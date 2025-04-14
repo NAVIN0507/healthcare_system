@@ -54,8 +54,6 @@ const navigation = [
     { name: 'Fitness', href: '/dashboard/fitness', icon: FireIcon, activeIcon: FireSolidIcon },
     { name: 'Meal Prep', href: '/dashboard/meal-prep', icon: HeartIcon, activeIcon: HeartSolidIcon },
     { name: 'Workouts', href: '/dashboard/workouts', icon: BoltIcon, activeIcon: BoltSolidIcon },
-    { name: 'Messages', href: '/dashboard/messages', icon: ChatBubbleLeftRightIcon, activeIcon: ChatBubbleLeftRightSolidIcon },
-    { name: 'Notifications', href: '/dashboard/notifications', icon: BellIcon, activeIcon: BellSolidIcon },
     { name: 'Settings', href: '/dashboard/settings', icon: Cog6ToothIcon, activeIcon: Cog6ToothSolidIcon },
 ];
 

@@ -28,11 +28,7 @@ const userSchema = new mongoose.Schema({
         minlength: [8, 'Password must be at least 8 characters long'],
         select: false // Don't return password in queries by default
     },
-    role: {
-        type: String,
-        enum: ['patient', 'doctor', 'admin'],
-        default: 'patient'
-    },
+
     // Health Information
     gender: {
         type: String,
@@ -63,17 +59,17 @@ const userSchema = new mongoose.Schema({
     pastMedicalIssues: {
         type: String,
         trim: true,
-        maxlength: [1000, 'Past medical issues cannot exceed 1000 characters']
+        maxlength: [20, 'Past medical issues cannot exceed 1000 characters']
     },
     allergies: {
         type: String,
         trim: true,
-        maxlength: [1000, 'Allergies cannot exceed 1000 characters']
+        maxlength: [20, 'Allergies cannot exceed 1000 characters']
     },
     currentHealthIssues: {
         type: String,
         trim: true,
-        maxlength: [1000, 'Current health issues cannot exceed 1000 characters']
+        maxlength: [20, 'Current health issues cannot exceed 1000 characters']
     },
     // Account Status
     isActive: {

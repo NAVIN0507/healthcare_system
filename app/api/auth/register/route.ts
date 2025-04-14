@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
-import connectDB from '@/lib/db';
-import User from '@/models/User';
+import connectDB from '../../../lib/db';
+import User from '../../../models/User';
 
 export async function POST(request: Request) {
     try {
@@ -25,7 +25,6 @@ export async function POST(request: Request) {
             lastName: body.lastName,
             email: body.email,
             password: body.password,
-            role: body.role || 'patient',
             gender: body.gender,
             dateOfBirth: new Date(body.dateOfBirth),
             height: body.height,

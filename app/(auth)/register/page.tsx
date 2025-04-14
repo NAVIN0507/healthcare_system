@@ -12,7 +12,14 @@ export default function RegisterPage() {
         email: '',
         password: '',
         confirmPassword: '',
-        role: 'patient', // Default role
+        gender: '',
+        dateOfBirth: '',
+        height: '',
+        weight: '',
+        bloodType: '',
+        pastMedicalIssues: '',
+        allergies: '',
+        currentHealthIssues: '',
         agreeToTerms: false,
     });
     const [error, setError] = useState('');
@@ -47,7 +54,7 @@ export default function RegisterPage() {
     };
 
     return (
-        <div className="bg-white rounded-lg shadow-soft p-8">
+        <div className="bg-white rounded-lg shadow-soft p-8 md:p-12">
             <h2 className="text-2xl font-semibold text-accent-500 mb-6">Create Account</h2>
 
             {error && (
@@ -56,8 +63,8 @@ export default function RegisterPage() {
                 </div>
             )}
 
-            <form onSubmit={handleSubmit} className="space-y-4">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <form onSubmit={handleSubmit} className="space-y-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div>
                         <label htmlFor="firstName" className="block text-sm font-medium text-neutral-700 mb-1">
                             First Name
@@ -104,53 +111,172 @@ export default function RegisterPage() {
                     />
                 </div>
 
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                        <label htmlFor="gender" className="block text-sm font-medium text-neutral-700 mb-1">
+                            Gender
+                        </label>
+                        <select
+                            id="gender"
+                            value={formData.gender}
+                            onChange={(e) => setFormData({ ...formData, gender: e.target.value })}
+                            className="w-full px-4 py-2 border border-neutral-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-colors"
+                            required
+                        >
+                            <option value="">Select gender</option>
+                            <option value="male">Male</option>
+                            <option value="female">Female</option>
+                            <option value="other">Other</option>
+                            <option value="prefer-not-to-say">Prefer not to say</option>
+                        </select>
+                    </div>
+
+                    <div>
+                        <label htmlFor="dateOfBirth" className="block text-sm font-medium text-neutral-700 mb-1">
+                            Date of Birth
+                        </label>
+                        <input
+                            type="date"
+                            id="dateOfBirth"
+                            value={formData.dateOfBirth}
+                            onChange={(e) => setFormData({ ...formData, dateOfBirth: e.target.value })}
+                            className="w-full px-4 py-2 border border-neutral-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-colors"
+                            required
+                        />
+                    </div>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                        <label htmlFor="height" className="block text-sm font-medium text-neutral-700 mb-1">
+                            Height (cm)
+                        </label>
+                        <input
+                            type="number"
+                            id="height"
+                            value={formData.height}
+                            onChange={(e) => setFormData({ ...formData, height: e.target.value })}
+                            className="w-full px-4 py-2 border border-neutral-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-colors"
+                            placeholder="Enter your height"
+                            required
+                        />
+                    </div>
+
+                    <div>
+                        <label htmlFor="weight" className="block text-sm font-medium text-neutral-700 mb-1">
+                            Weight (kg)
+                        </label>
+                        <input
+                            type="number"
+                            id="weight"
+                            value={formData.weight}
+                            onChange={(e) => setFormData({ ...formData, weight: e.target.value })}
+                            className="w-full px-4 py-2 border border-neutral-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-colors"
+                            placeholder="Enter your weight"
+                            required
+                        />
+                    </div>
+                </div>
+
                 <div>
-                    <label htmlFor="role" className="block text-sm font-medium text-neutral-700 mb-1">
-                        I am a
+                    <label htmlFor="bloodType" className="block text-sm font-medium text-neutral-700 mb-1">
+                        Blood Type
                     </label>
                     <select
-                        id="role"
-                        value={formData.role}
-                        onChange={(e) => setFormData({ ...formData, role: e.target.value })}
+                        id="bloodType"
+                        value={formData.bloodType}
+                        onChange={(e) => setFormData({ ...formData, bloodType: e.target.value })}
                         className="w-full px-4 py-2 border border-neutral-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-colors"
+                        required
                     >
-                        <option value="patient">Patient</option>
-                        <option value="doctor">Doctor</option>
-                        <option value="nurse">Nurse</option>
-                        <option value="admin">Administrator</option>
+                        <option value="">Select blood type</option>
+                        <option value="A+">A+</option>
+                        <option value="A-">A-</option>
+                        <option value="B+">B+</option>
+                        <option value="B-">B-</option>
+                        <option value="AB+">AB+</option>
+                        <option value="AB-">AB-</option>
+                        <option value="O+">O+</option>
+                        <option value="O-">O-</option>
                     </select>
                 </div>
 
-                <div>
-                    <label htmlFor="password" className="block text-sm font-medium text-neutral-700 mb-1">
-                        Password
-                    </label>
-                    <input
-                        type="password"
-                        id="password"
-                        value={formData.password}
-                        onChange={(e) => setFormData({ ...formData, password: e.target.value })}
-                        className="w-full px-4 py-2 border border-neutral-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-colors"
-                        placeholder="Create a password"
-                        required
-                        minLength={8}
-                    />
-                    <p className="mt-1 text-xs text-neutral-500">Must be at least 8 characters long</p>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                        <label htmlFor="pastMedicalIssues" className="block text-sm font-medium text-neutral-700 mb-1">
+                            Past Medical Issues
+                        </label>
+                        <textarea
+                            id="pastMedicalIssues"
+                            value={formData.pastMedicalIssues}
+                            onChange={(e) => setFormData({ ...formData, pastMedicalIssues: e.target.value })}
+                            className="w-full px-4 py-2 border border-neutral-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-colors"
+                            placeholder="List any past medical conditions or surgeries"
+                            rows={3}
+                        />
+                    </div>
+
+                    <div>
+                        <label htmlFor="allergies" className="block text-sm font-medium text-neutral-700 mb-1">
+                            Allergies
+                        </label>
+                        <textarea
+                            id="allergies"
+                            value={formData.allergies}
+                            onChange={(e) => setFormData({ ...formData, allergies: e.target.value })}
+                            className="w-full px-4 py-2 border border-neutral-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-colors"
+                            placeholder="List any allergies (medications, food, etc.)"
+                            rows={3}
+                        />
+                    </div>
                 </div>
 
                 <div>
-                    <label htmlFor="confirmPassword" className="block text-sm font-medium text-neutral-700 mb-1">
-                        Confirm Password
+                    <label htmlFor="currentHealthIssues" className="block text-sm font-medium text-neutral-700 mb-1">
+                        Current Health Issues
                     </label>
-                    <input
-                        type="password"
-                        id="confirmPassword"
-                        value={formData.confirmPassword}
-                        onChange={(e) => setFormData({ ...formData, confirmPassword: e.target.value })}
+                    <textarea
+                        id="currentHealthIssues"
+                        value={formData.currentHealthIssues}
+                        onChange={(e) => setFormData({ ...formData, currentHealthIssues: e.target.value })}
                         className="w-full px-4 py-2 border border-neutral-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-colors"
-                        placeholder="Confirm your password"
-                        required
+                        placeholder="Describe any current health issues or concerns"
+                        rows={3}
                     />
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                        <label htmlFor="password" className="block text-sm font-medium text-neutral-700 mb-1">
+                            Password
+                        </label>
+                        <input
+                            type="password"
+                            id="password"
+                            value={formData.password}
+                            onChange={(e) => setFormData({ ...formData, password: e.target.value })}
+                            className="w-full px-4 py-2 border border-neutral-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-colors"
+                            placeholder="Create a password"
+                            required
+                            minLength={8}
+                        />
+                        <p className="mt-1 text-xs text-neutral-500">Must be at least 8 characters long</p>
+                    </div>
+
+                    <div>
+                        <label htmlFor="confirmPassword" className="block text-sm font-medium text-neutral-700 mb-1">
+                            Confirm Password
+                        </label>
+                        <input
+                            type="password"
+                            id="confirmPassword"
+                            value={formData.confirmPassword}
+                            onChange={(e) => setFormData({ ...formData, confirmPassword: e.target.value })}
+                            className="w-full px-4 py-2 border border-neutral-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-colors"
+                            placeholder="Confirm your password"
+                            required
+                        />
+                    </div>
                 </div>
 
                 <div className="flex items-start">

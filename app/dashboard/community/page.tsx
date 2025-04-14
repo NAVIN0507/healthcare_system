@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
     UserCircleIcon,
@@ -29,6 +29,35 @@ import {
     Search, Filter, Plus, ChevronRight,
     Calendar, Clock, MapPin, Tag
 } from 'lucide-react';
+import { createApi } from 'unsplash-js';
+
+// Initialize Unsplash API
+const unsplash = createApi({
+    accessKey: 'YOUR_UNSPLASH_ACCESS_KEY', // Replace with your actual Unsplash access key
+});
+
+// Function to get random image from Unsplash
+const getRandomImage = async (query: string) => {
+    try {
+        const result = await unsplash.photos.getRandom({
+            query,
+            orientation: 'landscape',
+        });
+
+        if (result.type === 'success') {
+            // Handle both single photo and array of photos
+            if (Array.isArray(result.response)) {
+                return result.response[0]?.urls?.regular || null;
+            } else {
+                return result.response.urls?.regular || null;
+            }
+        }
+        return null;
+    } catch (error) {
+        console.error('Error fetching image from Unsplash:', error);
+        return null;
+    }
+};
 
 type User = {
     id: string;
@@ -159,6 +188,9 @@ export default function CommunityPage() {
     const [showSidebar, setShowSidebar] = useState(true);
     const [activeSection, setActiveSection] = useState<CommunitySection>('all');
     const { register, handleSubmit } = useForm();
+    const [isLoadingImages, setIsLoadingImages] = useState(true);
+    const [heroImage, setHeroImage] = useState('');
+    const [isLoadingHeroImage, setIsLoadingHeroImage] = useState(true);
 
     // Sample users data
     const users: User[] = [
@@ -191,7 +223,7 @@ export default function CommunityPage() {
         }
     ];
 
-    // Sample posts data
+    // Sample posts data with Unsplash images
     const [posts, setPosts] = useState<Post[]>([
         {
             id: '1',
@@ -199,7 +231,7 @@ export default function CommunityPage() {
             type: 'progress',
             title: '30-Day Transformation Challenge Complete!',
             content: 'Just finished my 30-day transformation challenge! Lost 5kg and gained so much strength. Consistency is key! 💪',
-            image: '/images/transformation.jpg',
+            image: '',
             likes: 124,
             comments: 23,
             shares: 12,
@@ -213,7 +245,7 @@ export default function CommunityPage() {
             type: 'workout',
             title: 'New HIIT Workout Routine',
             content: 'Here\'s my new HIIT workout routine that I\'ve been using with clients. It\'s challenging but effective! Try it out and let me know what you think.',
-            image: '/images/hiit-workout.jpg',
+            image: '',
             likes: 87,
             comments: 15,
             shares: 8,
@@ -227,7 +259,7 @@ export default function CommunityPage() {
             type: 'meal',
             title: 'Plant-Based Buddha Bowl',
             content: 'My go-to lunch: quinoa, roasted vegetables, avocado, chickpeas, and tahini dressing. Simple, nutritious, and delicious!',
-            image: '/images/buddha-bowl.jpg',
+            image: '',
             likes: 156,
             comments: 31,
             shares: 24,
@@ -241,7 +273,7 @@ export default function CommunityPage() {
             type: 'meal',
             title: 'Meal Prep Sunday',
             content: 'Prepped my meals for the week! Grilled chicken, sweet potatoes, broccoli, and brown rice. Ready to crush my fitness goals!',
-            image: '/images/meal-prep.jpg',
+            image: '',
             likes: 92,
             comments: 18,
             shares: 9,
@@ -255,7 +287,7 @@ export default function CommunityPage() {
             type: 'progress',
             title: 'Client Success Story',
             content: 'Proud of my client who lost 15kg in 3 months through consistent training and proper nutrition. Hard work pays off!',
-            image: '/images/client-success.jpg',
+            image: '',
             likes: 203,
             comments: 42,
             shares: 31,
@@ -264,6 +296,50 @@ export default function CommunityPage() {
             user: users[1]
         }
     ]);
+
+    // Fetch random images from Unsplash for posts
+    useEffect(() => {
+        const fetchImages = async () => {
+            setIsLoadingImages(true);
+
+            const updatedPosts = await Promise.all(
+                posts.map(async (post) => {
+                    let query = 'fitness';
+
+                    if (post.type === 'meal') {
+                        query = 'healthy food';
+                    } else if (post.type === 'workout') {
+                        query = 'workout';
+                    } else if (post.type === 'progress') {
+                        query = 'fitness transformation';
+                    }
+
+                    const imageUrl = await getRandomImage(query);
+                    return {
+                        ...post,
+                        image: imageUrl || ''
+                    };
+                })
+            );
+
+            setPosts(updatedPosts);
+            setIsLoadingImages(false);
+        };
+
+        fetchImages();
+    }, []);
+
+    // Fetch random hero image from Unsplash
+    useEffect(() => {
+        const fetchHeroImage = async () => {
+            setIsLoadingHeroImage(true);
+            const imageUrl = await getRandomImage('fitness community');
+            setHeroImage(imageUrl || '');
+            setIsLoadingHeroImage(false);
+        };
+
+        fetchHeroImage();
+    }, []);
 
     // Filter communities based on search query
     const filteredCommunities = communities.filter(community =>
@@ -349,7 +425,16 @@ export default function CommunityPage() {
             <div className="relative overflow-hidden bg-gradient-to-r from-indigo-600 to-purple-600 text-white">
                 <div className="absolute inset-0">
                     <div className="absolute inset-0 bg-gradient-to-r from-indigo-600 to-purple-600 opacity-90"></div>
-                    <div className="absolute inset-0 bg-[url('/images/pattern.svg')] opacity-10"></div>
+                    {isLoadingHeroImage ? (
+                        <div className="absolute inset-0 bg-indigo-800 animate-pulse"></div>
+                    ) : heroImage ? (
+                        <div
+                            className="absolute inset-0 bg-cover bg-center"
+                            style={{ backgroundImage: `url(${heroImage})` }}
+                        ></div>
+                    ) : (
+                        <div className="absolute inset-0 bg-[url('/images/pattern.svg')] opacity-10"></div>
+                    )}
                 </div>
                 <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
                     <div className="flex flex-col md:flex-row items-center justify-between">
@@ -461,11 +546,17 @@ export default function CommunityPage() {
                                                 <p className="mt-2 text-gray-700">{post.content}</p>
                                                 {post.image && (
                                                     <div className="mt-4 rounded-lg overflow-hidden">
-                                                        <img
-                                                            src={post.image}
-                                                            alt="Post content"
-                                                            className="w-full h-64 object-cover hover:scale-105 transition-transform duration-300"
-                                                        />
+                                                        {isLoadingImages ? (
+                                                            <div className="w-full h-64 bg-gray-200 animate-pulse flex items-center justify-center">
+                                                                <PhotoIcon className="w-12 h-12 text-gray-400" />
+                                                            </div>
+                                                        ) : (
+                                                            <img
+                                                                src={post.image}
+                                                                alt="Post content"
+                                                                className="w-full h-64 object-cover hover:scale-105 transition-transform duration-300"
+                                                            />
+                                                        )}
                                                     </div>
                                                 )}
                                                 <div className="mt-4 flex flex-wrap gap-2">

@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
 import Link from "next/link";
+import Footer from "./components/Footer";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -63,39 +64,7 @@ export default function RootLayout({
           </div>
         </header>
         <main>{children}</main>
-        <footer className="bg-accent-500 text-white py-8">
-          <div className="container mx-auto px-4">
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-              <div>
-                <h3 className="text-lg font-semibold mb-4">Wellnest</h3>
-                <p className="text-accent-200">
-                  Your personalized wellness companion for a healthier lifestyle.
-                </p>
-              </div>
-              <div>
-                <h3 className="text-lg font-semibold mb-4">Quick Links</h3>
-                <ul className="space-y-2">
-                  <li><Link href="/" className="text-accent-200 hover:text-white transition-colors">Home</Link></li>
-                  <li><Link href="/about" className="text-accent-200 hover:text-white transition-colors">About</Link></li>
-                  <li><Link href="/contact" className="text-accent-200 hover:text-white transition-colors">Contact</Link></li>
-                  <li><Link href="/login" className="text-accent-200 hover:text-white transition-colors">Sign In</Link></li>
-                  <li><Link href="/register" className="text-accent-200 hover:text-white transition-colors">Sign Up</Link></li>
-                </ul>
-              </div>
-              <div>
-                <h3 className="text-lg font-semibold mb-4">Contact Us</h3>
-                <ul className="space-y-2 text-accent-200">
-                  <li>Email: info@wellnest.com</li>
-                  <li>Phone: (123) 456-7890</li>
-                  <li>Address: 123 Wellness St, Health City</li>
-                </ul>
-              </div>
-            </div>
-            <div className="mt-8 pt-8 border-t border-accent-400 text-center text-accent-200">
-              <p>&copy; {new Date().getFullYear()} Wellnest. All rights reserved.</p>
-            </div>
-          </div>
-        </footer>
+        <Footer />
       </body>
     </html>
   );

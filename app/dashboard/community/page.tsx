@@ -10,7 +10,6 @@ import {
     FireIcon,
     ClipboardDocumentListIcon,
     ChartBarIcon,
-
     ChevronDownIcon,
     PlusIcon,
     UserGroupIcon,
@@ -50,6 +49,7 @@ type Post = {
     image?: string;
     likes: number;
     comments: number;
+    shares: number;
     isLiked: boolean;
     timestamp: string;
     user: User;
@@ -202,6 +202,7 @@ export default function CommunityPage() {
             image: '/images/transformation.jpg',
             likes: 124,
             comments: 23,
+            shares: 12,
             isLiked: true,
             timestamp: '2 hours ago',
             user: users[0]
@@ -215,6 +216,7 @@ export default function CommunityPage() {
             image: '/images/hiit-workout.jpg',
             likes: 87,
             comments: 15,
+            shares: 8,
             isLiked: false,
             timestamp: '5 hours ago',
             user: users[1]
@@ -228,6 +230,7 @@ export default function CommunityPage() {
             image: '/images/buddha-bowl.jpg',
             likes: 156,
             comments: 31,
+            shares: 24,
             isLiked: true,
             timestamp: '1 day ago',
             user: users[2]
@@ -241,6 +244,7 @@ export default function CommunityPage() {
             image: '/images/meal-prep.jpg',
             likes: 92,
             comments: 18,
+            shares: 9,
             isLiked: false,
             timestamp: '2 days ago',
             user: users[0]
@@ -254,6 +258,7 @@ export default function CommunityPage() {
             image: '/images/client-success.jpg',
             likes: 203,
             comments: 42,
+            shares: 31,
             isLiked: true,
             timestamp: '3 days ago',
             user: users[1]
@@ -340,41 +345,92 @@ export default function CommunityPage() {
 
     return (
         <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-white to-purple-50">
-            {/* Header */}
-            <div className="bg-white shadow-sm">
-                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-                    <div className="flex items-center justify-between">
-                        <h1 className="text-3xl font-bold text-gray-900">Community</h1>
-                        <button className="btn-primary flex items-center gap-2">
-                            <Plus className="w-5 h-5" />
-                            Create Post
-                        </button>
+            {/* Hero Section */}
+            <div className="relative overflow-hidden bg-gradient-to-r from-indigo-600 to-purple-600 text-white">
+                <div className="absolute inset-0">
+                    <div className="absolute inset-0 bg-gradient-to-r from-indigo-600 to-purple-600 opacity-90"></div>
+                    <div className="absolute inset-0 bg-[url('/images/pattern.svg')] opacity-10"></div>
+                </div>
+                <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
+                    <div className="flex flex-col md:flex-row items-center justify-between">
+                        <div className="md:w-1/2 mb-8 md:mb-0">
+                            <motion.h1
+                                initial={{ opacity: 0, y: 20 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                transition={{ duration: 0.5 }}
+                                className="text-4xl md:text-5xl font-bold mb-4"
+                            >
+                                Connect with Your Health Community
+                            </motion.h1>
+                            <motion.p
+                                initial={{ opacity: 0, y: 20 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                transition={{ duration: 0.5, delay: 0.1 }}
+                                className="text-xl text-indigo-100 mb-6"
+                            >
+                                Share your journey, get inspired, and support others on their path to better health.
+                            </motion.p>
+                            <motion.div
+                                initial={{ opacity: 0, y: 20 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                transition={{ duration: 0.5, delay: 0.2 }}
+                                className="flex flex-wrap gap-4"
+                            >
+                                <button className="px-6 py-3 bg-white text-indigo-600 rounded-lg font-medium shadow-lg hover:bg-indigo-50 transition-all">
+                                    Join a Community
+                                </button>
+                                <button className="px-6 py-3 bg-indigo-700 text-white rounded-lg font-medium shadow-lg hover:bg-indigo-800 transition-all">
+                                    Create a Post
+                                </button>
+                            </motion.div>
+                        </div>
+                        <motion.div
+                            initial={{ opacity: 0, scale: 0.9 }}
+                            animate={{ opacity: 1, scale: 1 }}
+                            transition={{ duration: 0.5, delay: 0.3 }}
+                            className="md:w-1/2"
+                        >
+                            <div className="relative">
+                                <div className="absolute -top-4 -right-4 w-24 h-24 bg-yellow-400 rounded-full opacity-20"></div>
+                                <div className="absolute -bottom-4 -left-4 w-32 h-32 bg-pink-400 rounded-full opacity-20"></div>
+                                <div className="flex justify-center items-center">
+                                    <UserGroupIcon className="w-48 h-48 text-white opacity-90" />
+                                </div>
+                            </div>
+                        </motion.div>
                     </div>
                 </div>
             </div>
 
-            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
                 <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
                     {/* Main Content */}
-                    <div className="lg:col-span-3 space-y-6">
+                    <div className="lg:col-span-3 space-y-8">
                         {/* Section Tabs */}
-                        <div className="bg-white rounded-xl shadow-sm p-4">
+                        <motion.div
+                            initial={{ opacity: 0, y: 20 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            transition={{ duration: 0.5 }}
+                            className="bg-white rounded-xl shadow-sm p-4"
+                        >
                             <div className="flex space-x-4 overflow-x-auto">
                                 {sections.map(({ id, label, icon: Icon }) => (
-                                    <button
+                                    <motion.button
                                         key={id}
+                                        whileHover={{ scale: 1.05 }}
+                                        whileTap={{ scale: 0.95 }}
                                         onClick={() => setActiveSection(id as CommunitySection)}
                                         className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-all ${activeSection === id
-                                                ? 'bg-indigo-50 text-indigo-600'
-                                                : 'text-gray-600 hover:bg-gray-50'
+                                            ? 'bg-indigo-50 text-indigo-600'
+                                            : 'text-gray-600 hover:bg-gray-50'
                                             }`}
                                     >
                                         <Icon className="w-5 h-5" />
                                         <span>{label}</span>
-                                    </button>
+                                    </motion.button>
                                 ))}
                             </div>
-                        </div>
+                        </motion.div>
 
                         {/* Posts */}
                         <div className="space-y-6">
@@ -385,15 +441,14 @@ export default function CommunityPage() {
                                     animate={{ opacity: 1, y: 0 }}
                                     exit={{ opacity: 0, y: -20 }}
                                     transition={{ duration: 0.3, delay: index * 0.1 }}
-                                    className="bg-white rounded-xl shadow-sm overflow-hidden"
+                                    className="bg-white rounded-xl shadow-sm overflow-hidden hover:shadow-md transition-shadow"
                                 >
                                     <div className="p-6">
                                         <div className="flex items-start gap-4">
-                                            <img
-                                                src={post.user.icon ? (post.user.icon as string) : '/images/placeholder.jpg'}
-                                                alt={post.user.name}
-                                                className="w-12 h-12 rounded-full object-cover"
-                                            />
+                                            <div className="relative">
+                                                {post.user.icon}
+                                                <div className="absolute -bottom-1 -right-1 w-4 h-4 bg-green-400 rounded-full border-2 border-white"></div>
+                                            </div>
                                             <div className="flex-1">
                                                 <div className="flex items-center justify-between">
                                                     <div>
@@ -402,13 +457,16 @@ export default function CommunityPage() {
                                                     </div>
                                                     <span className="text-sm text-gray-500">{post.timestamp}</span>
                                                 </div>
-                                                <p className="mt-4 text-gray-700">{post.content}</p>
+                                                <h4 className="mt-3 text-lg font-medium text-gray-900">{post.title}</h4>
+                                                <p className="mt-2 text-gray-700">{post.content}</p>
                                                 {post.image && (
-                                                    <img
-                                                        src={post.image}
-                                                        alt="Post content"
-                                                        className="mt-4 rounded-lg w-full h-64 object-cover"
-                                                    />
+                                                    <div className="mt-4 rounded-lg overflow-hidden">
+                                                        <img
+                                                            src={post.image}
+                                                            alt="Post content"
+                                                            className="w-full h-64 object-cover hover:scale-105 transition-transform duration-300"
+                                                        />
+                                                    </div>
                                                 )}
                                                 <div className="mt-4 flex flex-wrap gap-2">
                                                     {post.user.bio.split(' ').map((word) => (
@@ -416,7 +474,7 @@ export default function CommunityPage() {
                                                             key={word}
                                                             className="px-3 py-1 bg-indigo-50 text-indigo-600 rounded-full text-sm"
                                                         >
-                                                            {word}
+                                                            #{word}
                                                         </span>
                                                     ))}
                                                 </div>
@@ -426,21 +484,31 @@ export default function CommunityPage() {
                                     <div className="border-t border-gray-100">
                                         <div className="flex items-center justify-between px-6 py-4">
                                             <div className="flex items-center gap-6">
-                                                <button
+                                                <motion.button
+                                                    whileHover={{ scale: 1.1 }}
+                                                    whileTap={{ scale: 0.9 }}
                                                     onClick={() => handleLike(post.id)}
+                                                    className={`flex items-center gap-2 ${post.isLiked ? 'text-red-500' : 'text-gray-500 hover:text-indigo-600'}`}
+                                                >
+                                                    <Heart className={`w-5 h-5 ${post.isLiked ? 'fill-current' : ''}`} />
+                                                    <span>{post.likes}</span>
+                                                </motion.button>
+                                                <motion.button
+                                                    whileHover={{ scale: 1.1 }}
+                                                    whileTap={{ scale: 0.9 }}
                                                     className="flex items-center gap-2 text-gray-500 hover:text-indigo-600"
                                                 >
-                                                    <Heart className="w-5 h-5" />
-                                                    <span>{post.likes}</span>
-                                                </button>
-                                                <button className="flex items-center gap-2 text-gray-500 hover:text-indigo-600">
                                                     <MessageSquare className="w-5 h-5" />
                                                     <span>{post.comments}</span>
-                                                </button>
-                                                <button className="flex items-center gap-2 text-gray-500 hover:text-indigo-600">
-                                                    <ShareIcon className="w-5 h-5" />
+                                                </motion.button>
+                                                <motion.button
+                                                    whileHover={{ scale: 1.1 }}
+                                                    whileTap={{ scale: 0.9 }}
+                                                    className="flex items-center gap-2 text-gray-500 hover:text-indigo-600"
+                                                >
+                                                    <Share2 className="w-5 h-5" />
                                                     <span>{post.shares}</span>
-                                                </button>
+                                                </motion.button>
                                             </div>
                                         </div>
                                     </div>
@@ -452,7 +520,12 @@ export default function CommunityPage() {
                     {/* Sidebar */}
                     <div className="space-y-6">
                         {/* Search */}
-                        <div className="bg-white rounded-xl shadow-sm p-4">
+                        <motion.div
+                            initial={{ opacity: 0, x: 20 }}
+                            animate={{ opacity: 1, x: 0 }}
+                            transition={{ duration: 0.5, delay: 0.2 }}
+                            className="bg-white rounded-xl shadow-sm p-4"
+                        >
                             <div className="relative">
                                 <Search className="w-5 h-5 absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
                                 <input
@@ -462,19 +535,70 @@ export default function CommunityPage() {
                                     {...register('search')}
                                 />
                             </div>
-                        </div>
+                        </motion.div>
+
+                        {/* Featured Communities */}
+                        <motion.div
+                            initial={{ opacity: 0, x: 20 }}
+                            animate={{ opacity: 1, x: 0 }}
+                            transition={{ duration: 0.5, delay: 0.3 }}
+                            className="bg-white rounded-xl shadow-sm p-6"
+                        >
+                            <h2 className="text-xl font-semibold text-gray-900 mb-4">Featured Communities</h2>
+                            <div className="space-y-4">
+                                {communities.map((community) => (
+                                    <motion.div
+                                        key={community.id}
+                                        whileHover={{ scale: 1.02 }}
+                                        className="flex gap-4 p-3 rounded-lg hover:bg-gray-50 transition-colors"
+                                    >
+                                        <div className="p-3 bg-indigo-50 rounded-lg">
+                                            {community.icon}
+                                        </div>
+                                        <div className="flex-1">
+                                            <h3 className="font-medium text-gray-900">{community.name}</h3>
+                                            <p className="text-sm text-gray-500 mt-1">{community.description}</p>
+                                            <div className="mt-2 flex items-center justify-between">
+                                                <span className="text-xs text-indigo-600 bg-indigo-50 px-2 py-1 rounded-full">
+                                                    {community.memberCount} members
+                                                </span>
+                                                <button
+                                                    onClick={() => handleJoinCommunity(community.id)}
+                                                    className={`text-sm px-3 py-1 rounded-full ${community.isJoined
+                                                        ? 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                                                        : 'bg-indigo-600 text-white hover:bg-indigo-700'
+                                                        }`}
+                                                >
+                                                    {community.isJoined ? 'Joined' : 'Join'}
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </motion.div>
+                                ))}
+                            </div>
+                        </motion.div>
 
                         {/* Upcoming Events */}
-                        <div className="bg-white rounded-xl shadow-sm p-6">
+                        <motion.div
+                            initial={{ opacity: 0, x: 20 }}
+                            animate={{ opacity: 1, x: 0 }}
+                            transition={{ duration: 0.5, delay: 0.4 }}
+                            className="bg-white rounded-xl shadow-sm p-6"
+                        >
                             <h2 className="text-xl font-semibold text-gray-900 mb-4">Upcoming Events</h2>
                             <div className="space-y-4">
                                 {onlineUsers.map((user) => (
-                                    <div key={user.id} className="flex gap-4">
-                                        <img
-                                            src={user.icon as string}
-                                            alt={user.name}
-                                            className="w-20 h-20 rounded-lg object-cover"
-                                        />
+                                    <motion.div
+                                        key={user.id}
+                                        whileHover={{ scale: 1.02 }}
+                                        className="flex gap-4 p-3 rounded-lg hover:bg-gray-50 transition-colors"
+                                    >
+                                        <div className="relative">
+                                            {user.icon}
+                                            <div className={`absolute bottom-0 right-0 w-3 h-3 rounded-full border-2 border-white ${user.status === 'online' ? 'bg-green-400' :
+                                                user.status === 'away' ? 'bg-yellow-400' : 'bg-red-400'
+                                                }`}></div>
+                                        </div>
                                         <div className="flex-1">
                                             <h3 className="font-medium text-gray-900">{user.name}</h3>
                                             <div className="mt-1 space-y-1">
@@ -484,16 +608,20 @@ export default function CommunityPage() {
                                                 </div>
                                             </div>
                                             <div className="mt-2 flex items-center justify-between">
-                                                <span className="text-sm text-indigo-600">{user.status === 'online' ? 'Online' : user.status === 'away' ? 'Away' : 'Busy'}</span>
-                                                <button className="text-sm text-indigo-600 hover:text-indigo-700">
+                                                <span className={`text-xs px-2 py-1 rounded-full ${user.status === 'online' ? 'bg-green-50 text-green-600' :
+                                                    user.status === 'away' ? 'bg-yellow-50 text-yellow-600' : 'bg-red-50 text-red-600'
+                                                    }`}>
+                                                    {user.status === 'online' ? 'Online' : user.status === 'away' ? 'Away' : 'Busy'}
+                                                </span>
+                                                <button className="text-sm text-indigo-600 hover:text-indigo-700 font-medium">
                                                     Join
                                                 </button>
                                             </div>
                                         </div>
-                                    </div>
+                                    </motion.div>
                                 ))}
                             </div>
-                        </div>
+                        </motion.div>
                     </div>
                 </div>
             </div>

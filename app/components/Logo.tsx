@@ -21,7 +21,7 @@ export default function Logo({ size = 'medium', className = '' }: LogoProps) {
                 </div>
                 <div className="absolute -bottom-1 -right-1 w-3 h-3 bg-accent-500 rounded-full border-2 "></div>
             </div>
-            <span className="font-bold text-white">Wellnest</span>
+            <span className="font-bold text-black">Wellnest</span>
         </div>
     );
 } 

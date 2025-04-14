@@ -5,14 +5,10 @@ export default function Home() {
   return (
     <div className="overflow-hidden">
       {/* Hero Section */}
-      <section className="relative overflow-hidden bg-gradient-to-r from-primary-600 to-primary-800 text-white">
-        <div className="absolute inset-0 opacity-10">
-          <div className="absolute inset-0 bg-[url('/grid-pattern.svg')] bg-center [mask-image:linear-gradient(180deg,white,rgba(255,255,255,0))]"></div>
-        </div>
-
-        <div className="container mx-auto px-4 py-16 md:py-24">
+      <section className="relative overflow-hidden bg-gradient-to-r from-primary-600 to-primary-800 text-white mt-8">
+        <div className="container mx-auto px-4 py-20 md:py-28 relative z-10">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
-            <div className="space-y-6 relative z-10">
+            <div className="space-y-6">
               <div className="inline-block">
                 <span className="inline-flex items-center px-4 py-2 rounded-full bg-primary-500/20 text-primary-100 text-sm font-medium">
                   <span className="w-2 h-2 rounded-full bg-primary-200 mr-2"></span>
@@ -57,7 +53,7 @@ export default function Home() {
                 {/* Main Image */}
                 <div className="absolute top-0 right-0 w-3/4 h-3/4 bg-white rounded-lg shadow-2xl overflow-hidden transform rotate-3">
                   <Image
-                    src="/images/wellness-dashboard.jpg"
+                    src="/images/heroimg.png"
                     alt="Wellness Dashboard"
                     width={600}
                     height={400}

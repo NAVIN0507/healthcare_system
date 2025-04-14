@@ -32,7 +32,7 @@ export default function LoginPage() {
 
     return (
         <div className="bg-white rounded-lg shadow-soft p-8">
-            <h2 className="text-2xl font-semibold text-accent-500 mb-6">Sign In</h2>
+            <h2 className="text-2xl font-semibold text-black mb-6">Sign In</h2>
 
             {error && (
                 <div className="mb-4 p-3 bg-red-50 text-red-700 rounded-lg text-sm">

@@ -69,6 +69,38 @@ const exercises = {
                 'Rest for 30 seconds between sets'
             ]
         },
+        {
+            id: 'swimming',
+            name: 'Swimming',
+            duration: '45 min',
+            calories: 350,
+            difficulty: 'Medium',
+            description: "A full-body workout that's easy on joints and improves cardiovascular fitness.",
+            equipment: 'Swimsuit, Goggles',
+            targetMuscles: ['Full Body', 'Shoulders', 'Back', 'Legs'],
+            instructions: [
+                'Start with a 5-minute warm-up',
+                'Practice different strokes (freestyle, breaststroke, backstroke)',
+                'Include intervals of different intensities',
+                'Cool down with easy swimming'
+            ]
+        },
+        {
+            id: 'rowing',
+            name: 'Rowing',
+            duration: '30 min',
+            calories: 300,
+            difficulty: 'Medium',
+            description: 'A low-impact, full-body workout that builds strength and endurance.',
+            equipment: 'Rowing Machine',
+            targetMuscles: ['Back', 'Shoulders', 'Legs', 'Core'],
+            instructions: [
+                'Start with proper form: legs, back, arms sequence',
+                'Maintain a steady pace for 20 minutes',
+                'Include intervals of higher intensity',
+                'Cool down with easy rowing'
+            ]
+        }
     ],
     strength: [
         {
@@ -120,6 +152,38 @@ const exercises = {
                 'Lower the bar with control'
             ]
         },
+        {
+            id: 'bench-press',
+            name: 'Bench Press',
+            duration: '15 min',
+            calories: 130,
+            difficulty: 'High',
+            description: 'A classic upper body exercise that builds chest and shoulder strength.',
+            equipment: 'Bench, Barbell, Weight Plates',
+            targetMuscles: ['Chest', 'Shoulders', 'Triceps'],
+            instructions: [
+                'Lie on the bench with feet flat on the ground',
+                'Grip the bar slightly wider than shoulder width',
+                'Lower the bar to your chest with control',
+                'Press the bar back up to the starting position'
+            ]
+        },
+        {
+            id: 'pull-ups',
+            name: 'Pull-ups',
+            duration: '10 min',
+            calories: '100',
+            difficulty: 'High',
+            description: 'An advanced upper body exercise that builds back and arm strength.',
+            equipment: 'Pull-up Bar',
+            targetMuscles: ['Back', 'Biceps', 'Shoulders', 'Core'],
+            instructions: [
+                'Hang from the bar with hands slightly wider than shoulders',
+                'Pull your body up until your chin clears the bar',
+                'Lower yourself with control',
+                'Keep your core engaged throughout'
+            ]
+        }
     ],
     flexibility: [
         {
@@ -170,6 +234,38 @@ const exercises = {
                 'Start with basic exercises and progress to more challenging ones'
             ]
         },
+        {
+            id: 'mobility-work',
+            name: 'Mobility Work',
+            duration: '20 min',
+            calories: 100,
+            difficulty: 'Low',
+            description: 'Exercises that improve joint range of motion and movement patterns.',
+            equipment: 'Foam Roller, Mobility Bands',
+            targetMuscles: ['Joints', 'Connective Tissue', 'Muscles'],
+            instructions: [
+                'Start with foam rolling to release tension',
+                'Perform joint circles and rotations',
+                'Include dynamic stretches',
+                'Focus on problem areas'
+            ]
+        },
+        {
+            id: 'tai-chi',
+            name: 'Tai Chi',
+            duration: '30 min',
+            calories: 120,
+            difficulty: 'Low',
+            description: 'A gentle form of exercise that combines movement, breathing, and meditation.',
+            equipment: 'None',
+            targetMuscles: ['Full Body', 'Balance', 'Core'],
+            instructions: [
+                'Start with basic movements and stances',
+                'Focus on slow, controlled movements',
+                'Coordinate breathing with movements',
+                'Practice regularly for best results'
+            ]
+        }
     ],
     hiit: [
         {
@@ -222,7 +318,40 @@ const exercises = {
                 'Repeat at a quick pace'
             ]
         },
-    ],
+        {
+            id: 'box-jumps',
+            name: 'Box Jumps',
+            duration: '10 min',
+            calories: 130,
+            difficulty: 'High',
+            description: 'A plyometric exercise that builds power and explosiveness.',
+            equipment: 'Plyometric Box or Stable Platform',
+            targetMuscles: ['Legs', 'Glutes', 'Core', 'Cardiovascular System'],
+            instructions: [
+                'Stand in front of the box with feet shoulder-width apart',
+                'Squat down and swing your arms back',
+                'Explosively jump onto the box, landing softly',
+                'Step down and repeat'
+            ]
+        },
+        {
+            id: 'kettlebell-swings',
+            name: 'Kettlebell Swings',
+            duration: '15 min',
+            calories: 140,
+            difficulty: 'Medium',
+            description: 'A dynamic full-body exercise that builds power and endurance.',
+            equipment: 'Kettlebell',
+            targetMuscles: ['Hips', 'Glutes', 'Back', 'Shoulders', 'Core'],
+            instructions: [
+                'Stand with feet shoulder-width apart, kettlebell between your feet',
+                'Hinge at the hips and grab the kettlebell with both hands',
+                'Drive your hips forward to swing the kettlebell up to shoulder height',
+                'Let the kettlebell swing back down between your legs',
+                'Repeat the movement'
+            ]
+        }
+    ]
 };
 
 export default function FitnessPage() {

@@ -324,13 +324,13 @@ export default function CommunityPage() {
     return (
         <div className="flex relative">
             {/* Main Content */}
-            <div className={`flex-1 p-6 ${showSidebar ? 'max-w-7xl' : 'w-full'}`}>
+            <div className="flex-1 p-6 w-full">
                 <motion.div
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
                     className="space-y-6"
                 >
-                    {/* Header with sidebar toggle */}
+                    {/* Header */}
                     <motion.div
                         initial={{ opacity: 0, y: -20 }}
                         animate={{ opacity: 1, y: 0 }}
@@ -339,19 +339,6 @@ export default function CommunityPage() {
                     >
                         <h1 className="text-2xl font-bold text-gray-900">Community</h1>
                         <div className="flex items-center space-x-2">
-                            <motion.button
-                                whileHover={{ scale: 1.05 }}
-                                whileTap={{ scale: 0.95 }}
-                                onClick={() => setShowSidebar(!showSidebar)}
-                                className="p-2 text-gray-600 rounded-full hover:bg-gray-100"
-                                title={showSidebar ? "Hide sidebar" : "Show sidebar"}
-                            >
-                                {showSidebar ? (
-                                    <ChevronRightIcon className="h-5 w-5" />
-                                ) : (
-                                    <ChevronLeftIcon className="h-5 w-5" />
-                                )}
-                            </motion.button>
                             <motion.button
                                 whileHover={{ scale: 1.05 }}
                                 whileTap={{ scale: 0.95 }}
@@ -793,39 +780,38 @@ export default function CommunityPage() {
                             </table>
                         </div>
                     </div>
-                </motion.div>
-            </div>
 
-            {/* Right Sidebar - Online Users */}
-            <AnimatePresence>
-                {showSidebar && (
+                    {/* Online Users Section */}
                     <motion.div
-                        initial={{ width: 0, opacity: 0 }}
-                        animate={{ width: 320, opacity: 1 }}
-                        exit={{ width: 0, opacity: 0 }}
-                        transition={{ duration: 0.3 }}
-                        className="w-80 border-l border-gray-200 bg-white p-6 overflow-hidden"
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        className="bg-gray-900 rounded-xl shadow-sm overflow-hidden"
                     >
-                        <div className="space-y-6">
-                            <div className="flex items-center justify-between">
-                                <h2 className="text-lg font-semibold text-gray-900">Online Users</h2>
-                                <span className="text-sm text-gray-500">{onlineUsers.length} online</span>
+                        <div className="p-6">
+                            <div className="flex items-center justify-between pb-4 border-b border-gray-700">
+                                <h2 className="text-lg font-semibold text-white flex items-center">
+                                    <UserGroupIcon className="h-5 w-5 mr-2 text-blue-400" />
+                                    Online Users
+                                </h2>
+                                <span className="text-sm font-medium px-2.5 py-1 rounded-full bg-blue-900 text-blue-300">
+                                    {onlineUsers.length} online
+                                </span>
                             </div>
 
-                            <div className="space-y-4">
+                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mt-4">
                                 {onlineUsers.map((user) => (
                                     <motion.div
                                         key={user.id}
-                                        initial={{ opacity: 0, x: 20 }}
-                                        animate={{ opacity: 1, x: 0 }}
-                                        className="flex items-center space-x-3"
+                                        initial={{ opacity: 0, y: 10 }}
+                                        animate={{ opacity: 1, y: 0 }}
+                                        className="flex items-center space-x-4 p-4 rounded-lg bg-gray-800 hover:bg-gray-700 transition-colors duration-200"
                                     >
                                         <div className="relative">
-                                            <div className="p-2 bg-gray-50 rounded-full">
+                                            <div className="p-3 bg-gray-700 rounded-full">
                                                 {user.icon}
                                             </div>
                                             <span
-                                                className={`absolute bottom-0 right-0 block h-2.5 w-2.5 rounded-full ring-2 ring-white ${user.status === 'online'
+                                                className={`absolute bottom-0 right-0 block h-3 w-3 rounded-full ring-2 ring-gray-800 ${user.status === 'online'
                                                         ? 'bg-green-400'
                                                         : user.status === 'away'
                                                             ? 'bg-yellow-400'
@@ -834,10 +820,10 @@ export default function CommunityPage() {
                                             />
                                         </div>
                                         <div className="flex-1 min-w-0">
-                                            <p className="text-sm font-medium text-gray-900 truncate">
+                                            <p className="text-base font-medium text-white truncate">
                                                 {user.name}
                                             </p>
-                                            <p className="text-xs text-gray-500">
+                                            <p className="text-sm text-gray-400">
                                                 {user.lastActive}
                                             </p>
                                         </div>
@@ -846,8 +832,8 @@ export default function CommunityPage() {
                             </div>
                         </div>
                     </motion.div>
-                )}
-            </AnimatePresence>
+                </motion.div>
+            </div>
         </div>
     );
 } 

@@ -50,7 +50,6 @@ const navigation = [
     { name: 'Dashboard', href: '/dashboard', icon: HomeIcon, activeIcon: HomeSolidIcon },
     { name: 'Profile', href: '/dashboard/profile', icon: UserIcon, activeIcon: UserSolidIcon },
     { name: 'Appointments', href: '/dashboard/appointments', icon: CalendarIcon, activeIcon: CalendarSolidIcon },
-    { name: 'Analytics', href: '/dashboard/analytics', icon: ChartBarIcon, activeIcon: ChartBarSolidIcon },
     { name: 'Community', href: '/dashboard/community', icon: UserGroupIcon, activeIcon: UserGroupSolidIcon },
     { name: 'Goals', href: '/dashboard/goals', icon: TrophyIcon, activeIcon: TrophySolidIcon },
     { name: 'Fitness', href: '/dashboard/fitness', icon: FireIcon, activeIcon: FireSolidIcon },
@@ -136,14 +135,20 @@ export default function DashboardLayout({
     };
 
     return (
-        <div className="flex h-screen bg-gradient-to-br from-gray-50 to-gray-100 ml-10 pt-10">
+        <div className="flex h-screen bg-gradient-to-br from-gray-900 to-black ml-10 pt-10 relative overflow-hidden">
+            {/* Background Effects */}
+            <div className="absolute inset-0 overflow-hidden pointer-events-none">
+                <div className="absolute top-0 left-0 w-full h-full bg-[radial-gradient(circle_at_50%_120%,rgba(120,119,198,0.1),rgba(255,255,255,0))]"></div>
+                <div className="absolute top-0 left-0 w-full h-full bg-[radial-gradient(circle_at_50%_0%,rgba(120,119,198,0.1),rgba(255,255,255,0))]"></div>
+            </div>
+
             {/* Sidebar Toggle Button (Mobile) */}
             <div className="fixed top-4 left-4 z-50 md:hidden">
                 <motion.button
                     whileHover={{ scale: 1.05 }}
                     whileTap={{ scale: 0.95 }}
                     onClick={toggleSidebar}
-                    className="p-2 rounded-full bg-gradient-to-r from-primary-600 to-primary-700 text-white shadow-lg backdrop-blur-sm"
+                    className="p-2 rounded-full bg-white text-black shadow-lg backdrop-blur-sm"
                 >
                     {isSidebarOpen ? (
                         <XMarkIcon className="h-6 w-6" />
@@ -163,18 +168,37 @@ export default function DashboardLayout({
                         transition={{ type: "spring", stiffness: 300, damping: 30 }}
                         className="fixed inset-y-0 left-0 z-40 w-72 overflow-y-auto"
                         style={{
-                            background: 'linear-gradient(135deg, rgba(26, 54, 93, 0.95) 0%, rgba(45, 55, 72, 0.95) 100%)',
+                            background: 'linear-gradient(135deg, rgba(0, 0, 0, 0.95) 0%, rgba(17, 24, 39, 0.95) 100%)',
                             backdropFilter: 'blur(10px)',
                             boxShadow: '0 4px 30px rgba(0, 0, 0, 0.1)',
+                            borderRight: '1px solid rgba(255, 255, 255, 0.1)',
                         }}
                     >
                         <div className="flex flex-col h-full">
                             {/* Logo and Toggle */}
                             <div className="flex items-center justify-between p-6 border-b border-gray-700/50">
                                 <div className="flex items-center space-x-3">
-                                    <div className="p-2 bg-gradient-to-r from-primary-400 to-primary-600 rounded-xl shadow-lg">
-                                        <SparklesIcon className="h-7 w-7 text-white" />
-                                    </div>
+                                    <motion.div
+                                        className="p-2 bg-white rounded-xl shadow-lg relative overflow-hidden"
+                                        whileHover={{ rotate: 15, scale: 1.1 }}
+                                        transition={{ type: "spring", stiffness: 400, damping: 10 }}
+                                    >
+                                        <motion.div
+                                            className="absolute inset-0 bg-gradient-to-r from-white to-gray-200"
+                                            animate={{
+                                                backgroundPosition: ['0% 0%', '100% 100%'],
+                                            }}
+                                            transition={{
+                                                duration: 3,
+                                                repeat: Infinity,
+                                                repeatType: "reverse",
+                                            }}
+                                            style={{
+                                                backgroundSize: '200% 200%',
+                                            }}
+                                        />
+                                        <SparklesIcon className="h-7 w-7 text-black relative z-10" />
+                                    </motion.div>
                                     <span className="text-2xl font-bold text-white tracking-tight">HealthCare</span>
                                 </div>
                                 <motion.button
@@ -198,11 +222,38 @@ export default function DashboardLayout({
                                                 className="w-14 h-14 rounded-xl object-cover shadow-lg"
                                             />
                                         ) : (
-                                            <div className="w-14 h-14 rounded-xl bg-gradient-to-r from-blue-400 to-indigo-600 flex items-center justify-center shadow-lg">
-                                                <UserIcon className="h-7 w-7 text-white" />
-                                            </div>
+                                            <motion.div
+                                                className="w-14 h-14 rounded-xl bg-white flex items-center justify-center shadow-lg relative overflow-hidden"
+                                                whileHover={{ scale: 1.05 }}
+                                            >
+                                                <motion.div
+                                                    className="absolute inset-0 bg-gradient-to-r from-white to-gray-200"
+                                                    animate={{
+                                                        backgroundPosition: ['0% 0%', '100% 100%'],
+                                                    }}
+                                                    transition={{
+                                                        duration: 3,
+                                                        repeat: Infinity,
+                                                        repeatType: "reverse",
+                                                    }}
+                                                    style={{
+                                                        backgroundSize: '200% 200%',
+                                                    }}
+                                                />
+                                                <UserIcon className="h-7 w-7 text-black relative z-10" />
+                                            </motion.div>
                                         )}
-                                        <div className="absolute bottom-0 right-0 w-3.5 h-3.5 bg-green-500 rounded-full border-2 border-gray-800 shadow-lg"></div>
+                                        <motion.div
+                                            className="absolute bottom-0 right-0 w-3.5 h-3.5 bg-white rounded-full border-2 border-gray-800 shadow-lg"
+                                            animate={{
+                                                boxShadow: ['0 0 0 rgba(255,255,255,0)', '0 0 10px rgba(255,255,255,0.8)', '0 0 0 rgba(255,255,255,0)'],
+                                            }}
+                                            transition={{
+                                                duration: 2,
+                                                repeat: Infinity,
+                                                repeatType: "reverse",
+                                            }}
+                                        />
                                     </div>
                                     <div>
                                         {isLoading ? (
@@ -210,7 +261,7 @@ export default function DashboardLayout({
                                         ) : (
                                             <h3 className="text-lg font-semibold text-white">{userName}</h3>
                                         )}
-                                        <p className="text-sm text-green-400 font-medium">{userStatus}</p>
+                                        <p className="text-sm text-white font-medium">{userStatus}</p>
                                     </div>
                                 </div>
                             </div>
@@ -227,20 +278,37 @@ export default function DashboardLayout({
                                                 whileHover={{ x: 5, backgroundColor: 'rgba(255, 255, 255, 0.1)' }}
                                                 whileTap={{ scale: 0.98 }}
                                                 className={`flex items-center px-4 py-3 rounded-xl transition-all duration-200 ${isActive
-                                                    ? 'bg-white text-primary-900 shadow-lg'
+                                                    ? 'bg-gradient-to-r from-white to-gray-100 text-black shadow-lg border border-white/20 relative overflow-hidden'
                                                     : 'text-gray-300 hover:bg-white/10'
                                                     }`}
                                             >
-                                                <Icon className={`h-5 w-5 mr-3 ${isActive ? 'text-primary-600' : 'text-gray-400'
+                                                {isActive && (
+                                                    <motion.div
+                                                        initial={{ opacity: 0 }}
+                                                        animate={{ opacity: 1 }}
+                                                        className="absolute inset-0 bg-gradient-to-r from-white/20 to-transparent"
+                                                        style={{ boxShadow: 'inset 0 0 10px rgba(255, 255, 255, 0.3)' }}
+                                                    />
+                                                )}
+                                                <Icon className={`h-5 w-5 mr-3 ${isActive ? 'text-black' : 'text-gray-400'
                                                     }`} />
-                                                <span className={`font-medium ${isActive ? 'text-primary-900' : 'text-gray-300'
+                                                <span className={`font-medium ${isActive ? 'text-black' : 'text-gray-300'
                                                     }`}>
                                                     {item.name}
                                                 </span>
                                                 {isActive && (
                                                     <motion.div
                                                         layoutId="activeIndicator"
-                                                        className="ml-auto w-1.5 h-1.5 rounded-full bg-primary-600"
+                                                        className="ml-auto w-2 h-2 rounded-full bg-black"
+                                                        animate={{
+                                                            scale: [1, 1.2, 1],
+                                                            boxShadow: ['0 0 0 rgba(0,0,0,0)', '0 0 5px rgba(0,0,0,0.5)', '0 0 0 rgba(0,0,0,0)']
+                                                        }}
+                                                        transition={{
+                                                            duration: 2,
+                                                            repeat: Infinity,
+                                                            ease: "easeInOut"
+                                                        }}
                                                     />
                                                 )}
                                             </motion.div>
@@ -251,10 +319,30 @@ export default function DashboardLayout({
 
                             {/* Bottom Section */}
                             <div className="p-6 border-t border-gray-700/50">
-                                <div className="bg-gradient-to-r from-gray-800/50 to-gray-900/50 rounded-xl p-4 backdrop-blur-sm">
+                                <motion.div
+                                    className="bg-gradient-to-r from-gray-800/50 to-gray-900/50 rounded-xl p-4 backdrop-blur-sm relative overflow-hidden"
+                                    whileHover={{ scale: 1.02 }}
+                                    transition={{ type: "spring", stiffness: 400, damping: 10 }}
+                                >
+                                    <motion.div
+                                        className="absolute inset-0 bg-gradient-to-r from-white/5 to-transparent"
+                                        animate={{
+                                            x: ['-100%', '100%'],
+                                        }}
+                                        transition={{
+                                            duration: 3,
+                                            repeat: Infinity,
+                                            repeatType: "loop",
+                                        }}
+                                    />
                                     <div className="flex items-center justify-between mb-3">
                                         <h4 className="text-sm font-semibold text-white">Health Tips</h4>
-                                        <BoltIcon className="h-5 w-5 text-yellow-400" />
+                                        <motion.div
+                                            animate={{ rotate: [0, 15, 0] }}
+                                            transition={{ duration: 2, repeat: Infinity, repeatDelay: 5 }}
+                                        >
+                                            <BoltIcon className="h-5 w-5 text-white" />
+                                        </motion.div>
                                     </div>
                                     <p className="text-sm text-gray-300 mb-4">
                                         Stay hydrated! Drink at least 8 glasses of water daily for optimal health.
@@ -264,12 +352,12 @@ export default function DashboardLayout({
                                         <motion.button
                                             whileHover={{ scale: 1.05 }}
                                             whileTap={{ scale: 0.95 }}
-                                            className="text-sm text-blue-400 hover:text-blue-300 font-medium"
+                                            className="text-sm text-white hover:text-gray-300 font-medium"
                                         >
                                             More tips
                                         </motion.button>
                                     </div>
-                                </div>
+                                </motion.div>
                             </div>
                         </div>
                     </motion.div>
@@ -283,7 +371,7 @@ export default function DashboardLayout({
                     animate={{ opacity: 1 }}
                     transition={{ delay: 0.2 }}
                     onClick={toggleSidebar}
-                    className="fixed top-4 left-4 z-40 p-2 rounded-full bg-gradient-to-r from-primary-600 to-primary-700 text-white shadow-lg backdrop-blur-sm"
+                    className="fixed top-4 left-4 z-40 p-2 rounded-full bg-white text-black shadow-lg backdrop-blur-sm"
                 >
                     <ChevronRightIcon className="h-5 w-5" />
                 </motion.button>

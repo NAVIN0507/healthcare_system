@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import {
     ChartBarIcon,
     UserGroupIcon,
@@ -13,7 +13,11 @@ import {
     HeartIcon,
     BoltIcon,
     ClipboardDocumentListIcon,
-    FlagIcon
+    FlagIcon,
+    SparklesIcon,
+    StarIcon,
+    TrophyIcon,
+    XMarkIcon
 } from '@heroicons/react/24/outline';
 import {
     ChartBarIcon as ChartBarSolidIcon,
@@ -34,6 +38,7 @@ import {
     ArcElement
 } from 'chart.js';
 import { Line, Bar, Doughnut } from 'react-chartjs-2';
+import dynamic from 'next/dynamic';
 
 // Register ChartJS components
 ChartJS.register(
@@ -65,10 +70,22 @@ const chartOptions = {
     },
 };
 
+// Dynamically import the HealthVisualization component
+const HealthVisualization = dynamic(() => import('@/components/HealthVisualization'), {
+    ssr: false,
+    loading: () => (
+        <div className="w-full h-[400px] bg-gradient-to-br from-gray-900 to-gray-800 rounded-2xl flex items-center justify-center">
+            <div className="w-12 h-12 border-4 border-primary-600 border-t-transparent rounded-full animate-spin" />
+        </div>
+    ),
+});
+
 export default function DashboardPage() {
     const router = useRouter();
     const [userData, setUserData] = useState<any>(null);
     const [isLoading, setIsLoading] = useState(true);
+    const [activeTab, setActiveTab] = useState('overview');
+    const [showAchievements, setShowAchievements] = useState(false);
 
     useEffect(() => {
         const fetchUserData = async () => {
@@ -178,28 +195,51 @@ export default function DashboardPage() {
     return (
         <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100">
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-                {/* Welcome Section */}
-                <motion.div
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.5 }}
-                    className="mb-8"
-                >
-                    <h1 className="text-3xl font-bold text-gray-900">
-                        Welcome back, <span className="text-primary-600">{userName}</span>! 👋
-                    </h1>
-                    <p className="mt-2 text-gray-600">
-                        Here's your health dashboard overview
-                    </p>
-                </motion.div>
+                {/* Welcome Section with 3D Visualization */}
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
+                    <motion.div
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ duration: 0.5 }}
+                    >
+                        <h1 className="text-3xl font-bold text-gray-900">
+                            Welcome back, <span className="text-primary-600">{userName}</span>! 👋
+                        </h1>
+                        <p className="mt-2 text-gray-600">
+                            Here's your health dashboard overview
+                        </p>
+                        <div className="mt-6 flex space-x-4">
+                            <motion.button
+                                whileHover={{ scale: 1.05 }}
+                                whileTap={{ scale: 0.95 }}
+                                className="px-4 py-2 bg-primary-600 text-white rounded-lg shadow-lg hover:bg-primary-700 transition-colors"
+                                onClick={() => setShowAchievements(true)}
+                            >
+                                <SparklesIcon className="h-5 w-5 inline-block mr-2" />
+                                View Achievements
+                            </motion.button>
+                            <motion.button
+                                whileHover={{ scale: 1.05 }}
+                                whileTap={{ scale: 0.95 }}
+                                className="px-4 py-2 bg-white text-gray-700 rounded-lg shadow-lg hover:bg-gray-50 transition-colors"
+                            >
+                                <StarIcon className="h-5 w-5 inline-block mr-2" />
+                                Track Progress
+                            </motion.button>
+                        </div>
+                    </motion.div>
+                    <HealthVisualization />
+                </div>
 
-                {/* Quick Stats */}
-                <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4 mb-8">
+                {/* Quick Stats with Interactive Cards */}
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
                     <motion.div
                         initial={{ opacity: 0, y: 20 }}
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ duration: 0.5, delay: 0.1 }}
-                        className="bg-white rounded-2xl shadow-lg p-6 hover:shadow-xl transition-shadow duration-300"
+                        whileHover={{ scale: 1.02 }}
+                        className="bg-white rounded-2xl shadow-lg p-6 hover:shadow-xl transition-all duration-300 cursor-pointer"
+                        onClick={() => setActiveTab('fitness')}
                     >
                         <div className="flex items-center">
                             <div className="p-3 rounded-full bg-primary-100">
@@ -223,7 +263,9 @@ export default function DashboardPage() {
                         initial={{ opacity: 0, y: 20 }}
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ duration: 0.5, delay: 0.2 }}
-                        className="bg-white rounded-2xl shadow-lg p-6 hover:shadow-xl transition-shadow duration-300"
+                        whileHover={{ scale: 1.02 }}
+                        className="bg-white rounded-2xl shadow-lg p-6 hover:shadow-xl transition-all duration-300 cursor-pointer"
+                        onClick={() => setActiveTab('nutrition')}
                     >
                         <div className="flex items-center">
                             <div className="p-3 rounded-full bg-blue-100">
@@ -247,7 +289,9 @@ export default function DashboardPage() {
                         initial={{ opacity: 0, y: 20 }}
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ duration: 0.5, delay: 0.3 }}
-                        className="bg-white rounded-2xl shadow-lg p-6 hover:shadow-xl transition-shadow duration-300"
+                        whileHover={{ scale: 1.02 }}
+                        className="bg-white rounded-2xl shadow-lg p-6 hover:shadow-xl transition-all duration-300 cursor-pointer"
+                        onClick={() => setActiveTab('progress')}
                     >
                         <div className="flex items-center">
                             <div className="p-3 rounded-full bg-green-100">
@@ -269,7 +313,9 @@ export default function DashboardPage() {
                         initial={{ opacity: 0, y: 20 }}
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ duration: 0.5, delay: 0.4 }}
-                        className="bg-white rounded-2xl shadow-lg p-6 hover:shadow-xl transition-shadow duration-300"
+                        whileHover={{ scale: 1.02 }}
+                        className="bg-white rounded-2xl shadow-lg p-6 hover:shadow-xl transition-all duration-300 cursor-pointer"
+                        onClick={() => setActiveTab('nutrition')}
                     >
                         <div className="flex items-center">
                             <div className="p-3 rounded-full bg-purple-100">
@@ -288,203 +334,330 @@ export default function DashboardPage() {
                     </motion.div>
                 </div>
 
-                {/* Charts Section */}
-                <div className="grid grid-cols-1 gap-8 lg:grid-cols-2 mb-8">
-                    <motion.div
-                        initial={{ opacity: 0, x: -20 }}
-                        animate={{ opacity: 1, x: 0 }}
-                        transition={{ duration: 0.5, delay: 0.5 }}
-                        className="bg-white rounded-2xl shadow-lg p-6"
-                    >
-                        <h3 className="text-lg font-semibold text-gray-900 mb-4">Weekly Activity</h3>
-                        <div className="h-64">
-                            <Line options={{
-                                ...chartOptions,
-                                maintainAspectRatio: false,
-                                plugins: {
-                                    ...chartOptions.plugins,
-                                    legend: {
-                                        position: 'bottom' as const,
-                                        labels: {
-                                            boxWidth: 12,
-                                            padding: 8,
-                                            font: {
-                                                size: 10
-                                            }
-                                        }
-                                    }
-                                }
-                            }} data={activityData} />
-                        </div>
-                    </motion.div>
-
-                    <motion.div
-                        initial={{ opacity: 0, x: 20 }}
-                        animate={{ opacity: 1, x: 0 }}
-                        transition={{ duration: 0.5, delay: 0.6 }}
-                        className="bg-white rounded-2xl shadow-lg p-6"
-                    >
-                        <h3 className="text-lg font-semibold text-gray-900 mb-4">Weight Progress</h3>
-                        <div className="h-64">
-                            <Line options={{
-                                ...chartOptions,
-                                maintainAspectRatio: false,
-                                plugins: {
-                                    ...chartOptions.plugins,
-                                    legend: {
-                                        position: 'bottom' as const,
-                                        labels: {
-                                            boxWidth: 12,
-                                            padding: 8,
-                                            font: {
-                                                size: 10
-                                            }
-                                        }
-                                    }
-                                }
-                            }} data={weightData} />
-                        </div>
-                    </motion.div>
+                {/* Interactive Tabs */}
+                <div className="mb-8">
+                    <div className="flex space-x-4 overflow-x-auto pb-4">
+                        {['overview', 'fitness', 'nutrition', 'progress'].map((tab) => (
+                            <motion.button
+                                key={tab}
+                                whileHover={{ scale: 1.05 }}
+                                whileTap={{ scale: 0.95 }}
+                                onClick={() => setActiveTab(tab)}
+                                className={`px-6 py-2 rounded-lg text-sm font-medium transition-colors ${activeTab === tab
+                                    ? 'bg-primary-600 text-white'
+                                    : 'bg-white text-gray-600 hover:bg-gray-50'
+                                    }`}
+                            >
+                                {tab.charAt(0).toUpperCase() + tab.slice(1)}
+                            </motion.button>
+                        ))}
+                    </div>
                 </div>
 
-                {/* Progress Tracking Tables */}
-                <div className="grid grid-cols-1 gap-8 lg:grid-cols-2 mb-8">
+                {/* Tab Content */}
+                <AnimatePresence mode="wait">
                     <motion.div
+                        key={activeTab}
                         initial={{ opacity: 0, y: 20 }}
                         animate={{ opacity: 1, y: 0 }}
-                        transition={{ duration: 0.5, delay: 0.7 }}
-                        className="bg-white rounded-2xl shadow-lg overflow-hidden"
+                        exit={{ opacity: 0, y: -20 }}
+                        transition={{ duration: 0.3 }}
                     >
-                        <div className="px-6 py-5 border-b border-gray-200">
-                            <h3 className="text-lg font-semibold text-gray-900">Physical Activity</h3>
-                        </div>
-                        <div className="p-6">
-                            <table className="min-w-full divide-y divide-gray-200">
-                                <thead>
-                                    <tr>
-                                        <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Metric</th>
-                                        <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Progress</th>
-                                        <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Goal</th>
-                                    </tr>
-                                </thead>
-                                <tbody className="divide-y divide-gray-200">
-                                    <tr>
-                                        <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-900">Daily Steps</td>
-                                        <td className="px-4 py-3 whitespace-nowrap">
-                                            <div className="w-full bg-gray-200 rounded-full h-2.5">
-                                                <div className="bg-blue-600 h-2.5 rounded-full transition-all duration-500" style={{ width: '85%' }}></div>
-                                            </div>
-                                        </td>
-                                        <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-500">10,000</td>
-                                    </tr>
-                                    <tr>
-                                        <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-900">Workout Days</td>
-                                        <td className="px-4 py-3 whitespace-nowrap">
-                                            <div className="w-full bg-gray-200 rounded-full h-2.5">
-                                                <div className="bg-purple-600 h-2.5 rounded-full transition-all duration-500" style={{ width: '80%' }}></div>
-                                            </div>
-                                        </td>
-                                        <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-500">5/week</td>
-                                    </tr>
-                                    <tr>
-                                        <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-900">Active Minutes</td>
-                                        <td className="px-4 py-3 whitespace-nowrap">
-                                            <div className="w-full bg-gray-200 rounded-full h-2.5">
-                                                <div className="bg-green-600 h-2.5 rounded-full transition-all duration-500" style={{ width: '75%' }}></div>
-                                            </div>
-                                        </td>
-                                        <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-500">30/day</td>
-                                    </tr>
-                                </tbody>
-                            </table>
-                        </div>
-                    </motion.div>
+                        {activeTab === 'overview' && (
+                            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                                <motion.div
+                                    initial={{ opacity: 0, x: -20 }}
+                                    animate={{ opacity: 1, x: 0 }}
+                                    transition={{ duration: 0.5, delay: 0.5 }}
+                                    className="bg-white rounded-2xl shadow-lg p-6"
+                                >
+                                    <h3 className="text-lg font-semibold text-gray-900 mb-4">Weekly Activity</h3>
+                                    <div className="h-64">
+                                        <Line options={{
+                                            ...chartOptions,
+                                            maintainAspectRatio: false,
+                                            plugins: {
+                                                ...chartOptions.plugins,
+                                                legend: {
+                                                    position: 'bottom' as const,
+                                                    labels: {
+                                                        boxWidth: 12,
+                                                        padding: 8,
+                                                        font: {
+                                                            size: 10
+                                                        }
+                                                    }
+                                                }
+                                            }
+                                        }} data={activityData} />
+                                    </div>
+                                </motion.div>
 
-                    <motion.div
-                        initial={{ opacity: 0, y: 20 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ duration: 0.5, delay: 0.8 }}
-                        className="bg-white rounded-2xl shadow-lg overflow-hidden"
-                    >
-                        <div className="px-6 py-5 border-b border-gray-200">
-                            <h3 className="text-lg font-semibold text-gray-900">Nutrition</h3>
-                        </div>
-                        <div className="p-6">
-                            <table className="min-w-full divide-y divide-gray-200">
-                                <thead>
-                                    <tr>
-                                        <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Metric</th>
-                                        <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Progress</th>
-                                        <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Goal</th>
-                                    </tr>
-                                </thead>
-                                <tbody className="divide-y divide-gray-200">
-                                    <tr>
-                                        <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-900">Water Intake</td>
-                                        <td className="px-4 py-3 whitespace-nowrap">
-                                            <div className="w-full bg-gray-200 rounded-full h-2.5">
-                                                <div className="bg-cyan-600 h-2.5 rounded-full transition-all duration-500" style={{ width: '72%' }}></div>
-                                            </div>
-                                        </td>
-                                        <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-500">2.5 L</td>
-                                    </tr>
-                                    <tr>
-                                        <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-900">Calories</td>
-                                        <td className="px-4 py-3 whitespace-nowrap">
-                                            <div className="w-full bg-gray-200 rounded-full h-2.5">
-                                                <div className="bg-yellow-600 h-2.5 rounded-full transition-all duration-500" style={{ width: '65%' }}></div>
-                                            </div>
-                                        </td>
-                                        <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-500">2,000</td>
-                                    </tr>
-                                    <tr>
-                                        <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-900">Protein</td>
-                                        <td className="px-4 py-3 whitespace-nowrap">
-                                            <div className="w-full bg-gray-200 rounded-full h-2.5">
-                                                <div className="bg-red-600 h-2.5 rounded-full transition-all duration-500" style={{ width: '90%' }}></div>
-                                            </div>
-                                        </td>
-                                        <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-500">65g</td>
-                                    </tr>
-                                </tbody>
-                            </table>
-                        </div>
-                    </motion.div>
-                </div>
+                                <motion.div
+                                    initial={{ opacity: 0, x: 20 }}
+                                    animate={{ opacity: 1, x: 0 }}
+                                    transition={{ duration: 0.5, delay: 0.5 }}
+                                    className="bg-white rounded-2xl shadow-lg p-6"
+                                >
+                                    <h3 className="text-lg font-semibold text-gray-900 mb-4">Goals Progress</h3>
+                                    <div className="h-64">
+                                        <Doughnut options={{
+                                            ...chartOptions,
+                                            maintainAspectRatio: false,
+                                            plugins: {
+                                                ...chartOptions.plugins,
+                                                legend: {
+                                                    position: 'bottom' as const,
+                                                    labels: {
+                                                        boxWidth: 12,
+                                                        padding: 8,
+                                                        font: {
+                                                            size: 10
+                                                        }
+                                                    }
+                                                }
+                                            }
+                                        }} data={goalProgressData} />
+                                    </div>
+                                </motion.div>
+                            </div>
+                        )}
 
-                {/* Quick Actions */}
-                <motion.div
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.5, delay: 0.9 }}
-                    className="bg-white rounded-2xl shadow-lg overflow-hidden"
-                >
-                    <div className="px-6 py-5 border-b border-gray-200">
-                        <h3 className="text-lg font-semibold text-gray-900">Quick Actions</h3>
-                    </div>
-                    <div className="p-6">
-                        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-                            <button
-                                type="button"
-                                className="inline-flex items-center justify-center px-4 py-2 border border-transparent text-sm font-medium rounded-lg text-white bg-gradient-to-r from-primary-600 to-primary-700 hover:from-primary-700 hover:to-primary-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 transition-all duration-300 shadow-md hover:shadow-lg"
+                        {activeTab === 'fitness' && (
+                            <div className="grid grid-cols-1 gap-8 lg:grid-cols-2 mb-8">
+                                <motion.div
+                                    initial={{ opacity: 0, x: -20 }}
+                                    animate={{ opacity: 1, x: 0 }}
+                                    transition={{ duration: 0.5, delay: 0.5 }}
+                                    className="bg-white rounded-2xl shadow-lg p-6"
+                                >
+                                    <h3 className="text-lg font-semibold text-gray-900 mb-4">Weight Progress</h3>
+                                    <div className="h-64">
+                                        <Line options={{
+                                            ...chartOptions,
+                                            maintainAspectRatio: false,
+                                            plugins: {
+                                                ...chartOptions.plugins,
+                                                legend: {
+                                                    position: 'bottom' as const,
+                                                    labels: {
+                                                        boxWidth: 12,
+                                                        padding: 8,
+                                                        font: {
+                                                            size: 10
+                                                        }
+                                                    }
+                                                }
+                                            }
+                                        }} data={weightData} />
+                                    </div>
+                                </motion.div>
+
+                                <motion.div
+                                    initial={{ opacity: 0, x: 20 }}
+                                    animate={{ opacity: 1, x: 0 }}
+                                    transition={{ duration: 0.5, delay: 0.6 }}
+                                    className="bg-white rounded-2xl shadow-lg p-6"
+                                >
+                                    <h3 className="text-lg font-semibold text-gray-900 mb-4">Physical Activity</h3>
+                                    <div className="h-64">
+                                        <Line options={{
+                                            ...chartOptions,
+                                            maintainAspectRatio: false,
+                                            plugins: {
+                                                ...chartOptions.plugins,
+                                                legend: {
+                                                    position: 'bottom' as const,
+                                                    labels: {
+                                                        boxWidth: 12,
+                                                        padding: 8,
+                                                        font: {
+                                                            size: 10
+                                                        }
+                                                    }
+                                                }
+                                            }
+                                        }} data={activityData} />
+                                    </div>
+                                </motion.div>
+                            </div>
+                        )}
+
+                        {activeTab === 'nutrition' && (
+                            <div className="grid grid-cols-1 gap-8 lg:grid-cols-2 mb-8">
+                                <motion.div
+                                    initial={{ opacity: 0, y: 20 }}
+                                    animate={{ opacity: 1, y: 0 }}
+                                    transition={{ duration: 0.5, delay: 0.7 }}
+                                    className="bg-white rounded-2xl shadow-lg overflow-hidden"
+                                >
+                                    <div className="px-6 py-5 border-b border-gray-200">
+                                        <h3 className="text-lg font-semibold text-gray-900">Nutrition</h3>
+                                    </div>
+                                    <div className="p-6">
+                                        <table className="min-w-full divide-y divide-gray-200">
+                                            <thead>
+                                                <tr>
+                                                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Metric</th>
+                                                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Progress</th>
+                                                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Goal</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody className="divide-y divide-gray-200">
+                                                <tr>
+                                                    <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-900">Water Intake</td>
+                                                    <td className="px-4 py-3 whitespace-nowrap">
+                                                        <div className="w-full bg-gray-200 rounded-full h-2.5">
+                                                            <div className="bg-cyan-600 h-2.5 rounded-full transition-all duration-500" style={{ width: '72%' }}></div>
+                                                        </div>
+                                                    </td>
+                                                    <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-500">2.5 L</td>
+                                                </tr>
+                                                <tr>
+                                                    <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-900">Calories</td>
+                                                    <td className="px-4 py-3 whitespace-nowrap">
+                                                        <div className="w-full bg-gray-200 rounded-full h-2.5">
+                                                            <div className="bg-yellow-600 h-2.5 rounded-full transition-all duration-500" style={{ width: '65%' }}></div>
+                                                        </div>
+                                                    </td>
+                                                    <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-500">2,000</td>
+                                                </tr>
+                                                <tr>
+                                                    <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-900">Protein</td>
+                                                    <td className="px-4 py-3 whitespace-nowrap">
+                                                        <div className="w-full bg-gray-200 rounded-full h-2.5">
+                                                            <div className="bg-red-600 h-2.5 rounded-full transition-all duration-500" style={{ width: '90%' }}></div>
+                                                        </div>
+                                                    </td>
+                                                    <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-500">65g</td>
+                                                </tr>
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </motion.div>
+                            </div>
+                        )}
+
+                        {activeTab === 'progress' && (
+                            <div className="grid grid-cols-1 gap-8 lg:grid-cols-2 mb-8">
+                                <motion.div
+                                    initial={{ opacity: 0, y: 20 }}
+                                    animate={{ opacity: 1, y: 0 }}
+                                    transition={{ duration: 0.5, delay: 0.7 }}
+                                    className="bg-white rounded-2xl shadow-lg overflow-hidden"
+                                >
+                                    <div className="px-6 py-5 border-b border-gray-200">
+                                        <h3 className="text-lg font-semibold text-gray-900">Physical Activity</h3>
+                                    </div>
+                                    <div className="p-6">
+                                        <table className="min-w-full divide-y divide-gray-200">
+                                            <thead>
+                                                <tr>
+                                                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Metric</th>
+                                                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Progress</th>
+                                                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Goal</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody className="divide-y divide-gray-200">
+                                                <tr>
+                                                    <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-900">Daily Steps</td>
+                                                    <td className="px-4 py-3 whitespace-nowrap">
+                                                        <div className="w-full bg-gray-200 rounded-full h-2.5">
+                                                            <div className="bg-blue-600 h-2.5 rounded-full transition-all duration-500" style={{ width: '85%' }}></div>
+                                                        </div>
+                                                    </td>
+                                                    <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-500">10,000</td>
+                                                </tr>
+                                                <tr>
+                                                    <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-900">Workout Days</td>
+                                                    <td className="px-4 py-3 whitespace-nowrap">
+                                                        <div className="w-full bg-gray-200 rounded-full h-2.5">
+                                                            <div className="bg-purple-600 h-2.5 rounded-full transition-all duration-500" style={{ width: '80%' }}></div>
+                                                        </div>
+                                                    </td>
+                                                    <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-500">5/week</td>
+                                                </tr>
+                                                <tr>
+                                                    <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-900">Active Minutes</td>
+                                                    <td className="px-4 py-3 whitespace-nowrap">
+                                                        <div className="w-full bg-gray-200 rounded-full h-2.5">
+                                                            <div className="bg-green-600 h-2.5 rounded-full transition-all duration-500" style={{ width: '75%' }}></div>
+                                                        </div>
+                                                    </td>
+                                                    <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-500">30/day</td>
+                                                </tr>
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </motion.div>
+                            </div>
+                        )}
+                    </motion.div>
+                </AnimatePresence>
+
+                {/* Achievements Modal */}
+                <AnimatePresence>
+                    {showAchievements && (
+                        <motion.div
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 1 }}
+                            exit={{ opacity: 0 }}
+                            className="fixed inset-0 bg-black/50 flex items-center justify-center z-50"
+                            onClick={() => setShowAchievements(false)}
+                        >
+                            <motion.div
+                                initial={{ scale: 0.9, opacity: 0 }}
+                                animate={{ scale: 1, opacity: 1 }}
+                                exit={{ scale: 0.9, opacity: 0 }}
+                                className="bg-white rounded-2xl p-6 max-w-2xl w-full mx-4"
+                                onClick={e => e.stopPropagation()}
                             >
-                                Schedule Appointment
-                            </button>
-                            <button
-                                type="button"
-                                className="inline-flex items-center justify-center px-4 py-2 border border-transparent text-sm font-medium rounded-lg text-white bg-gradient-to-r from-primary-600 to-primary-700 hover:from-primary-700 hover:to-primary-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 transition-all duration-300 shadow-md hover:shadow-lg"
-                            >
-                                View Medical Records
-                            </button>
-                            <button
-                                type="button"
-                                className="inline-flex items-center justify-center px-4 py-2 border border-transparent text-sm font-medium rounded-lg text-white bg-gradient-to-r from-primary-600 to-primary-700 hover:from-primary-700 hover:to-primary-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 transition-all duration-300 shadow-md hover:shadow-lg"
-                            >
-                                Update Health Info
-                            </button>
-                        </div>
-                    </div>
-                </motion.div>
+                                <div className="flex justify-between items-center mb-6">
+                                    <h2 className="text-2xl font-bold text-gray-900">Your Achievements</h2>
+                                    <button
+                                        onClick={() => setShowAchievements(false)}
+                                        className="text-gray-500 hover:text-gray-700"
+                                    >
+                                        <XMarkIcon className="h-6 w-6" />
+                                    </button>
+                                </div>
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                    {[
+                                        { title: 'Fitness Master', icon: TrophyIcon, progress: 75 },
+                                        { title: 'Nutrition Expert', icon: HeartIcon, progress: 60 },
+                                        { title: 'Wellness Guru', icon: SparklesIcon, progress: 90 },
+                                        { title: 'Goal Crusher', icon: FlagIcon, progress: 85 },
+                                    ].map((achievement, index) => (
+                                        <motion.div
+                                            key={index}
+                                            initial={{ opacity: 0, y: 20 }}
+                                            animate={{ opacity: 1, y: 0 }}
+                                            transition={{ delay: index * 0.1 }}
+                                            className="bg-gray-50 rounded-xl p-4"
+                                        >
+                                            <div className="flex items-center space-x-4">
+                                                <div className="p-3 bg-primary-100 rounded-lg">
+                                                    <achievement.icon className="h-6 w-6 text-primary-600" />
+                                                </div>
+                                                <div className="flex-1">
+                                                    <h3 className="font-medium text-gray-900">{achievement.title}</h3>
+                                                    <div className="mt-2 h-2 bg-gray-200 rounded-full overflow-hidden">
+                                                        <motion.div
+                                                            initial={{ width: 0 }}
+                                                            animate={{ width: `${achievement.progress}%` }}
+                                                            transition={{ duration: 1, delay: index * 0.1 }}
+                                                            className="h-full bg-primary-600"
+                                                        />
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </motion.div>
+                                    ))}
+                                </div>
+                            </motion.div>
+                        </motion.div>
+                    )}
+                </AnimatePresence>
             </div>
         </div>
     );

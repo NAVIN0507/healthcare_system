@@ -130,13 +130,39 @@ export default function SettingsPage() {
         }
     }, []);
 
-    // Save settings to localStorage
+    // Apply layout changes
+    const applyLayoutChanges = () => {
+        const root = document.documentElement;
+
+        // Apply layout style
+        root.classList.remove('layout-default', 'layout-compact', 'layout-comfortable');
+        root.classList.add(`layout-${settings.layout}`);
+
+        // Apply spacing based on layout
+        const spacing = {
+            default: '1rem',
+            compact: '0.75rem',
+            comfortable: '1.25rem'
+        };
+        root.style.setProperty('--spacing-base', spacing[settings.layout]);
+
+        // Apply container width based on layout
+        const containerWidth = {
+            default: '1200px',
+            compact: '1400px',
+            comfortable: '1000px'
+        };
+        root.style.setProperty('--container-width', containerWidth[settings.layout]);
+    };
+
+    // Save settings to localStorage and apply changes
     const saveSettings = () => {
         setIsSaving(true);
         setSaveSuccess(false);
         setSaveError(null);
 
         try {
+            // Save to localStorage
             localStorage.setItem('userSettings', JSON.stringify(settings));
 
             // Apply theme changes
@@ -154,14 +180,27 @@ export default function SettingsPage() {
             }
 
             // Apply color scheme
-            document.documentElement.style.setProperty('--primary-color', colorSchemes.find(scheme => scheme.name === settings.colorScheme)?.primary || '#4F46E5');
-            document.documentElement.style.setProperty('--secondary-color', colorSchemes.find(scheme => scheme.name === settings.colorScheme)?.secondary || '#818CF8');
+            const selectedScheme = colorSchemes.find(scheme => scheme.name === settings.colorScheme);
+            if (selectedScheme) {
+                document.documentElement.style.setProperty('--primary-color', selectedScheme.primary);
+                document.documentElement.style.setProperty('--secondary-color', selectedScheme.secondary);
+
+                // Apply color scheme to specific elements
+                document.documentElement.style.setProperty('--button-primary-bg', selectedScheme.primary);
+                document.documentElement.style.setProperty('--button-primary-hover', selectedScheme.secondary);
+                document.documentElement.style.setProperty('--link-color', selectedScheme.primary);
+                document.documentElement.style.setProperty('--focus-ring-color', selectedScheme.primary);
+            }
 
             // Apply font size
-            document.documentElement.style.setProperty('--font-size-base',
-                settings.fontSize === 'small' ? '14px' :
-                    settings.fontSize === 'large' ? '18px' : '16px'
-            );
+            const fontSize = {
+                small: '14px',
+                medium: '16px',
+                large: '18px'
+            };
+            document.documentElement.style.setProperty('--font-size-base', fontSize[settings.fontSize]);
+            document.documentElement.style.setProperty('--font-size-sm', `calc(${fontSize[settings.fontSize]} * 0.875)`);
+            document.documentElement.style.setProperty('--font-size-lg', `calc(${fontSize[settings.fontSize]} * 1.125)`);
 
             // Apply animations
             if (settings.animations === 'none') {
@@ -170,9 +209,39 @@ export default function SettingsPage() {
                 document.documentElement.classList.remove('reduce-motion');
             }
 
+            // Apply layout changes
+            applyLayoutChanges();
+
+            // Apply language
+            document.documentElement.setAttribute('lang', settings.language);
+
+            // Apply notification settings
+            if (!settings.notifications) {
+                // Disable browser notifications if they were previously enabled
+                if (Notification.permission === 'granted') {
+                    // Note: We can't revoke notification permission, but we can ignore them in our app
+                    localStorage.setItem('notifications-disabled', 'true');
+                }
+            } else {
+                localStorage.removeItem('notifications-disabled');
+            }
+
+            // Apply sound settings
+            if (!settings.sound) {
+                document.documentElement.classList.add('sound-disabled');
+            } else {
+                document.documentElement.classList.remove('sound-disabled');
+            }
+
+            // Apply privacy settings
+            localStorage.setItem('privacy-settings', JSON.stringify(settings.privacy));
+
             // Show success message
             setSaveSuccess(true);
             setTimeout(() => setSaveSuccess(false), 3000);
+
+            // Reload the page to apply all changes
+            window.location.reload();
         } catch (error) {
             console.error('Error saving settings:', error);
             setSaveError('Failed to save settings. Please try again.');
@@ -284,8 +353,8 @@ export default function SettingsPage() {
                                             key={tab.id}
                                             onClick={() => setActiveTab(tab.id)}
                                             className={`w-full flex items-center px-4 py-3 rounded-xl transition-all duration-200 ${activeTab === tab.id
-                                                    ? 'bg-gradient-to-r from-primary-500 to-primary-600 text-white shadow-md'
-                                                    : 'text-gray-700 hover:bg-gray-100'
+                                                ? 'bg-gradient-to-r from-primary-500 to-primary-600 text-white shadow-md'
+                                                : 'text-gray-700 hover:bg-gray-100'
                                                 }`}
                                         >
                                             <Icon className={`h-5 w-5 mr-3 ${activeTab === tab.id ? 'text-white' : 'text-gray-500'}`} />
@@ -318,8 +387,8 @@ export default function SettingsPage() {
                                                 <button
                                                     onClick={() => handleSettingChange('', 'theme', 'light')}
                                                     className={`flex flex-col items-center p-4 rounded-xl border ${settings.theme === 'light'
-                                                            ? 'border-primary-500 bg-primary-50'
-                                                            : 'border-gray-200 hover:border-gray-300'
+                                                        ? 'border-primary-500 bg-primary-50'
+                                                        : 'border-gray-200 hover:border-gray-300'
                                                         }`}
                                                 >
                                                     <SunIcon className={`h-8 w-8 mb-2 ${settings.theme === 'light' ? 'text-primary-600' : 'text-gray-400'
@@ -330,8 +399,8 @@ export default function SettingsPage() {
                                                 <button
                                                     onClick={() => handleSettingChange('', 'theme', 'dark')}
                                                     className={`flex flex-col items-center p-4 rounded-xl border ${settings.theme === 'dark'
-                                                            ? 'border-primary-500 bg-primary-50'
-                                                            : 'border-gray-200 hover:border-gray-300'
+                                                        ? 'border-primary-500 bg-primary-50'
+                                                        : 'border-gray-200 hover:border-gray-300'
                                                         }`}
                                                 >
                                                     <MoonIcon className={`h-8 w-8 mb-2 ${settings.theme === 'dark' ? 'text-primary-600' : 'text-gray-400'
@@ -342,8 +411,8 @@ export default function SettingsPage() {
                                                 <button
                                                     onClick={() => handleSettingChange('', 'theme', 'system')}
                                                     className={`flex flex-col items-center p-4 rounded-xl border ${settings.theme === 'system'
-                                                            ? 'border-primary-500 bg-primary-50'
-                                                            : 'border-gray-200 hover:border-gray-300'
+                                                        ? 'border-primary-500 bg-primary-50'
+                                                        : 'border-gray-200 hover:border-gray-300'
                                                         }`}
                                                 >
                                                     <ComputerDesktopIcon className={`h-8 w-8 mb-2 ${settings.theme === 'system' ? 'text-primary-600' : 'text-gray-400'
@@ -365,8 +434,8 @@ export default function SettingsPage() {
                                                         key={scheme.name}
                                                         onClick={() => handleSettingChange('', 'colorScheme', scheme.name)}
                                                         className={`flex flex-col items-center p-3 rounded-xl border ${settings.colorScheme === scheme.name
-                                                                ? 'border-primary-500 ring-2 ring-primary-200'
-                                                                : 'border-gray-200 hover:border-gray-300'
+                                                            ? 'border-primary-500 ring-2 ring-primary-200'
+                                                            : 'border-gray-200 hover:border-gray-300'
                                                             }`}
                                                     >
                                                         <div className="w-8 h-8 rounded-full mb-2" style={{
@@ -388,8 +457,8 @@ export default function SettingsPage() {
                                                 <button
                                                     onClick={() => handleSettingChange('', 'fontSize', 'small')}
                                                     className={`flex items-center justify-center p-3 rounded-xl border ${settings.fontSize === 'small'
-                                                            ? 'border-primary-500 bg-primary-50'
-                                                            : 'border-gray-200 hover:border-gray-300'
+                                                        ? 'border-primary-500 bg-primary-50'
+                                                        : 'border-gray-200 hover:border-gray-300'
                                                         }`}
                                                 >
                                                     <span className={`text-sm font-medium ${settings.fontSize === 'small' ? 'text-primary-700' : 'text-gray-700'
@@ -398,8 +467,8 @@ export default function SettingsPage() {
                                                 <button
                                                     onClick={() => handleSettingChange('', 'fontSize', 'medium')}
                                                     className={`flex items-center justify-center p-3 rounded-xl border ${settings.fontSize === 'medium'
-                                                            ? 'border-primary-500 bg-primary-50'
-                                                            : 'border-gray-200 hover:border-gray-300'
+                                                        ? 'border-primary-500 bg-primary-50'
+                                                        : 'border-gray-200 hover:border-gray-300'
                                                         }`}
                                                 >
                                                     <span className={`text-sm font-medium ${settings.fontSize === 'medium' ? 'text-primary-700' : 'text-gray-700'
@@ -408,8 +477,8 @@ export default function SettingsPage() {
                                                 <button
                                                     onClick={() => handleSettingChange('', 'fontSize', 'large')}
                                                     className={`flex items-center justify-center p-3 rounded-xl border ${settings.fontSize === 'large'
-                                                            ? 'border-primary-500 bg-primary-50'
-                                                            : 'border-gray-200 hover:border-gray-300'
+                                                        ? 'border-primary-500 bg-primary-50'
+                                                        : 'border-gray-200 hover:border-gray-300'
                                                         }`}
                                                 >
                                                     <span className={`text-sm font-medium ${settings.fontSize === 'large' ? 'text-primary-700' : 'text-gray-700'
@@ -427,8 +496,8 @@ export default function SettingsPage() {
                                                 <button
                                                     onClick={() => handleSettingChange('', 'animations', 'none')}
                                                     className={`flex items-center justify-center p-3 rounded-xl border ${settings.animations === 'none'
-                                                            ? 'border-primary-500 bg-primary-50'
-                                                            : 'border-gray-200 hover:border-gray-300'
+                                                        ? 'border-primary-500 bg-primary-50'
+                                                        : 'border-gray-200 hover:border-gray-300'
                                                         }`}
                                                 >
                                                     <span className={`text-sm font-medium ${settings.animations === 'none' ? 'text-primary-700' : 'text-gray-700'
@@ -437,8 +506,8 @@ export default function SettingsPage() {
                                                 <button
                                                     onClick={() => handleSettingChange('', 'animations', 'minimal')}
                                                     className={`flex items-center justify-center p-3 rounded-xl border ${settings.animations === 'minimal'
-                                                            ? 'border-primary-500 bg-primary-50'
-                                                            : 'border-gray-200 hover:border-gray-300'
+                                                        ? 'border-primary-500 bg-primary-50'
+                                                        : 'border-gray-200 hover:border-gray-300'
                                                         }`}
                                                 >
                                                     <span className={`text-sm font-medium ${settings.animations === 'minimal' ? 'text-primary-700' : 'text-gray-700'
@@ -447,8 +516,8 @@ export default function SettingsPage() {
                                                 <button
                                                     onClick={() => handleSettingChange('', 'animations', 'full')}
                                                     className={`flex items-center justify-center p-3 rounded-xl border ${settings.animations === 'full'
-                                                            ? 'border-primary-500 bg-primary-50'
-                                                            : 'border-gray-200 hover:border-gray-300'
+                                                        ? 'border-primary-500 bg-primary-50'
+                                                        : 'border-gray-200 hover:border-gray-300'
                                                         }`}
                                                 >
                                                     <span className={`text-sm font-medium ${settings.animations === 'full' ? 'text-primary-700' : 'text-gray-700'
@@ -478,8 +547,8 @@ export default function SettingsPage() {
                                                 <button
                                                     onClick={() => handleSettingChange('', 'layout', 'default')}
                                                     className={`flex flex-col items-center p-4 rounded-xl border ${settings.layout === 'default'
-                                                            ? 'border-primary-500 bg-primary-50'
-                                                            : 'border-gray-200 hover:border-gray-300'
+                                                        ? 'border-primary-500 bg-primary-50'
+                                                        : 'border-gray-200 hover:border-gray-300'
                                                         }`}
                                                 >
                                                     <div className="w-full h-16 bg-gray-200 rounded-lg mb-2 flex items-center justify-center">
@@ -491,8 +560,8 @@ export default function SettingsPage() {
                                                 <button
                                                     onClick={() => handleSettingChange('', 'layout', 'compact')}
                                                     className={`flex flex-col items-center p-4 rounded-xl border ${settings.layout === 'compact'
-                                                            ? 'border-primary-500 bg-primary-50'
-                                                            : 'border-gray-200 hover:border-gray-300'
+                                                        ? 'border-primary-500 bg-primary-50'
+                                                        : 'border-gray-200 hover:border-gray-300'
                                                         }`}
                                                 >
                                                     <div className="w-full h-16 bg-gray-200 rounded-lg mb-2 flex items-center justify-center">
@@ -504,8 +573,8 @@ export default function SettingsPage() {
                                                 <button
                                                     onClick={() => handleSettingChange('', 'layout', 'comfortable')}
                                                     className={`flex flex-col items-center p-4 rounded-xl border ${settings.layout === 'comfortable'
-                                                            ? 'border-primary-500 bg-primary-50'
-                                                            : 'border-gray-200 hover:border-gray-300'
+                                                        ? 'border-primary-500 bg-primary-50'
+                                                        : 'border-gray-200 hover:border-gray-300'
                                                         }`}
                                                 >
                                                     <div className="w-full h-16 bg-gray-200 rounded-lg mb-2 flex items-center justify-center">
@@ -653,8 +722,8 @@ export default function SettingsPage() {
                                                         key={language.code}
                                                         onClick={() => handleSettingChange('', 'language', language.code)}
                                                         className={`flex items-center p-3 rounded-xl border ${settings.language === language.code
-                                                                ? 'border-primary-500 bg-primary-50'
-                                                                : 'border-gray-200 hover:border-gray-300'
+                                                            ? 'border-primary-500 bg-primary-50'
+                                                            : 'border-gray-200 hover:border-gray-300'
                                                             }`}
                                                     >
                                                         <span className={`text-sm font-medium ${settings.language === language.code ? 'text-primary-700' : 'text-gray-700'
@@ -688,8 +757,8 @@ export default function SettingsPage() {
                                                         <button
                                                             onClick={() => handleSettingChange('privacy', 'profileVisibility', 'public')}
                                                             className={`p-2 rounded-lg text-center ${settings.privacy.profileVisibility === 'public'
-                                                                    ? 'bg-primary-50 text-primary-700 border border-primary-200'
-                                                                    : 'bg-gray-50 text-gray-700 border border-gray-200'
+                                                                ? 'bg-primary-50 text-primary-700 border border-primary-200'
+                                                                : 'bg-gray-50 text-gray-700 border border-gray-200'
                                                                 }`}
                                                         >
                                                             Public
@@ -697,8 +766,8 @@ export default function SettingsPage() {
                                                         <button
                                                             onClick={() => handleSettingChange('privacy', 'profileVisibility', 'friends')}
                                                             className={`p-2 rounded-lg text-center ${settings.privacy.profileVisibility === 'friends'
-                                                                    ? 'bg-primary-50 text-primary-700 border border-primary-200'
-                                                                    : 'bg-gray-50 text-gray-700 border border-gray-200'
+                                                                ? 'bg-primary-50 text-primary-700 border border-primary-200'
+                                                                : 'bg-gray-50 text-gray-700 border border-gray-200'
                                                                 }`}
                                                         >
                                                             Friends Only
@@ -706,8 +775,8 @@ export default function SettingsPage() {
                                                         <button
                                                             onClick={() => handleSettingChange('privacy', 'profileVisibility', 'private')}
                                                             className={`p-2 rounded-lg text-center ${settings.privacy.profileVisibility === 'private'
-                                                                    ? 'bg-primary-50 text-primary-700 border border-primary-200'
-                                                                    : 'bg-gray-50 text-gray-700 border border-gray-200'
+                                                                ? 'bg-primary-50 text-primary-700 border border-primary-200'
+                                                                : 'bg-gray-50 text-gray-700 border border-gray-200'
                                                                 }`}
                                                         >
                                                             Private

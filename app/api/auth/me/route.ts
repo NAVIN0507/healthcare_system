@@ -9,7 +9,8 @@ const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key';
 export async function GET() {
     try {
         // Get token from cookies
-        const token = await cookies().get('auth-token');
+        const cookieStore = await cookies();
+        const token = cookieStore.get('auth-token');
 
         if (!token) {
             return NextResponse.json(

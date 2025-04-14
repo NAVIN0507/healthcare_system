@@ -54,10 +54,10 @@ type Community = {
     category: string;
     memberCount: number;
     isJoined: boolean;
-    coverImage?: string;
+    icon: React.ReactNode;
 };
 
-// Sample communities data
+// Sample communities data with icons
 const communities: Community[] = [
     {
         id: '1',
@@ -66,7 +66,7 @@ const communities: Community[] = [
         category: 'Fitness',
         memberCount: 1234,
         isJoined: false,
-        coverImage: '/images/community/fitness.jpg'
+        icon: <FireIcon className="w-12 h-12 text-orange-500" />
     },
     {
         id: '2',
@@ -75,7 +75,7 @@ const communities: Community[] = [
         category: 'Nutrition',
         memberCount: 856,
         isJoined: true,
-        coverImage: '/images/community/nutrition.jpg'
+        icon: <ClipboardDocumentListIcon className="w-12 h-12 text-green-500" />
     },
     {
         id: '3',
@@ -84,7 +84,7 @@ const communities: Community[] = [
         category: 'Weight Loss',
         memberCount: 2341,
         isJoined: false,
-        coverImage: '/images/community/weight-loss.jpg'
+        icon: <ChartBarIcon className="w-12 h-12 text-blue-500" />
     }
 ];
 
@@ -253,6 +253,21 @@ export default function CommunityPage() {
             setCopied(true);
             setTimeout(() => setCopied(false), 2000);
         }
+    };
+
+    const handleFollowUser = (userId: string) => {
+        const updatedUsers = users.map(user => {
+            if (user.id === userId) {
+                return {
+                    ...user,
+                    isFollowing: !user.isFollowing,
+                    followers: user.isFollowing ? user.followers - 1 : user.followers + 1
+                };
+            }
+            return user;
+        });
+        // Update the users array (in a real app, this would be handled by an API call)
+        Object.assign(users, updatedUsers);
     };
 
     return (
@@ -481,63 +496,38 @@ export default function CommunityPage() {
                                         key={community.id}
                                         initial={{ opacity: 0, y: 20 }}
                                         animate={{ opacity: 1, y: 0 }}
-                                        transition={{ duration: 0.3 }}
-                                        className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden"
+                                        className="bg-white rounded-xl shadow-sm overflow-hidden"
                                     >
-                                        <div className="h-24 bg-gray-200 relative">
-                                            {community.coverImage ? (
-                                                <img
-                                                    src={community.coverImage}
-                                                    alt={community.name}
-                                                    className="w-full h-full object-cover"
-                                                />
-                                            ) : (
-                                                <div className="w-full h-full flex items-center justify-center bg-primary-100">
-                                                    <UserGroupIcon className="h-12 w-12 text-primary-500" />
+                                        <div className="p-6">
+                                            <div className="flex items-start space-x-4">
+                                                <div className="flex-shrink-0">
+                                                    <div className="p-3 bg-gray-50 rounded-xl">
+                                                        {community.icon}
+                                                    </div>
                                                 </div>
-                                            )}
-                                            <div className="absolute top-2 right-2">
-                                                <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${community.category === 'fitness' ? 'bg-blue-100 text-blue-800' :
-                                                    community.category === 'nutrition' ? 'bg-green-100 text-green-800' :
-                                                        community.category === 'wellness' ? 'bg-purple-100 text-purple-800' :
-                                                            community.category === 'weight-loss' ? 'bg-yellow-100 text-yellow-800' :
-                                                                community.category === 'muscle-gain' ? 'bg-red-100 text-red-800' :
-                                                                    'bg-gray-100 text-gray-800'
-                                                    }`}>
-                                                    {community.category.replace('-', ' ').replace(/\b\w/g, l => l.toUpperCase())}
-                                                </span>
+                                                <div className="flex-1 min-w-0">
+                                                    <h3 className="text-lg font-semibold text-gray-900">{community.name}</h3>
+                                                    <p className="mt-1 text-sm text-gray-500">{community.description}</p>
+                                                    <div className="mt-4 flex items-center space-x-4">
+                                                        <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                                                            {community.category}
+                                                        </span>
+                                                        <span className="text-sm text-gray-500">
+                                                            {community.memberCount} members
+                                                        </span>
+                                                    </div>
+                                                </div>
                                             </div>
-                                        </div>
-                                        <div className="p-4">
-                                            <h3 className="text-lg font-medium text-gray-900">{community.name}</h3>
-                                            <p className="mt-1 text-sm text-gray-500 line-clamp-2">{community.description}</p>
-                                            <div className="mt-3 flex items-center justify-between">
-                                                <div className="flex items-center text-sm text-gray-500">
-                                                    <UserGroupIcon className="h-4 w-4 mr-1" />
-                                                    <span>{community.memberCount} members</span>
-                                                </div>
-                                                <div className="flex space-x-2">
-                                                    <motion.button
-                                                        whileHover={{ scale: 1.05 }}
-                                                        whileTap={{ scale: 0.95 }}
-                                                        onClick={() => handleShareCommunity(community)}
-                                                        className="p-1 text-gray-500 hover:text-gray-700 rounded-full hover:bg-gray-100"
-                                                        title="Share Community"
-                                                    >
-                                                        <LinkIcon className="h-5 w-5" />
-                                                    </motion.button>
-                                                    <motion.button
-                                                        whileHover={{ scale: 1.05 }}
-                                                        whileTap={{ scale: 0.95 }}
-                                                        onClick={() => handleJoinCommunity(community.id)}
-                                                        className={`px-3 py-1 text-sm font-medium rounded-md ${community.isJoined
-                                                            ? 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                                                            : 'bg-primary-100 text-primary-700 hover:bg-primary-200'
-                                                            }`}
-                                                    >
-                                                        {community.isJoined ? 'Joined' : 'Join'}
-                                                    </motion.button>
-                                                </div>
+                                            <div className="mt-6 flex justify-end">
+                                                <button
+                                                    onClick={() => handleJoinCommunity(community.id)}
+                                                    className={`px-4 py-2 rounded-lg text-sm font-medium ${community.isJoined
+                                                        ? 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                                                        : 'bg-blue-600 text-white hover:bg-blue-700'
+                                                        }`}
+                                                >
+                                                    {community.isJoined ? 'Leave Community' : 'Join Community'}
+                                                </button>
                                             </div>
                                         </div>
                                     </motion.div>
@@ -664,6 +654,84 @@ export default function CommunityPage() {
                     </div>
                 )}
             </AnimatePresence>
+
+            {/* Users Table */}
+            <div className="bg-white rounded-xl shadow-sm overflow-hidden">
+                <div className="overflow-x-auto">
+                    <table className="min-w-full divide-y divide-gray-200">
+                        <thead className="bg-gray-50">
+                            <tr>
+                                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                    User
+                                </th>
+                                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                    Bio
+                                </th>
+                                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                    Followers
+                                </th>
+                                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                    Following
+                                </th>
+                                <th scope="col" className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                    Actions
+                                </th>
+                            </tr>
+                        </thead>
+                        <tbody className="bg-white divide-y divide-gray-200">
+                            {users.map((user) => (
+                                <motion.tr
+                                    key={user.id}
+                                    initial={{ opacity: 0 }}
+                                    animate={{ opacity: 1 }}
+                                    className="hover:bg-gray-50"
+                                >
+                                    <td className="px-6 py-4 whitespace-nowrap">
+                                        <div className="flex items-center">
+                                            <div className="flex-shrink-0 h-10 w-10">
+                                                {user.avatar ? (
+                                                    <img
+                                                        className="h-10 w-10 rounded-full"
+                                                        src={user.avatar}
+                                                        alt={user.name}
+                                                    />
+                                                ) : (
+                                                    <div className="h-10 w-10 rounded-full bg-gray-100 flex items-center justify-center">
+                                                        <UserCircleIcon className="h-8 w-8 text-gray-400" />
+                                                    </div>
+                                                )}
+                                            </div>
+                                            <div className="ml-4">
+                                                <div className="text-sm font-medium text-gray-900">{user.name}</div>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td className="px-6 py-4">
+                                        <div className="text-sm text-gray-500 max-w-xs truncate">{user.bio}</div>
+                                    </td>
+                                    <td className="px-6 py-4 whitespace-nowrap">
+                                        <div className="text-sm text-gray-900">{user.followers}</div>
+                                    </td>
+                                    <td className="px-6 py-4 whitespace-nowrap">
+                                        <div className="text-sm text-gray-900">{user.following}</div>
+                                    </td>
+                                    <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                                        <button
+                                            onClick={() => handleFollowUser(user.id)}
+                                            className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium ${user.isFollowing
+                                                ? 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                                                : 'bg-blue-600 text-white hover:bg-blue-700'
+                                                }`}
+                                        >
+                                            {user.isFollowing ? 'Following' : 'Follow'}
+                                        </button>
+                                    </td>
+                                </motion.tr>
+                            ))}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
         </div>
     );
 } 

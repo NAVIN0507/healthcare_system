@@ -8,6 +8,32 @@ import {
     ClipboardDocumentListIcon,
     FlagIcon
 } from '@heroicons/react/24/outline';
+import {
+    Chart as ChartJS,
+    CategoryScale,
+    LinearScale,
+    PointElement,
+    LineElement,
+    BarElement,
+    Title,
+    Tooltip,
+    Legend,
+    ArcElement
+} from 'chart.js';
+import { Line, Bar, Doughnut } from 'react-chartjs-2';
+
+// Register ChartJS components
+ChartJS.register(
+    CategoryScale,
+    LinearScale,
+    PointElement,
+    LineElement,
+    BarElement,
+    Title,
+    Tooltip,
+    Legend,
+    ArcElement
+);
 
 export default function DashboardPage() {
     const router = useRouter();
@@ -34,6 +60,93 @@ export default function DashboardPage() {
 
         fetchUser();
     }, [router]);
+
+    // Sample data for charts
+    const activityData = {
+        labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
+        datasets: [
+            {
+                label: 'Steps',
+                data: [6500, 5900, 8000, 8100, 5600, 9500, 8500],
+                borderColor: 'rgb(75, 192, 192)',
+                backgroundColor: 'rgba(75, 192, 192, 0.5)',
+                tension: 0.3,
+            },
+            {
+                label: 'Calories Burned',
+                data: [1200, 1100, 1500, 1600, 1300, 1800, 1700],
+                borderColor: 'rgb(255, 99, 132)',
+                backgroundColor: 'rgba(255, 99, 132, 0.5)',
+                tension: 0.3,
+            },
+        ],
+    };
+
+    const nutritionData = {
+        labels: ['Protein', 'Carbs', 'Fat', 'Fiber', 'Sugar'],
+        datasets: [
+            {
+                label: 'Daily Intake (g)',
+                data: [65, 250, 55, 30, 45],
+                backgroundColor: [
+                    'rgba(255, 99, 132, 0.6)',
+                    'rgba(54, 162, 235, 0.6)',
+                    'rgba(255, 206, 86, 0.6)',
+                    'rgba(75, 192, 192, 0.6)',
+                    'rgba(153, 102, 255, 0.6)',
+                ],
+                borderColor: [
+                    'rgba(255, 99, 132, 1)',
+                    'rgba(54, 162, 235, 1)',
+                    'rgba(255, 206, 86, 1)',
+                    'rgba(75, 192, 192, 1)',
+                    'rgba(153, 102, 255, 1)',
+                ],
+                borderWidth: 1,
+            },
+        ],
+    };
+
+    const weightData = {
+        labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
+        datasets: [
+            {
+                label: 'Weight (kg)',
+                data: [75, 74.2, 73.5, 72.8, 72.1, 71.5],
+                borderColor: 'rgb(53, 162, 235)',
+                backgroundColor: 'rgba(53, 162, 235, 0.5)',
+            },
+        ],
+    };
+
+    const goalProgressData = {
+        labels: ['Completed', 'In Progress', 'Not Started'],
+        datasets: [
+            {
+                data: [3, 2, 1],
+                backgroundColor: [
+                    'rgba(75, 192, 192, 0.6)',
+                    'rgba(255, 206, 86, 0.6)',
+                    'rgba(255, 99, 132, 0.6)',
+                ],
+                borderColor: [
+                    'rgba(75, 192, 192, 1)',
+                    'rgba(255, 206, 86, 1)',
+                    'rgba(255, 99, 132, 1)',
+                ],
+                borderWidth: 1,
+            },
+        ],
+    };
+
+    const chartOptions = {
+        responsive: true,
+        plugins: {
+            legend: {
+                position: 'top' as const,
+            },
+        },
+    };
 
     if (loading) {
         return (
@@ -134,6 +247,108 @@ export default function DashboardPage() {
                                     </dd>
                                 </dl>
                             </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            {/* Charts Section */}
+            <div className="grid grid-cols-1 gap-8 lg:grid-cols-4 mb-8">
+                {/* Activity Chart */}
+                <div className="bg-white shadow rounded-lg p-4">
+                    <h3 className="text-lg font-medium text-gray-900 mb-2">Weekly Activity</h3>
+                    <div className="h-48">
+                        <Line options={{
+                            ...chartOptions,
+                            maintainAspectRatio: false,
+                            plugins: {
+                                ...chartOptions.plugins,
+                                legend: {
+                                    position: 'bottom' as const,
+                                    labels: {
+                                        boxWidth: 12,
+                                        padding: 8,
+                                        font: {
+                                            size: 10
+                                        }
+                                    }
+                                }
+                            }
+                        }} data={activityData} />
+                    </div>
+                </div>
+
+                {/* Weight Chart */}
+                <div className="bg-white shadow rounded-lg p-4">
+                    <h3 className="text-lg font-medium text-gray-900 mb-2">Weight Progress</h3>
+                    <div className="h-48">
+                        <Line options={{
+                            ...chartOptions,
+                            maintainAspectRatio: false,
+                            plugins: {
+                                ...chartOptions.plugins,
+                                legend: {
+                                    position: 'bottom' as const,
+                                    labels: {
+                                        boxWidth: 12,
+                                        padding: 8,
+                                        font: {
+                                            size: 10
+                                        }
+                                    }
+                                }
+                            }
+                        }} data={weightData} />
+                    </div>
+                </div>
+
+                {/* Nutrition Chart */}
+                <div className="bg-white shadow rounded-lg p-4">
+                    <h3 className="text-lg font-medium text-gray-900 mb-2">Nutrition</h3>
+                    <div className="h-48">
+                        <Bar options={{
+                            ...chartOptions,
+                            maintainAspectRatio: false,
+                            plugins: {
+                                ...chartOptions.plugins,
+                                legend: {
+                                    position: 'bottom' as const,
+                                    labels: {
+                                        boxWidth: 12,
+                                        padding: 8,
+                                        font: {
+                                            size: 10
+                                        }
+                                    }
+                                }
+                            }
+                        }} data={nutritionData} />
+                    </div>
+                </div>
+
+                {/* Goals Progress Chart */}
+                <div className="bg-white shadow rounded-lg p-4">
+                    <h3 className="text-lg font-medium text-gray-900 mb-2">Goals</h3>
+                    <div className="h-48 flex items-center justify-center">
+                        <div className="w-32 h-32">
+                            <Doughnut
+                                data={goalProgressData}
+                                options={{
+                                    maintainAspectRatio: false,
+                                    plugins: {
+                                        legend: {
+                                            position: 'bottom' as const,
+                                            labels: {
+                                                boxWidth: 12,
+                                                padding: 8,
+                                                font: {
+                                                    size: 10
+                                                }
+                                            }
+                                        }
+                                    }
+                                }}
+                            />
                         </div>
                     </div>
                 </div>

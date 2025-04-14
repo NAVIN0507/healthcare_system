@@ -49,7 +49,6 @@ import AIAssistant from '@/components/AIAssistant';
 const navigation = [
     { name: 'Dashboard', href: '/dashboard', icon: HomeIcon, activeIcon: HomeSolidIcon },
     { name: 'Profile', href: '/dashboard/profile', icon: UserIcon, activeIcon: UserSolidIcon },
-    { name: 'Appointments', href: '/dashboard/appointments', icon: CalendarIcon, activeIcon: CalendarSolidIcon },
     { name: 'Community', href: '/dashboard/community', icon: UserGroupIcon, activeIcon: UserGroupSolidIcon },
     { name: 'Goals', href: '/dashboard/goals', icon: TrophyIcon, activeIcon: TrophySolidIcon },
     { name: 'Fitness', href: '/dashboard/fitness', icon: FireIcon, activeIcon: FireSolidIcon },
@@ -135,13 +134,7 @@ export default function DashboardLayout({
     };
 
     return (
-        <div className="flex h-screen bg-gradient-to-br from-gray-900 to-black ml-10 pt-10 relative overflow-hidden">
-            {/* Background Effects */}
-            <div className="absolute inset-0 overflow-hidden pointer-events-none">
-                <div className="absolute top-0 left-0 w-full h-full bg-[radial-gradient(circle_at_50%_120%,rgba(120,119,198,0.1),rgba(255,255,255,0))]"></div>
-                <div className="absolute top-0 left-0 w-full h-full bg-[radial-gradient(circle_at_50%_0%,rgba(120,119,198,0.1),rgba(255,255,255,0))]"></div>
-            </div>
-
+        <div className="flex h-screen bg-transparent ml-10 pt-10 relative overflow-hidden">
             {/* Sidebar Toggle Button (Mobile) */}
             <div className="fixed top-4 left-4 z-50 md:hidden">
                 <motion.button
@@ -320,7 +313,7 @@ export default function DashboardLayout({
                             {/* Bottom Section */}
                             <div className="p-6 border-t border-gray-700/50">
                                 <motion.div
-                                    className="bg-gradient-to-r from-gray-800/50 to-gray-900/50 rounded-xl p-4 backdrop-blur-sm relative overflow-hidden"
+                                    className="bg-gray-800/50 rounded-xl p-4 backdrop-blur-sm relative overflow-hidden"
                                     whileHover={{ scale: 1.02 }}
                                     transition={{ type: "spring", stiffness: 400, damping: 10 }}
                                 >

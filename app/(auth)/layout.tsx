@@ -1,4 +1,5 @@
 import { Inter } from "next/font/google";
+import Logo from "../components/Logo";
 
 const inter = Inter({
     subsets: ["latin"],
@@ -14,8 +15,8 @@ export default function AuthLayout({
         <div className={`${inter.variable} min-h-screen bg-neutral-50 flex items-center justify-center p-4`}>
             <div className="w-full max-w-md">
                 <div className="text-center mb-8">
-                    <h1 className="text-3xl font-bold text-primary-600">Healthcare MS</h1>
-                    <p className="text-neutral-600 mt-2">Secure access to your healthcare management system</p>
+                    <Logo size="large" className="mx-auto mb-2" />
+                    <p className="text-neutral-600 mt-2">Your journey to wellness starts here</p>
                 </div>
                 {children}
             </div>

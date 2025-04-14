@@ -32,10 +32,10 @@ export default function LoginPage() {
 
     return (
         <div className="bg-white rounded-lg shadow-soft p-8">
-            <h2 className="text-2xl font-semibold text-neutral-800 mb-6">Sign In</h2>
+            <h2 className="text-2xl font-semibold text-accent-500 mb-6">Sign In</h2>
 
             {error && (
-                <div className="mb-4 p-3 bg-accent-50 text-accent-700 rounded-lg text-sm">
+                <div className="mb-4 p-3 bg-red-50 text-red-700 rounded-lg text-sm">
                     {error}
                 </div>
             )}
@@ -94,8 +94,8 @@ export default function LoginPage() {
                     type="submit"
                     disabled={loading}
                     className={`w-full py-2 px-4 rounded-lg text-white font-medium transition-colors ${loading
-                            ? 'bg-primary-400 cursor-not-allowed'
-                            : 'bg-primary-500 hover:bg-primary-600'
+                        ? 'bg-primary-400 cursor-not-allowed'
+                        : 'bg-primary-500 hover:bg-primary-600'
                         }`}
                 >
                     {loading ? 'Signing in...' : 'Sign In'}

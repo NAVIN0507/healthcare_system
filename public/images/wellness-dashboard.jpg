@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="800" height="600" viewBox="0 0 800 600" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Background -->
+  <rect width="800" height="600" fill="#F3F4F6"/>
+  
+  <!-- Header -->
+  <rect width="800" height="60" fill="#00AF4B"/>
+  <rect x="20" y="20" width="120" height="20" fill="white" opacity="0.8"/>
+  <circle cx="740" cy="30" r="15" fill="white" opacity="0.8"/>
+  
+  <!-- Sidebar -->
+  <rect width="200" height="540" fill="white"/>
+  <rect x="20" y="100" width="160" height="40" rx="4" fill="#E5E7EB"/>
+  <rect x="20" y="160" width="160" height="40" rx="4" fill="#E5E7EB"/>
+  <rect x="20" y="220" width="160" height="40" rx="4" fill="#E5E7EB"/>
+  
+  <!-- Main Content -->
+  <rect x="240" y="100" width="540" height="200" rx="8" fill="white"/>
+  <rect x="260" y="120" width="200" height="20" fill="#E5E7EB"/>
+  <rect x="260" y="160" width="400" height="120" rx="4" fill="#F3F4F6"/>
+  
+  <!-- Stats Cards -->
+  <rect x="240" y="320" width="260" height="120" rx="8" fill="white"/>
+  <rect x="260" y="340" width="100" height="20" fill="#E5E7EB"/>
+  <rect x="260" y="380" width="180" height="40" fill="#00AF4B" opacity="0.1"/>
+  
+  <rect x="520" y="320" width="260" height="120" rx="8" fill="white"/>
+  <rect x="540" y="340" width="100" height="20" fill="#E5E7EB"/>
+  <rect x="540" y="380" width="180" height="40" fill="#00AF4B" opacity="0.1"/>
+  
+  <!-- Activity Chart -->
+  <rect x="240" y="460" width="540" height="180" rx="8" fill="white"/>
+  <rect x="260" y="480" width="150" height="20" fill="#E5E7EB"/>
+  <path d="M260 560 L800 560" stroke="#E5E7EB" stroke-width="2"/>
+  <path d="M260 520 L800 520" stroke="#E5E7EB" stroke-width="2"/>
+  <path d="M260 480 L800 480" stroke="#E5E7EB" stroke-width="2"/>
+  
+  <!-- Chart Line -->
+  <path d="M280 540 L340 500 L400 520 L460 480 L520 460 L580 440 L640 420 L700 400" 
+        stroke="#00AF4B" stroke-width="3" fill="none"/>
+  
+  <!-- Data Points -->
+  <circle cx="280" cy="540" r="4" fill="#00AF4B"/>
+  <circle cx="340" cy="500" r="4" fill="#00AF4B"/>
+  <circle cx="400" cy="520" r="4" fill="#00AF4B"/>
+  <circle cx="460" cy="480" r="4" fill="#00AF4B"/>
+  <circle cx="520" cy="460" r="4" fill="#00AF4B"/>
+  <circle cx="580" cy="440" r="4" fill="#00AF4B"/>
+  <circle cx="640" cy="420" r="4" fill="#00AF4B"/>
+  <circle cx="700" cy="400" r="4" fill="#00AF4B"/>
+</svg> 

@@ -354,25 +354,193 @@ export default function DashboardPage() {
                 </div>
             </div>
 
-            {/* Health Summary */}
-            <div className="bg-white shadow rounded-lg mb-8">
-                <div className="px-4 py-5 sm:p-6">
-                    <h3 className="text-lg leading-6 font-medium text-gray-900">Health Summary</h3>
-                    <div className="mt-5 border-t border-gray-200">
-                        <dl className="divide-y divide-gray-200">
-                            <div className="py-4 sm:grid sm:grid-cols-3 sm:gap-4">
-                                <dt className="text-sm font-medium text-gray-500">Height</dt>
-                                <dd className="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">{user?.height || 'Not set'} cm</dd>
-                            </div>
-                            <div className="py-4 sm:grid sm:grid-cols-3 sm:gap-4">
-                                <dt className="text-sm font-medium text-gray-500">Weight</dt>
-                                <dd className="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">{user?.weight || 'Not set'} kg</dd>
-                            </div>
-                            <div className="py-4 sm:grid sm:grid-cols-3 sm:gap-4">
-                                <dt className="text-sm font-medium text-gray-500">Blood Type</dt>
-                                <dd className="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">{user?.bloodType || 'Not set'}</dd>
-                            </div>
-                        </dl>
+            {/* Progress Tracking Tables */}
+            <div className="grid grid-cols-1 gap-8 lg:grid-cols-2 mb-8">
+                {/* Physical Activity Progress */}
+                <div className="bg-white shadow rounded-lg">
+                    <div className="px-4 py-5 sm:p-6">
+                        <h3 className="text-lg leading-6 font-medium text-gray-900">Physical Activity</h3>
+                        <div className="mt-4">
+                            <table className="min-w-full divide-y divide-gray-200">
+                                <thead>
+                                    <tr>
+                                        <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Metric</th>
+                                        <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Progress</th>
+                                        <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Goal</th>
+                                    </tr>
+                                </thead>
+                                <tbody className="divide-y divide-gray-200">
+                                    <tr>
+                                        <td className="px-3 py-2 whitespace-nowrap text-sm text-gray-900">Daily Steps</td>
+                                        <td className="px-3 py-2 whitespace-nowrap">
+                                            <div className="w-full bg-gray-200 rounded-full h-2">
+                                                <div className="bg-blue-600 h-2 rounded-full" style={{ width: '85%' }}></div>
+                                            </div>
+                                        </td>
+                                        <td className="px-3 py-2 whitespace-nowrap text-sm text-gray-500">10,000</td>
+                                    </tr>
+                                    <tr>
+                                        <td className="px-3 py-2 whitespace-nowrap text-sm text-gray-900">Workout Days</td>
+                                        <td className="px-3 py-2 whitespace-nowrap">
+                                            <div className="w-full bg-gray-200 rounded-full h-2">
+                                                <div className="bg-purple-600 h-2 rounded-full" style={{ width: '80%' }}></div>
+                                            </div>
+                                        </td>
+                                        <td className="px-3 py-2 whitespace-nowrap text-sm text-gray-500">5/week</td>
+                                    </tr>
+                                    <tr>
+                                        <td className="px-3 py-2 whitespace-nowrap text-sm text-gray-900">Active Minutes</td>
+                                        <td className="px-3 py-2 whitespace-nowrap">
+                                            <div className="w-full bg-gray-200 rounded-full h-2">
+                                                <div className="bg-green-600 h-2 rounded-full" style={{ width: '75%' }}></div>
+                                            </div>
+                                        </td>
+                                        <td className="px-3 py-2 whitespace-nowrap text-sm text-gray-500">30/day</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                {/* Nutrition Progress */}
+                <div className="bg-white shadow rounded-lg">
+                    <div className="px-4 py-5 sm:p-6">
+                        <h3 className="text-lg leading-6 font-medium text-gray-900">Nutrition</h3>
+                        <div className="mt-4">
+                            <table className="min-w-full divide-y divide-gray-200">
+                                <thead>
+                                    <tr>
+                                        <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Metric</th>
+                                        <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Progress</th>
+                                        <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Goal</th>
+                                    </tr>
+                                </thead>
+                                <tbody className="divide-y divide-gray-200">
+                                    <tr>
+                                        <td className="px-3 py-2 whitespace-nowrap text-sm text-gray-900">Water Intake</td>
+                                        <td className="px-3 py-2 whitespace-nowrap">
+                                            <div className="w-full bg-gray-200 rounded-full h-2">
+                                                <div className="bg-cyan-600 h-2 rounded-full" style={{ width: '72%' }}></div>
+                                            </div>
+                                        </td>
+                                        <td className="px-3 py-2 whitespace-nowrap text-sm text-gray-500">2.5 L</td>
+                                    </tr>
+                                    <tr>
+                                        <td className="px-3 py-2 whitespace-nowrap text-sm text-gray-900">Calories</td>
+                                        <td className="px-3 py-2 whitespace-nowrap">
+                                            <div className="w-full bg-gray-200 rounded-full h-2">
+                                                <div className="bg-yellow-600 h-2 rounded-full" style={{ width: '65%' }}></div>
+                                            </div>
+                                        </td>
+                                        <td className="px-3 py-2 whitespace-nowrap text-sm text-gray-500">2,000</td>
+                                    </tr>
+                                    <tr>
+                                        <td className="px-3 py-2 whitespace-nowrap text-sm text-gray-900">Protein</td>
+                                        <td className="px-3 py-2 whitespace-nowrap">
+                                            <div className="w-full bg-gray-200 rounded-full h-2">
+                                                <div className="bg-red-600 h-2 rounded-full" style={{ width: '90%' }}></div>
+                                            </div>
+                                        </td>
+                                        <td className="px-3 py-2 whitespace-nowrap text-sm text-gray-500">65g</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                {/* Sleep & Recovery */}
+                <div className="bg-white shadow rounded-lg">
+                    <div className="px-4 py-5 sm:p-6">
+                        <h3 className="text-lg leading-6 font-medium text-gray-900">Sleep & Recovery</h3>
+                        <div className="mt-4">
+                            <table className="min-w-full divide-y divide-gray-200">
+                                <thead>
+                                    <tr>
+                                        <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Metric</th>
+                                        <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Progress</th>
+                                        <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Goal</th>
+                                    </tr>
+                                </thead>
+                                <tbody className="divide-y divide-gray-200">
+                                    <tr>
+                                        <td className="px-3 py-2 whitespace-nowrap text-sm text-gray-900">Sleep Duration</td>
+                                        <td className="px-3 py-2 whitespace-nowrap">
+                                            <div className="w-full bg-gray-200 rounded-full h-2">
+                                                <div className="bg-indigo-600 h-2 rounded-full" style={{ width: '81%' }}></div>
+                                            </div>
+                                        </td>
+                                        <td className="px-3 py-2 whitespace-nowrap text-sm text-gray-500">8 hrs</td>
+                                    </tr>
+                                    <tr>
+                                        <td className="px-3 py-2 whitespace-nowrap text-sm text-gray-900">Sleep Quality</td>
+                                        <td className="px-3 py-2 whitespace-nowrap">
+                                            <div className="w-full bg-gray-200 rounded-full h-2">
+                                                <div className="bg-violet-600 h-2 rounded-full" style={{ width: '78%' }}></div>
+                                            </div>
+                                        </td>
+                                        <td className="px-3 py-2 whitespace-nowrap text-sm text-gray-500">85%</td>
+                                    </tr>
+                                    <tr>
+                                        <td className="px-3 py-2 whitespace-nowrap text-sm text-gray-900">Recovery Score</td>
+                                        <td className="px-3 py-2 whitespace-nowrap">
+                                            <div className="w-full bg-gray-200 rounded-full h-2">
+                                                <div className="bg-pink-600 h-2 rounded-full" style={{ width: '82%' }}></div>
+                                            </div>
+                                        </td>
+                                        <td className="px-3 py-2 whitespace-nowrap text-sm text-gray-500">90%</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                {/* Weight Management */}
+                <div className="bg-white shadow rounded-lg">
+                    <div className="px-4 py-5 sm:p-6">
+                        <h3 className="text-lg leading-6 font-medium text-gray-900">Weight Management</h3>
+                        <div className="mt-4">
+                            <table className="min-w-full divide-y divide-gray-200">
+                                <thead>
+                                    <tr>
+                                        <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Metric</th>
+                                        <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Progress</th>
+                                        <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Goal</th>
+                                    </tr>
+                                </thead>
+                                <tbody className="divide-y divide-gray-200">
+                                    <tr>
+                                        <td className="px-3 py-2 whitespace-nowrap text-sm text-gray-900">Weight Loss</td>
+                                        <td className="px-3 py-2 whitespace-nowrap">
+                                            <div className="w-full bg-gray-200 rounded-full h-2">
+                                                <div className="bg-green-600 h-2 rounded-full" style={{ width: '70%' }}></div>
+                                            </div>
+                                        </td>
+                                        <td className="px-3 py-2 whitespace-nowrap text-sm text-gray-500">5 kg</td>
+                                    </tr>
+                                    <tr>
+                                        <td className="px-3 py-2 whitespace-nowrap text-sm text-gray-900">BMI</td>
+                                        <td className="px-3 py-2 whitespace-nowrap">
+                                            <div className="w-full bg-gray-200 rounded-full h-2">
+                                                <div className="bg-teal-600 h-2 rounded-full" style={{ width: '65%' }}></div>
+                                            </div>
+                                        </td>
+                                        <td className="px-3 py-2 whitespace-nowrap text-sm text-gray-500">22.5</td>
+                                    </tr>
+                                    <tr>
+                                        <td className="px-3 py-2 whitespace-nowrap text-sm text-gray-900">Body Fat %</td>
+                                        <td className="px-3 py-2 whitespace-nowrap">
+                                            <div className="w-full bg-gray-200 rounded-full h-2">
+                                                <div className="bg-emerald-600 h-2 rounded-full" style={{ width: '60%' }}></div>
+                                            </div>
+                                        </td>
+                                        <td className="px-3 py-2 whitespace-nowrap text-sm text-gray-500">18%</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
                     </div>
                 </div>
             </div>

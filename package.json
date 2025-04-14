@@ -14,12 +14,14 @@
     "chart.js": "^4.4.8",
     "framer-motion": "^12.6.5",
     "jsonwebtoken": "^9.0.2",
+    "lucide-react": "^0.488.0",
     "mongodb": "^6.15.0",
     "mongoose": "^8.13.2",
     "next": "15.1.4",
     "react": "^19.0.0",
     "react-chartjs-2": "^5.3.0",
-    "react-dom": "^19.0.0"
+    "react-dom": "^19.0.0",
+    "react-hook-form": "^7.55.0"
   },
   "devDependencies": {
     "@types/jsonwebtoken": "^9.0.9",

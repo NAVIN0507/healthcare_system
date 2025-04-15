@@ -1,10 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/app/api/auth/[...nextauth]/route';
-
+import { connectDB } from '@/app/lib/db';
 import Community from '@/app/models/Community';
 import { z } from 'zod';
-import connectDB from '@/app/lib/db';
+import User from '../../../models/User';
+import { cookies } from 'next/headers';
+import { sign } from 'jsonwebtoken';
 
 // Schema for validating community updates
 const updateCommunitySchema = z.object({
@@ -66,7 +68,7 @@ export async function PATCH(
             );
         }
 
-        await dbConnect();
+        await connectDB();
 
         // Check authorization
         if (!(await isAuthorized(params.id, session.user.id))) {
@@ -124,7 +126,7 @@ export async function DELETE(
             );
         }
 
-        await dbConnect();
+        await connectDB();
 
         // Check authorization
         if (!(await isAuthorized(params.id, session.user.id))) {

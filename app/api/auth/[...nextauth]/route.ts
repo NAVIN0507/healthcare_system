@@ -1,6 +1,6 @@
 import NextAuth from 'next-auth';
 import { MongoDBAdapter } from '@auth/mongodb-adapter';
-import { clientPromise, connectDB } from '@/lib/database';
+import { clientPromise, connectDB } from '@/app/lib/db';
 import GoogleProvider from 'next-auth/providers/google';
 import CredentialsProvider from 'next-auth/providers/credentials';
 import bcrypt from 'bcryptjs';

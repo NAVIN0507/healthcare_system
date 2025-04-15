@@ -16,7 +16,8 @@ import {
     SparklesIcon,
     StarIcon,
     TrophyIcon,
-    XMarkIcon
+    XMarkIcon,
+    PlusIcon
 } from '@heroicons/react/24/outline';
 import {
     ChartBarIcon as ChartBarSolidIcon,
@@ -37,6 +38,8 @@ import {
     ArcElement
 } from 'chart.js';
 import { Line, Bar, Doughnut } from 'react-chartjs-2';
+import CreateGoalModal from '@/app/components/CreateGoalModal';
+import toast from 'react-hot-toast';
 
 // Register ChartJS components
 ChartJS.register(
@@ -67,6 +70,20 @@ const chartOptions = {
         },
     },
 };
+
+interface Goal {
+    _id: string;
+    title: string;
+    description: string;
+    category: string;
+    targetValue: number;
+    currentValue: number;
+    unit: string;
+    progress: number;
+    status: string;
+    startDate: string;
+    targetDate: string;
+}
 
 export default function DashboardPage() {
     const router = useRouter();
@@ -348,7 +365,7 @@ export default function DashboardPage() {
                                                 <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-900">Water Intake</td>
                                                 <td className="px-4 py-3 whitespace-nowrap">
                                                     <div className="w-full bg-gray-200 rounded-full h-2.5">
-                                                        <div className="bg-cyan-600 h-2.5 rounded-full transition-all duration-500" style={{ width: '72%' }}></div>
+                                                        <div className="bg-cyan-600 h-2.5 rounded-full" style={{ width: '72%' }}></div>
                                                     </div>
                                                 </td>
                                                 <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-500">2.5 L</td>
@@ -357,7 +374,7 @@ export default function DashboardPage() {
                                                 <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-900">Calories</td>
                                                 <td className="px-4 py-3 whitespace-nowrap">
                                                     <div className="w-full bg-gray-200 rounded-full h-2.5">
-                                                        <div className="bg-yellow-600 h-2.5 rounded-full transition-all duration-500" style={{ width: '65%' }}></div>
+                                                        <div className="bg-yellow-600 h-2.5 rounded-full" style={{ width: '65%' }}></div>
                                                     </div>
                                                 </td>
                                                 <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-500">2,000</td>
@@ -366,7 +383,7 @@ export default function DashboardPage() {
                                                 <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-900">Protein</td>
                                                 <td className="px-4 py-3 whitespace-nowrap">
                                                     <div className="w-full bg-gray-200 rounded-full h-2.5">
-                                                        <div className="bg-red-600 h-2.5 rounded-full transition-all duration-500" style={{ width: '90%' }}></div>
+                                                        <div className="bg-red-600 h-2.5 rounded-full" style={{ width: '90%' }}></div>
                                                     </div>
                                                 </td>
                                                 <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-500">65g</td>
@@ -398,7 +415,7 @@ export default function DashboardPage() {
                                                 <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-900">Daily Steps</td>
                                                 <td className="px-4 py-3 whitespace-nowrap">
                                                     <div className="w-full bg-gray-200 rounded-full h-2.5">
-                                                        <div className="bg-blue-600 h-2.5 rounded-full transition-all duration-500" style={{ width: '85%' }}></div>
+                                                        <div className="bg-blue-600 h-2.5 rounded-full" style={{ width: '85%' }}></div>
                                                     </div>
                                                 </td>
                                                 <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-500">10,000</td>
@@ -407,7 +424,7 @@ export default function DashboardPage() {
                                                 <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-900">Workout Days</td>
                                                 <td className="px-4 py-3 whitespace-nowrap">
                                                     <div className="w-full bg-gray-200 rounded-full h-2.5">
-                                                        <div className="bg-purple-600 h-2.5 rounded-full transition-all duration-500" style={{ width: '80%' }}></div>
+                                                        <div className="bg-purple-600 h-2.5 rounded-full" style={{ width: '80%' }}></div>
                                                     </div>
                                                 </td>
                                                 <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-500">5/week</td>
@@ -416,7 +433,7 @@ export default function DashboardPage() {
                                                 <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-900">Active Minutes</td>
                                                 <td className="px-4 py-3 whitespace-nowrap">
                                                     <div className="w-full bg-gray-200 rounded-full h-2.5">
-                                                        <div className="bg-green-600 h-2.5 rounded-full transition-all duration-500" style={{ width: '75%' }}></div>
+                                                        <div className="bg-green-600 h-2.5 rounded-full" style={{ width: '75%' }}></div>
                                                     </div>
                                                 </td>
                                                 <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-500">30/day</td>

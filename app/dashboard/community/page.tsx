@@ -457,10 +457,10 @@ export default function CommunityPage() {
             post._id === postId
                 ? {
                     ...post,
-                    likes: post.likes.includes(session.user.id)
+                    likes: post.likes.includes(session.user.id || '')
                         ? post.likes.filter(id => id !== session.user.id)
                         : [...post.likes, session.user.id],
-                    likeCount: post.likes.includes(session.user.id)
+                    likeCount: post.likes.includes(session.user.id || '')
                         ? post.likeCount - 1
                         : post.likeCount + 1
                 }
@@ -534,7 +534,17 @@ export default function CommunityPage() {
     const handleImageSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
         const files = event.target.files;
         if (files) {
-            const imageUrls = Array.from(files).map(file => URL.createObjectURL(file));
+            const validFiles = Array.from(files).filter(file => {
+                const isValid = file.type.startsWith('image/');
+                const isWithinSize = file.size <= 10 * 1024 * 1024; // 10MB
+                return isValid && isWithinSize;
+            });
+
+            if (validFiles.length !== files.length) {
+                toast.error('Some files were skipped. Please upload images under 10MB.');
+            }
+
+            const imageUrls = validFiles.map(file => URL.createObjectURL(file));
             setSelectedImages(prev => [...prev, ...imageUrls]);
         }
     };
@@ -602,22 +612,20 @@ export default function CommunityPage() {
         const post = posts.find(p => p._id === postId);
         if (!post) return;
 
-        const title = post.title ?? 'Health Community Post';
-        const content = post.content ?? 'Check out this post from the Health Community!';
         const url = `${window.location.origin}/community/post/${postId}`;
-
-        const shareData: ShareData = {
-            title,
-            text: content,
-            url
-        };
+        const title = post.title || 'Health Community Post';
+        const text = post.content || 'Check out this post from the Health Community!';
 
         if (navigator.share) {
-            navigator.share(shareData)
+            navigator.share({
+                title,
+                text,
+                url
+            } as ShareData)
                 .then(() => toast.success('Post shared successfully!'))
                 .catch(() => toast.error('Failed to share post'));
         } else {
-            navigator.clipboard.writeText(shareData.url)
+            navigator.clipboard.writeText(url)
                 .then(() => toast.success('Link copied to clipboard!'))
                 .catch(() => toast.error('Failed to copy link'));
         }
@@ -625,9 +633,9 @@ export default function CommunityPage() {
 
     return (
         <ClientOnly>
-            <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-white to-purple-50">
+            <div className="flex flex-col min-h-screen h-screen overflow-y-auto">
                 {/* Hero Section */}
-                <div className="relative overflow-hidden bg-gradient-to-r from-indigo-600 to-purple-600 text-white">
+                <div className="relative bg-gradient-to-r from-indigo-600 to-purple-600 text-white flex-shrink-0">
                     <div className="absolute inset-0">
                         <div className="absolute inset-0 bg-gradient-to-r from-indigo-600 to-purple-600 opacity-90"></div>
                         {isLoadingHeroImage ? (
@@ -695,382 +703,393 @@ export default function CommunityPage() {
                     </div>
                 </div>
 
-                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-                    <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
-                        {/* Main Content */}
-                        <div className="lg:col-span-3 space-y-8">
-                            {/* Section Tabs */}
-                            <motion.div
-                                initial={{ opacity: 0, y: 20 }}
-                                animate={{ opacity: 1, y: 0 }}
-                                transition={{ duration: 0.5 }}
-                                className="bg-white rounded-xl shadow-sm p-4"
-                            >
-                                <div className="flex space-x-4 overflow-x-auto">
-                                    {sections.map(({ id, label, icon: Icon }) => (
-                                        <motion.button
-                                            key={id}
-                                            whileHover={{ scale: 1.05 }}
-                                            whileTap={{ scale: 0.95 }}
-                                            onClick={() => setActiveSection(id as CommunitySection)}
-                                            className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-all ${activeSection === id
-                                                ? 'bg-indigo-50 text-indigo-600'
-                                                : 'text-gray-600 hover:bg-gray-50'
-                                                }`}
+                <div className="flex-1 bg-gradient-to-br from-indigo-50 via-white to-purple-50">
+                    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 relative">
+                        <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
+                            {/* Main Content */}
+                            <div className="lg:col-span-3 space-y-8">
+                                {/* Section Tabs */}
+                                <motion.div
+                                    initial={{ opacity: 0, y: 20 }}
+                                    animate={{ opacity: 1, y: 0 }}
+                                    transition={{ duration: 0.5 }}
+                                    className="bg-white rounded-xl shadow-sm p-4"
+                                >
+                                    <div className="flex space-x-4 overflow-x-auto">
+                                        {sections.map(({ id, label, icon: Icon }) => (
+                                            <motion.button
+                                                key={id}
+                                                whileHover={{ scale: 1.05 }}
+                                                whileTap={{ scale: 0.95 }}
+                                                onClick={() => setActiveSection(id as CommunitySection)}
+                                                className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-all ${activeSection === id
+                                                    ? 'bg-indigo-50 text-indigo-600'
+                                                    : 'text-gray-600 hover:bg-gray-50'
+                                                    }`}
+                                            >
+                                                <Icon className="w-5 h-5" />
+                                                <span>{label}</span>
+                                            </motion.button>
+                                        ))}
+                                    </div>
+                                </motion.div>
+
+                                {/* Posts */}
+                                <div className="space-y-6">
+                                    {filteredBySearch.map((post, index) => (
+                                        <motion.div
+                                            key={post._id}
+                                            initial={{ opacity: 0, y: 20 }}
+                                            animate={{ opacity: 1, y: 0 }}
+                                            exit={{ opacity: 0, y: -20 }}
+                                            transition={{ duration: 0.3, delay: index * 0.1 }}
+                                            className="bg-white rounded-xl shadow-sm overflow-hidden hover:shadow-md transition-shadow"
                                         >
-                                            <Icon className="w-5 h-5" />
-                                            <span>{label}</span>
-                                        </motion.button>
+                                            <div className="p-6">
+                                                <div className="flex items-start gap-4">
+                                                    <div className="relative">
+                                                        {post.author.icon}
+                                                        <div className="absolute -bottom-1 -right-1 w-4 h-4 bg-green-400 rounded-full border-2 border-white"></div>
+                                                    </div>
+                                                    <div className="flex-1">
+                                                        <div className="flex items-center justify-between">
+                                                            <div>
+                                                                <h3 className="font-semibold text-gray-900">{post.author.name}</h3>
+                                                                <p className="text-sm text-gray-500">{post.author.bio}</p>
+                                                            </div>
+                                                            <span className="text-sm text-gray-500">{post.createdAt}</span>
+                                                        </div>
+                                                        <h4 className="mt-3 text-lg font-medium text-gray-900">{post.title}</h4>
+                                                        <p className="mt-2 text-gray-700">{post.content}</p>
+                                                        {post.images.length > 0 && (
+                                                            <div className="mt-4 rounded-lg overflow-hidden">
+                                                                {isLoadingImages ? (
+                                                                    <div className="w-full h-64 bg-gray-200 animate-pulse flex items-center justify-center">
+                                                                        <PhotoIcon className="w-12 h-12 text-gray-400" />
+                                                                    </div>
+                                                                ) : (
+                                                                    <img
+                                                                        src={post.images[0]}
+                                                                        alt="Post content"
+                                                                        className="w-full h-64 object-cover hover:scale-105 transition-transform duration-300"
+                                                                    />
+                                                                )}
+                                                            </div>
+                                                        )}
+                                                        <div className="mt-4 flex flex-wrap gap-2">
+                                                            {post.author.bio?.split(' ').map((word) => (
+                                                                <span
+                                                                    key={word}
+                                                                    className="px-3 py-1 bg-indigo-50 text-indigo-600 rounded-full text-sm"
+                                                                >
+                                                                    #{word}
+                                                                </span>
+                                                            ))}
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div className="border-t border-gray-100">
+                                                <div className="flex items-center justify-between px-6 py-4">
+                                                    <div className="flex items-center gap-6">
+                                                        <motion.button
+                                                            whileHover={{ scale: 1.1 }}
+                                                            whileTap={{ scale: 0.9 }}
+                                                            onClick={() => handleLike(post._id)}
+                                                            className={`flex items-center gap-2 ${post.likes.includes(session?.user?.id || '')
+                                                                ? 'text-red-500'
+                                                                : 'text-gray-500 hover:text-indigo-600'
+                                                                }`}
+                                                        >
+                                                            <Heart className={`w-5 h-5 ${post.likes.includes(session?.user?.id || '')
+                                                                ? 'fill-current'
+                                                                : ''
+                                                                }`} />
+                                                            <span>{post.likeCount}</span>
+                                                        </motion.button>
+                                                        <motion.button
+                                                            whileHover={{ scale: 1.1 }}
+                                                            whileTap={{ scale: 0.9 }}
+                                                            className="flex items-center gap-2 text-gray-500 hover:text-indigo-600"
+                                                        >
+                                                            <MessageSquare className="w-5 h-5" />
+                                                            <span>{post.commentCount}</span>
+                                                        </motion.button>
+                                                        <motion.button
+                                                            whileHover={{ scale: 1.1 }}
+                                                            whileTap={{ scale: 0.9 }}
+                                                            className="flex items-center gap-2 text-gray-500 hover:text-indigo-600"
+                                                        >
+                                                            <Share2 className="w-5 h-5" />
+                                                            <span>{post.images.length}</span>
+                                                        </motion.button>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </motion.div>
                                     ))}
                                 </div>
-                            </motion.div>
+                            </div>
 
-                            {/* Posts */}
+                            {/* Sidebar */}
                             <div className="space-y-6">
-                                {filteredBySearch.map((post, index) => (
-                                    <motion.div
-                                        key={post._id}
-                                        initial={{ opacity: 0, y: 20 }}
-                                        animate={{ opacity: 1, y: 0 }}
-                                        exit={{ opacity: 0, y: -20 }}
-                                        transition={{ duration: 0.3, delay: index * 0.1 }}
-                                        className="bg-white rounded-xl shadow-sm overflow-hidden hover:shadow-md transition-shadow"
-                                    >
-                                        <div className="p-6">
-                                            <div className="flex items-start gap-4">
-                                                <div className="relative">
-                                                    {post.author.icon}
-                                                    <div className="absolute -bottom-1 -right-1 w-4 h-4 bg-green-400 rounded-full border-2 border-white"></div>
+                                {/* Search */}
+                                <motion.div
+                                    initial={{ opacity: 0, x: 20 }}
+                                    animate={{ opacity: 1, x: 0 }}
+                                    transition={{ duration: 0.5, delay: 0.2 }}
+                                    className="bg-white rounded-xl shadow-sm p-4"
+                                >
+                                    <div className="relative">
+                                        <Search className="w-5 h-5 absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
+                                        <input
+                                            type="text"
+                                            placeholder="Search community..."
+                                            className="w-full pl-10 pr-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                                            value={searchQuery}
+                                            onChange={handleSearch}
+                                        />
+                                    </div>
+                                </motion.div>
+
+                                {/* Featured Communities */}
+                                <motion.div
+                                    initial={{ opacity: 0, x: 20 }}
+                                    animate={{ opacity: 1, x: 0 }}
+                                    transition={{ duration: 0.5, delay: 0.3 }}
+                                    className="bg-white rounded-xl shadow-sm p-6"
+                                >
+                                    <h2 className="text-xl font-semibold text-gray-900 mb-4">Featured Communities</h2>
+                                    <div className="space-y-4">
+                                        {communities.map((community) => (
+                                            <motion.div
+                                                key={community.id}
+                                                whileHover={{ scale: 1.02 }}
+                                                className="flex gap-4 p-3 rounded-lg hover:bg-gray-50 transition-colors"
+                                            >
+                                                <div className="p-3 bg-indigo-50 rounded-lg">
+                                                    {community.icon}
                                                 </div>
                                                 <div className="flex-1">
-                                                    <div className="flex items-center justify-between">
-                                                        <div>
-                                                            <h3 className="font-semibold text-gray-900">{post.author.name}</h3>
-                                                            <p className="text-sm text-gray-500">{post.author.bio}</p>
-                                                        </div>
-                                                        <span className="text-sm text-gray-500">{post.createdAt}</span>
-                                                    </div>
-                                                    <h4 className="mt-3 text-lg font-medium text-gray-900">{post.title}</h4>
-                                                    <p className="mt-2 text-gray-700">{post.content}</p>
-                                                    {post.images.length > 0 && (
-                                                        <div className="mt-4 rounded-lg overflow-hidden">
-                                                            {isLoadingImages ? (
-                                                                <div className="w-full h-64 bg-gray-200 animate-pulse flex items-center justify-center">
-                                                                    <PhotoIcon className="w-12 h-12 text-gray-400" />
-                                                                </div>
-                                                            ) : (
-                                                                <img
-                                                                    src={post.images[0]}
-                                                                    alt="Post content"
-                                                                    className="w-full h-64 object-cover hover:scale-105 transition-transform duration-300"
-                                                                />
-                                                            )}
-                                                        </div>
-                                                    )}
-                                                    <div className="mt-4 flex flex-wrap gap-2">
-                                                        {post.author.bio?.split(' ').map((word) => (
-                                                            <span
-                                                                key={word}
-                                                                className="px-3 py-1 bg-indigo-50 text-indigo-600 rounded-full text-sm"
-                                                            >
-                                                                #{word}
-                                                            </span>
-                                                        ))}
+                                                    <h3 className="font-medium text-gray-900">{community.name}</h3>
+                                                    <p className="text-sm text-gray-500 mt-1">{community.description}</p>
+                                                    <div className="mt-2 flex items-center justify-between">
+                                                        <span className="text-xs text-indigo-600 bg-indigo-50 px-2 py-1 rounded-full">
+                                                            {community.memberCount} members
+                                                        </span>
+                                                        <button
+                                                            onClick={() => handleJoinCommunity(community.id)}
+                                                            className={`text-sm px-3 py-1 rounded-full ${community.isJoined
+                                                                ? 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                                                                : 'bg-indigo-600 text-white hover:bg-indigo-700'
+                                                                }`}
+                                                        >
+                                                            {community.isJoined ? 'Joined' : 'Join'}
+                                                        </button>
                                                     </div>
                                                 </div>
-                                            </div>
-                                        </div>
-                                        <div className="border-t border-gray-100">
-                                            <div className="flex items-center justify-between px-6 py-4">
-                                                <div className="flex items-center gap-6">
-                                                    <motion.button
-                                                        whileHover={{ scale: 1.1 }}
-                                                        whileTap={{ scale: 0.9 }}
-                                                        onClick={() => handleLike(post._id)}
-                                                        className={`flex items-center gap-2 ${post.likes.includes(session?.user.id) ? 'text-red-500' : 'text-gray-500 hover:text-indigo-600'}`}
-                                                    >
-                                                        <Heart className={`w-5 h-5 ${post.likes.includes(session?.user.id) ? 'fill-current' : ''}`} />
-                                                        <span>{post.likeCount}</span>
-                                                    </motion.button>
-                                                    <motion.button
-                                                        whileHover={{ scale: 1.1 }}
-                                                        whileTap={{ scale: 0.9 }}
-                                                        className="flex items-center gap-2 text-gray-500 hover:text-indigo-600"
-                                                    >
-                                                        <MessageSquare className="w-5 h-5" />
-                                                        <span>{post.commentCount}</span>
-                                                    </motion.button>
-                                                    <motion.button
-                                                        whileHover={{ scale: 1.1 }}
-                                                        whileTap={{ scale: 0.9 }}
-                                                        className="flex items-center gap-2 text-gray-500 hover:text-indigo-600"
-                                                    >
-                                                        <Share2 className="w-5 h-5" />
-                                                        <span>{post.images.length}</span>
-                                                    </motion.button>
+                                            </motion.div>
+                                        ))}
+                                    </div>
+                                </motion.div>
+
+                                {/* Upcoming Events */}
+                                <motion.div
+                                    initial={{ opacity: 0, x: 20 }}
+                                    animate={{ opacity: 1, x: 0 }}
+                                    transition={{ duration: 0.5, delay: 0.4 }}
+                                    className="bg-white rounded-xl shadow-sm p-6"
+                                >
+                                    <h2 className="text-xl font-semibold text-gray-900 mb-4">Upcoming Events</h2>
+                                    <div className="space-y-4">
+                                        {onlineUsers.map((user) => (
+                                            <motion.div
+                                                key={user.id}
+                                                whileHover={{ scale: 1.02 }}
+                                                className="flex gap-4 p-3 rounded-lg hover:bg-gray-50 transition-colors"
+                                            >
+                                                <div className="relative">
+                                                    {user.icon}
+                                                    <div className={`absolute bottom-0 right-0 w-3 h-3 rounded-full border-2 border-white ${user.status === 'online' ? 'bg-green-400' :
+                                                        user.status === 'away' ? 'bg-yellow-400' : 'bg-red-400'
+                                                        }`}></div>
                                                 </div>
-                                            </div>
-                                        </div>
-                                    </motion.div>
-                                ))}
+                                                <div className="flex-1">
+                                                    <h3 className="font-medium text-gray-900">{user.name}</h3>
+                                                    <div className="mt-1 space-y-1">
+                                                        <div className="flex items-center gap-2 text-sm text-gray-500">
+                                                            <Calendar className="w-4 h-4" />
+                                                            <span>{user.lastActive}</span>
+                                                        </div>
+                                                    </div>
+                                                    <div className="mt-2 flex items-center justify-between">
+                                                        <span className={`text-xs px-2 py-1 rounded-full ${user.status === 'online' ? 'bg-green-50 text-green-600' :
+                                                            user.status === 'away' ? 'bg-yellow-50 text-yellow-600' : 'bg-red-50 text-red-600'
+                                                            }`}>
+                                                            {user.status === 'online' ? 'Online' : user.status === 'away' ? 'Away' : 'Busy'}
+                                                        </span>
+                                                        <button className="text-sm text-indigo-600 hover:text-indigo-700 font-medium">
+                                                            Join
+                                                        </button>
+                                                    </div>
+                                                </div>
+                                            </motion.div>
+                                        ))}
+                                    </div>
+                                </motion.div>
                             </div>
-                        </div>
-
-                        {/* Sidebar */}
-                        <div className="space-y-6">
-                            {/* Search */}
-                            <motion.div
-                                initial={{ opacity: 0, x: 20 }}
-                                animate={{ opacity: 1, x: 0 }}
-                                transition={{ duration: 0.5, delay: 0.2 }}
-                                className="bg-white rounded-xl shadow-sm p-4"
-                            >
-                                <div className="relative">
-                                    <Search className="w-5 h-5 absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
-                                    <input
-                                        type="text"
-                                        placeholder="Search community..."
-                                        className="w-full pl-10 pr-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                                        value={searchQuery}
-                                        onChange={handleSearch}
-                                    />
-                                </div>
-                            </motion.div>
-
-                            {/* Featured Communities */}
-                            <motion.div
-                                initial={{ opacity: 0, x: 20 }}
-                                animate={{ opacity: 1, x: 0 }}
-                                transition={{ duration: 0.5, delay: 0.3 }}
-                                className="bg-white rounded-xl shadow-sm p-6"
-                            >
-                                <h2 className="text-xl font-semibold text-gray-900 mb-4">Featured Communities</h2>
-                                <div className="space-y-4">
-                                    {communities.map((community) => (
-                                        <motion.div
-                                            key={community.id}
-                                            whileHover={{ scale: 1.02 }}
-                                            className="flex gap-4 p-3 rounded-lg hover:bg-gray-50 transition-colors"
-                                        >
-                                            <div className="p-3 bg-indigo-50 rounded-lg">
-                                                {community.icon}
-                                            </div>
-                                            <div className="flex-1">
-                                                <h3 className="font-medium text-gray-900">{community.name}</h3>
-                                                <p className="text-sm text-gray-500 mt-1">{community.description}</p>
-                                                <div className="mt-2 flex items-center justify-between">
-                                                    <span className="text-xs text-indigo-600 bg-indigo-50 px-2 py-1 rounded-full">
-                                                        {community.memberCount} members
-                                                    </span>
-                                                    <button
-                                                        onClick={() => handleJoinCommunity(community.id)}
-                                                        className={`text-sm px-3 py-1 rounded-full ${community.isJoined
-                                                            ? 'bg-gray-100 text-gray-600 hover:bg-gray-200'
-                                                            : 'bg-indigo-600 text-white hover:bg-indigo-700'
-                                                            }`}
-                                                    >
-                                                        {community.isJoined ? 'Joined' : 'Join'}
-                                                    </button>
-                                                </div>
-                                            </div>
-                                        </motion.div>
-                                    ))}
-                                </div>
-                            </motion.div>
-
-                            {/* Upcoming Events */}
-                            <motion.div
-                                initial={{ opacity: 0, x: 20 }}
-                                animate={{ opacity: 1, x: 0 }}
-                                transition={{ duration: 0.5, delay: 0.4 }}
-                                className="bg-white rounded-xl shadow-sm p-6"
-                            >
-                                <h2 className="text-xl font-semibold text-gray-900 mb-4">Upcoming Events</h2>
-                                <div className="space-y-4">
-                                    {onlineUsers.map((user) => (
-                                        <motion.div
-                                            key={user.id}
-                                            whileHover={{ scale: 1.02 }}
-                                            className="flex gap-4 p-3 rounded-lg hover:bg-gray-50 transition-colors"
-                                        >
-                                            <div className="relative">
-                                                {user.icon}
-                                                <div className={`absolute bottom-0 right-0 w-3 h-3 rounded-full border-2 border-white ${user.status === 'online' ? 'bg-green-400' :
-                                                    user.status === 'away' ? 'bg-yellow-400' : 'bg-red-400'
-                                                    }`}></div>
-                                            </div>
-                                            <div className="flex-1">
-                                                <h3 className="font-medium text-gray-900">{user.name}</h3>
-                                                <div className="mt-1 space-y-1">
-                                                    <div className="flex items-center gap-2 text-sm text-gray-500">
-                                                        <Calendar className="w-4 h-4" />
-                                                        <span>{user.lastActive}</span>
-                                                    </div>
-                                                </div>
-                                                <div className="mt-2 flex items-center justify-between">
-                                                    <span className={`text-xs px-2 py-1 rounded-full ${user.status === 'online' ? 'bg-green-50 text-green-600' :
-                                                        user.status === 'away' ? 'bg-yellow-50 text-yellow-600' : 'bg-red-50 text-red-600'
-                                                        }`}>
-                                                        {user.status === 'online' ? 'Online' : user.status === 'away' ? 'Away' : 'Busy'}
-                                                    </span>
-                                                    <button className="text-sm text-indigo-600 hover:text-indigo-700 font-medium">
-                                                        Join
-                                                    </button>
-                                                </div>
-                                            </div>
-                                        </motion.div>
-                                    ))}
-                                </div>
-                            </motion.div>
                         </div>
                     </div>
                 </div>
 
-                {/* Create Post Button */}
-                <button
-                    onClick={() => setShowCreatePost(true)}
-                    className="fixed bottom-6 right-6 bg-blue-600 text-white rounded-full p-4 shadow-lg hover:bg-blue-700 transition-colors"
-                >
-                    <PlusIcon className="w-6 h-6" />
-                </button>
-
                 {/* Create Post Modal */}
                 <AnimatePresence>
                     {showCreatePost && (
-                        <motion.div
-                            initial={{ opacity: 0 }}
-                            animate={{ opacity: 1 }}
-                            exit={{ opacity: 0 }}
-                            className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4"
-                        >
-                            <motion.div
-                                initial={{ scale: 0.95 }}
-                                animate={{ scale: 1 }}
-                                exit={{ scale: 0.95 }}
-                                className="bg-white rounded-lg shadow-xl w-full max-w-2xl p-6"
-                            >
-                                <div className="flex justify-between items-center mb-6">
-                                    <h2 className="text-2xl font-bold">Create Post</h2>
-                                    <button
-                                        onClick={() => setShowCreatePost(false)}
-                                        className="text-gray-500 hover:text-gray-700"
-                                    >
-                                        <XMarkIcon className="w-6 h-6" />
-                                    </button>
+                        <div className="fixed inset-0 z-50 overflow-y-auto">
+                            <div className="flex items-center justify-center min-h-screen px-4 pt-4 pb-20 text-center sm:p-0">
+                                <div className="fixed inset-0 transition-opacity" aria-hidden="true">
+                                    <div className="absolute inset-0 bg-gray-500 opacity-75"></div>
                                 </div>
 
-                                <form onSubmit={handleSubmit(onSubmitPost)} className="space-y-6">
-                                    <div>
-                                        <label className="block text-sm font-medium text-gray-700 mb-1">
-                                            Title
-                                        </label>
-                                        <input
-                                            {...register('title', { required: 'Title is required' })}
-                                            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                                            placeholder="Enter post title"
-                                        />
-                                        {errors.title && (
-                                            <p className="text-red-500 text-sm mt-1">{errors.title.message}</p>
-                                        )}
-                                    </div>
-
-                                    <div>
-                                        <label className="block text-sm font-medium text-gray-700 mb-1">
-                                            Content
-                                        </label>
-                                        <textarea
-                                            {...register('content', { required: 'Content is required' })}
-                                            rows={5}
-                                            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                                            placeholder="Write your post content..."
-                                        />
-                                        {errors.content && (
-                                            <p className="text-red-500 text-sm mt-1">{errors.content.message}</p>
-                                        )}
-                                    </div>
-
-                                    <div>
-                                        <label className="block text-sm font-medium text-gray-700 mb-1">
-                                            Category
-                                        </label>
-                                        <select
-                                            {...register('category', { required: 'Category is required' })}
-                                            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                                        >
-                                            <option value="general">General</option>
-                                            <option value="progress">Progress</option>
-                                            <option value="meal">Meal</option>
-                                            <option value="workout">Workout</option>
-                                        </select>
-                                    </div>
-
-                                    <div>
-                                        <label className="block text-sm font-medium text-gray-700 mb-1">
-                                            Tags (comma separated)
-                                        </label>
-                                        <input
-                                            {...register('tags')}
-                                            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                                            placeholder="fitness, health, workout"
-                                        />
-                                    </div>
-
-                                    <div>
-                                        <label className="block text-sm font-medium text-gray-700 mb-1">
-                                            Images
-                                        </label>
-                                        <input
-                                            type="file"
-                                            multiple
-                                            accept="image/*"
-                                            {...register('images')}
-                                            onChange={handleImageSelect}
-                                            className="w-full"
-                                        />
-                                        <div className="mt-2 flex flex-wrap gap-2">
-                                            {selectedImages.map((url, index) => (
-                                                <div key={index} className="relative">
-                                                    <Image
-                                                        src={url}
-                                                        alt={`Selected image ${index + 1}`}
-                                                        width={100}
-                                                        height={100}
-                                                        className="rounded-lg object-cover"
-                                                    />
-                                                    <button
-                                                        type="button"
-                                                        onClick={() => removeImage(index)}
-                                                        className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-1"
-                                                    >
-                                                        <XMarkIcon className="w-4 h-4" />
-                                                    </button>
-                                                </div>
-                                            ))}
-                                        </div>
-                                    </div>
-
-                                    <div className="flex justify-end gap-4">
+                                <motion.div
+                                    initial={{ opacity: 0, scale: 0.95 }}
+                                    animate={{ opacity: 1, scale: 1 }}
+                                    exit={{ opacity: 0, scale: 0.95 }}
+                                    className="inline-block w-full max-w-2xl p-6 my-8 overflow-hidden text-left align-middle transition-all transform bg-white shadow-xl rounded-lg relative"
+                                >
+                                    <div className="flex justify-between items-center mb-6">
+                                        <h2 className="text-2xl font-bold text-gray-900">Create Post</h2>
                                         <button
-                                            type="button"
                                             onClick={() => setShowCreatePost(false)}
-                                            className="px-4 py-2 text-gray-700 hover:text-gray-900"
+                                            className="text-gray-500 hover:text-gray-700 transition-colors"
                                         >
-                                            Cancel
-                                        </button>
-                                        <button
-                                            type="submit"
-                                            disabled={isSubmitting}
-                                            className={`px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors ${isSubmitting ? 'opacity-50 cursor-not-allowed' : ''
-                                                }`}
-                                        >
-                                            {isSubmitting ? 'Creating...' : 'Create Post'}
+                                            <XMarkIcon className="w-6 h-6" />
                                         </button>
                                     </div>
-                                </form>
-                            </motion.div>
-                        </motion.div>
+
+                                    <form onSubmit={handleSubmit(onSubmitPost)} className="space-y-6">
+                                        <div>
+                                            <label className="block text-sm font-medium text-gray-700 mb-1">
+                                                Title
+                                            </label>
+                                            <input
+                                                {...register('title', { required: 'Title is required' })}
+                                                type="text"
+                                                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                                placeholder="Enter post title"
+                                            />
+                                            {errors.title && (
+                                                <p className="mt-1 text-sm text-red-600">{errors.title.message}</p>
+                                            )}
+                                        </div>
+
+                                        <div>
+                                            <label className="block text-sm font-medium text-gray-700 mb-1">
+                                                Content
+                                            </label>
+                                            <textarea
+                                                {...register('content', { required: 'Content is required' })}
+                                                rows={5}
+                                                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                                placeholder="Write your post content..."
+                                            />
+                                            {errors.content && (
+                                                <p className="mt-1 text-sm text-red-600">{errors.content.message}</p>
+                                            )}
+                                        </div>
+
+                                        <div>
+                                            <label className="block text-sm font-medium text-gray-700 mb-1">
+                                                Category
+                                            </label>
+                                            <select
+                                                {...register('category')}
+                                                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                                defaultValue="general"
+                                            >
+                                                <option value="general">General</option>
+                                                <option value="progress">Progress</option>
+                                                <option value="meal">Meal</option>
+                                                <option value="workout">Workout</option>
+                                            </select>
+                                        </div>
+
+                                        <div>
+                                            <label className="block text-sm font-medium text-gray-700 mb-1">
+                                                Tags (comma separated)
+                                            </label>
+                                            <input
+                                                {...register('tags')}
+                                                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                                placeholder="fitness, health, workout"
+                                            />
+                                        </div>
+
+                                        <div>
+                                            <label className="block text-sm font-medium text-gray-700 mb-1">
+                                                Images
+                                            </label>
+                                            <input
+                                                type="file"
+                                                multiple
+                                                accept="image/*"
+                                                {...register('images')}
+                                                onChange={handleImageSelect}
+                                                className="w-full"
+                                            />
+                                            <div className="mt-2 flex flex-wrap gap-2">
+                                                {selectedImages.map((url, index) => (
+                                                    <div key={index} className="relative">
+                                                        <Image
+                                                            src={url}
+                                                            alt={`Selected image ${index + 1}`}
+                                                            width={100}
+                                                            height={100}
+                                                            className="rounded-lg object-cover"
+                                                        />
+                                                        <button
+                                                            type="button"
+                                                            onClick={() => removeImage(index)}
+                                                            className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-1"
+                                                        >
+                                                            <XMarkIcon className="w-4 h-4" />
+                                                        </button>
+                                                    </div>
+                                                ))}
+                                            </div>
+                                        </div>
+
+                                        <div className="flex justify-end gap-4">
+                                            <button
+                                                type="button"
+                                                onClick={() => setShowCreatePost(false)}
+                                                className="px-4 py-2 text-gray-700 hover:text-gray-900"
+                                            >
+                                                Cancel
+                                            </button>
+                                            <button
+                                                type="submit"
+                                                disabled={isSubmitting}
+                                                className={`px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors ${isSubmitting ? 'opacity-50 cursor-not-allowed' : ''
+                                                    }`}
+                                            >
+                                                {isSubmitting ? 'Creating...' : 'Create Post'}
+                                            </button>
+                                        </div>
+                                    </form>
+                                </motion.div>
+                            </div>
+                        </div>
                     )}
                 </AnimatePresence>
+
+                {/* Create Post Button */}
+                <button
+                    onClick={() => setShowCreatePost(true)}
+                    className="fixed bottom-6 right-6 bg-blue-600 text-white rounded-full p-4 shadow-lg hover:bg-blue-700 transition-colors z-40"
+                >
+                    <PlusIcon className="w-6 h-6" />
+                </button>
             </div>
         </ClientOnly>
     );

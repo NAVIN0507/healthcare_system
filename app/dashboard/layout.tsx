@@ -131,7 +131,7 @@ export default function DashboardLayout({
     };
 
     return (
-        <div className="flex h-screen bg-transparent relative overflow-hidden">
+        <div className="flex h-screen bg-transparent">
             {/* Sidebar Toggle Button (Mobile) */}
             <div className="fixed top-4 left-4 z-50 md:hidden">
                 <button
@@ -148,7 +148,7 @@ export default function DashboardLayout({
 
             {/* Sidebar */}
             <div className={`fixed inset-y-0 left-0 z-40 w-64 transform transition-transform duration-200 ease-in-out ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full'
-                } md:translate-x-0`}>
+                } md:translate-x-0 flex-shrink-0`}>
                 <div className="h-full bg-white border-r border-gray-200">
                     <div className="flex flex-col h-full">
                         {/* Logo */}
@@ -212,8 +212,8 @@ export default function DashboardLayout({
             </div>
 
             {/* Main Content */}
-            <div className={`flex-1 ${isSidebarOpen ? 'md:ml-64' : ''}`}>
-                <main className="p-6">
+            <div className="flex-1 flex flex-col md:pl-64">
+                <main className="flex-1 overflow-y-auto">
                     {children}
                 </main>
             </div>

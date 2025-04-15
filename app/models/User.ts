@@ -2,17 +2,11 @@ import mongoose from 'mongoose';
 import bcrypt from 'bcryptjs';
 
 const userSchema = new mongoose.Schema({
-    firstName: {
+    name: {
         type: String,
-        required: [true, 'First name is required'],
+        required: [true, 'Name is required'],
         trim: true,
-        minlength: [2, 'First name must be at least 2 characters long']
-    },
-    lastName: {
-        type: String,
-        required: [true, 'Last name is required'],
-        trim: true,
-        minlength: [2, 'Last name must be at least 2 characters long']
+        maxlength: [50, 'Name cannot exceed 50 characters']
     },
     email: {
         type: String,
@@ -20,94 +14,67 @@ const userSchema = new mongoose.Schema({
         unique: true,
         trim: true,
         lowercase: true,
-        match: [/^\w+([.-]?\w+)*@\w+([.-]?\w+)*(\.\w{2,3})+$/, 'Please enter a valid email address']
+        match: [/^\S+@\S+\.\S+$/, 'Please enter a valid email']
     },
     password: {
         type: String,
         required: [true, 'Password is required'],
-        minlength: [8, 'Password must be at least 8 characters long'],
-        select: false // Don't return password in queries by default
+        minlength: [6, 'Password must be at least 6 characters']
     },
-
-    // Health Information
-    gender: {
+    image: {
         type: String,
-        enum: ['male', 'female', 'other'],
-        required: [true, 'Gender is required']
+        default: ''
     },
-    dateOfBirth: {
-        type: Date,
-        required: [true, 'Date of birth is required']
-    },
-    height: {
-        type: Number,
-        required: [true, 'Height is required'],
-        min: [50, 'Height must be at least 50cm'],
-        max: [250, 'Height must not exceed 250cm']
-    },
-    weight: {
-        type: Number,
-        required: [true, 'Weight is required'],
-        min: [20, 'Weight must be at least 20kg'],
-        max: [300, 'Weight must not exceed 300kg']
-    },
-    bloodType: {
+    role: {
         type: String,
-        enum: ['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-'],
-        required: [true, 'Blood type is required']
+        enum: ['user', 'admin'],
+        default: 'user'
     },
-    pastMedicalIssues: {
+    bio: {
         type: String,
-        trim: true,
-        maxlength: [20, 'Past medical issues cannot exceed 1000 characters']
+        maxlength: [200, 'Bio cannot exceed 200 characters'],
+        default: ''
     },
-    allergies: {
+    goals: [{
         type: String,
-        trim: true,
-        maxlength: [20, 'Allergies cannot exceed 1000 characters']
-    },
-    currentHealthIssues: {
-        type: String,
-        trim: true,
-        maxlength: [20, 'Current health issues cannot exceed 1000 characters']
-    },
-    // Account Status
-    isActive: {
-        type: Boolean,
-        default: true
-    },
-    isEmailVerified: {
-        type: Boolean,
-        default: false
-    },
-    // Timestamps
-    createdAt: {
-        type: Date,
-        default: Date.now
-    },
-    updatedAt: {
-        type: Date,
-        default: Date.now
+        trim: true
+    }],
+    preferences: {
+        notifications: {
+            type: Boolean,
+            default: true
+        },
+        emailUpdates: {
+            type: Boolean,
+            default: true
+        },
+        theme: {
+            type: String,
+            enum: ['light', 'dark'],
+            default: 'light'
+        }
     }
 }, {
-    timestamps: true // Automatically manage createdAt and updatedAt
+    timestamps: true
 });
 
 // Hash password before saving
 userSchema.pre('save', async function (next) {
-    if (!this.isModified('password')) return next();
+    if (!this.isModified('password')) {
+        return next();
+    }
 
     try {
         const salt = await bcrypt.genSalt(10);
         this.password = await bcrypt.hash(this.password, salt);
         next();
-    } catch (error: any) {
-        next(error);
+    } catch (error) {
+        next(error as Error);
     }
 });
 
 // Method to compare password
-userSchema.methods.comparePassword = async function (candidatePassword: string): Promise<boolean> {
+userSchema.methods.comparePassword = async function (candidatePassword: string) {
     try {
         return await bcrypt.compare(candidatePassword, this.password);
     } catch (error) {
@@ -115,7 +82,6 @@ userSchema.methods.comparePassword = async function (candidatePassword: string):
     }
 };
 
-// Create and export the model
 const User = mongoose.models.User || mongoose.model('User', userSchema);
 
 export default User; 

@@ -44,7 +44,7 @@ import {
     TrophyIcon as TrophySolidIcon,
     StarIcon as StarSolidIcon
 } from '@heroicons/react/24/solid';
-import AIAssistant from '@/components/AIAssistant';
+import AIAssistant from '@/app/components/AIAssistant';
 
 const navigation = [
     { name: 'Dashboard', href: '/dashboard', icon: HomeIcon, activeIcon: HomeSolidIcon },
@@ -53,8 +53,7 @@ const navigation = [
     { name: 'Goals', href: '/dashboard/goals', icon: TrophyIcon, activeIcon: TrophySolidIcon },
     { name: 'Fitness', href: '/dashboard/fitness', icon: FireIcon, activeIcon: FireSolidIcon },
     { name: 'Meal Prep', href: '/dashboard/meal-prep', icon: HeartIcon, activeIcon: HeartSolidIcon },
-    { name: 'Workouts', href: '/dashboard/workouts', icon: BoltIcon, activeIcon: BoltSolidIcon },
-    { name: 'Settings', href: '/dashboard/settings', icon: Cog6ToothIcon, activeIcon: Cog6ToothSolidIcon },
+    { name: 'Workouts', href: '/dashboard/workouts', icon: BoltIcon, activeIcon: BoltSolidIcon }
 ];
 
 export default function DashboardLayout({
@@ -132,245 +131,89 @@ export default function DashboardLayout({
     };
 
     return (
-        <div className="flex h-screen bg-transparent ml-10 pt-10 relative overflow-hidden">
+        <div className="flex h-screen bg-transparent relative overflow-hidden">
             {/* Sidebar Toggle Button (Mobile) */}
             <div className="fixed top-4 left-4 z-50 md:hidden">
-                <motion.button
-                    whileHover={{ scale: 1.05 }}
-                    whileTap={{ scale: 0.95 }}
+                <button
                     onClick={toggleSidebar}
-                    className="p-2 rounded-full bg-white text-black shadow-lg backdrop-blur-sm"
+                    className="p-2 rounded-lg bg-white text-gray-700 shadow-sm"
                 >
                     {isSidebarOpen ? (
-                        <XMarkIcon className="h-6 w-6" />
+                        <XMarkIcon className="h-5 w-5" />
                     ) : (
-                        <Bars3Icon className="h-6 w-6" />
+                        <Bars3Icon className="h-5 w-5" />
                     )}
-                </motion.button>
+                </button>
             </div>
 
             {/* Sidebar */}
-            <AnimatePresence>
-                {isSidebarOpen && (
-                    <motion.div
-                        initial={{ x: -300, opacity: 0 }}
-                        animate={{ x: 0, opacity: 1 }}
-                        exit={{ x: -300, opacity: 0 }}
-                        transition={{ type: "spring", stiffness: 300, damping: 30 }}
-                        className="fixed inset-y-0 left-0 z-40 w-72 overflow-y-auto"
-                        style={{
-                            background: 'linear-gradient(135deg, rgba(0, 0, 0, 0.95) 0%, rgba(17, 24, 39, 0.95) 100%)',
-                            backdropFilter: 'blur(10px)',
-                            boxShadow: '0 4px 30px rgba(0, 0, 0, 0.1)',
-                            borderRight: '1px solid rgba(255, 255, 255, 0.1)',
-                        }}
-                    >
-                        <div className="flex flex-col h-full">
-                            {/* Logo and Toggle */}
-                            <div className="flex items-center justify-between p-6 border-b border-gray-700/50">
-                                <div className="flex items-center space-x-3">
-                                    <motion.div
-                                        className="p-2 bg-white rounded-xl shadow-lg relative overflow-hidden"
-                                        whileHover={{ rotate: 15, scale: 1.1 }}
-                                        transition={{ type: "spring", stiffness: 400, damping: 10 }}
-                                    >
-                                        <motion.div
-                                            className="absolute inset-0 bg-gradient-to-r from-white to-gray-200"
-                                            animate={{
-                                                backgroundPosition: ['0% 0%', '100% 100%'],
-                                            }}
-                                            transition={{
-                                                duration: 3,
-                                                repeat: Infinity,
-                                                repeatType: "reverse",
-                                            }}
-                                            style={{
-                                                backgroundSize: '200% 200%',
-                                            }}
-                                        />
-                                        <SparklesIcon className="h-7 w-7 text-black relative z-10" />
-                                    </motion.div>
-                                    <span className="text-2xl font-bold text-white tracking-tight">HealthCare</span>
-                                </div>
-                                <motion.button
-                                    whileHover={{ scale: 1.1 }}
-                                    whileTap={{ scale: 0.9 }}
-                                    onClick={toggleSidebar}
-                                    className="p-2 rounded-full hover:bg-white/10 transition-colors"
-                                >
-                                    <ChevronLeftIcon className="h-5 w-5 text-white" />
-                                </motion.button>
+            <div className={`fixed inset-y-0 left-0 z-40 w-64 transform transition-transform duration-200 ease-in-out ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full'
+                } md:translate-x-0`}>
+                <div className="h-full bg-white border-r border-gray-200">
+                    <div className="flex flex-col h-full">
+                        {/* Logo */}
+                        <div className="px-6 py-5 border-b border-gray-200">
+                            <div className="flex items-center">
+                                <SparklesIcon className="h-6 w-6 text-primary-600" />
+                                <span className="ml-3 text-lg font-semibold text-gray-900">HealthCare</span>
                             </div>
+                        </div>
 
-                            {/* User Profile */}
-                            <div className="p-6 border-b border-gray-700/50">
-                                <div className="flex items-center space-x-4">
-                                    <div className="relative">
-                                        {userData?.avatar ? (
-                                            <img
-                                                src={userData.avatar}
-                                                alt={userName}
-                                                className="w-14 h-14 rounded-xl object-cover shadow-lg"
-                                            />
-                                        ) : (
-                                            <motion.div
-                                                className="w-14 h-14 rounded-xl bg-white flex items-center justify-center shadow-lg relative overflow-hidden"
-                                                whileHover={{ scale: 1.05 }}
-                                            >
-                                                <motion.div
-                                                    className="absolute inset-0 bg-gradient-to-r from-white to-gray-200"
-                                                    animate={{
-                                                        backgroundPosition: ['0% 0%', '100% 100%'],
-                                                    }}
-                                                    transition={{
-                                                        duration: 3,
-                                                        repeat: Infinity,
-                                                        repeatType: "reverse",
-                                                    }}
-                                                    style={{
-                                                        backgroundSize: '200% 200%',
-                                                    }}
-                                                />
-                                                <UserIcon className="h-7 w-7 text-black relative z-10" />
-                                            </motion.div>
-                                        )}
-                                        <motion.div
-                                            className="absolute bottom-0 right-0 w-3.5 h-3.5 bg-white rounded-full border-2 border-gray-800 shadow-lg"
-                                            animate={{
-                                                boxShadow: ['0 0 0 rgba(255,255,255,0)', '0 0 10px rgba(255,255,255,0.8)', '0 0 0 rgba(255,255,255,0)'],
-                                            }}
-                                            transition={{
-                                                duration: 2,
-                                                repeat: Infinity,
-                                                repeatType: "reverse",
-                                            }}
-                                        />
-                                    </div>
-                                    <div>
-                                        {isLoading ? (
-                                            <div className="h-6 w-36 bg-gray-700/50 rounded-lg animate-pulse"></div>
-                                        ) : (
-                                            <h3 className="text-lg font-semibold text-white">{userName}</h3>
-                                        )}
-                                        <p className="text-sm text-white font-medium">{userStatus}</p>
-                                    </div>
+                        {/* User Profile */}
+                        <div className="px-6 py-4 border-b border-gray-200">
+                            <div className="flex items-center space-x-3">
+                                <div className="w-10 h-10 rounded-full bg-primary-100 flex items-center justify-center">
+                                    <UserIcon className="h-5 w-5 text-primary-600" />
+                                </div>
+                                <div>
+                                    <h3 className="text-sm font-medium text-gray-900">{userName}</h3>
+                                    <p className="text-xs text-gray-500">{userStatus}</p>
                                 </div>
                             </div>
+                        </div>
 
-                            {/* Navigation */}
-                            <nav className="flex-1 px-4 py-4 space-y-2">
+                        {/* Navigation */}
+                        <nav className="flex-1 px-3 py-4">
+                            <div className="space-y-1">
                                 {navigation.map((item) => {
                                     const isActive = pathname === item.href;
                                     const Icon = isActive ? item.activeIcon : item.icon;
 
                                     return (
                                         <Link key={item.name} href={item.href}>
-                                            <motion.div
-                                                whileHover={{ x: 5, backgroundColor: 'rgba(255, 255, 255, 0.1)' }}
-                                                whileTap={{ scale: 0.98 }}
-                                                className={`flex items-center px-4 py-3 rounded-xl transition-all duration-200 ${isActive
-                                                    ? 'bg-gradient-to-r from-white to-gray-100 text-black shadow-lg border border-white/20 relative overflow-hidden'
-                                                    : 'text-gray-300 hover:bg-white/10'
-                                                    }`}
-                                            >
-                                                {isActive && (
-                                                    <motion.div
-                                                        initial={{ opacity: 0 }}
-                                                        animate={{ opacity: 1 }}
-                                                        className="absolute inset-0 bg-gradient-to-r from-white/20 to-transparent"
-                                                        style={{ boxShadow: 'inset 0 0 10px rgba(255, 255, 255, 0.3)' }}
-                                                    />
-                                                )}
-                                                <Icon className={`h-5 w-5 mr-3 ${isActive ? 'text-black' : 'text-gray-400'
+                                            <div className={`group flex items-center px-3 py-2.5 text-sm font-medium rounded-lg transition-colors ${isActive
+                                                ? 'bg-primary-50 text-primary-700'
+                                                : 'text-gray-700 hover:bg-gray-50'
+                                                }`}>
+                                                <Icon className={`flex-shrink-0 h-5 w-5 mr-3 transition-colors ${isActive ? 'text-primary-600' : 'text-gray-400 group-hover:text-gray-500'
                                                     }`} />
-                                                <span className={`font-medium ${isActive ? 'text-black' : 'text-gray-300'
-                                                    }`}>
-                                                    {item.name}
-                                                </span>
-                                                {isActive && (
-                                                    <motion.div
-                                                        layoutId="activeIndicator"
-                                                        className="ml-auto w-2 h-2 rounded-full bg-black"
-                                                        animate={{
-                                                            scale: [1, 1.2, 1],
-                                                            boxShadow: ['0 0 0 rgba(0,0,0,0)', '0 0 5px rgba(0,0,0,0.5)', '0 0 0 rgba(0,0,0,0)']
-                                                        }}
-                                                        transition={{
-                                                            duration: 2,
-                                                            repeat: Infinity,
-                                                            ease: "easeInOut"
-                                                        }}
-                                                    />
-                                                )}
-                                            </motion.div>
+                                                {item.name}
+                                            </div>
                                         </Link>
                                     );
                                 })}
-                            </nav>
+                            </div>
+                        </nav>
 
-                            {/* Bottom Section */}
-                            <div className="p-6 border-t border-gray-700/50">
-                                <motion.div
-                                    className="bg-gray-800/50 rounded-xl p-4 backdrop-blur-sm relative overflow-hidden"
-                                    whileHover={{ scale: 1.02 }}
-                                    transition={{ type: "spring", stiffness: 400, damping: 10 }}
-                                >
-                                    <motion.div
-                                        className="absolute inset-0 bg-gradient-to-r from-white/5 to-transparent"
-                                        animate={{
-                                            x: ['-100%', '100%'],
-                                        }}
-                                        transition={{
-                                            duration: 3,
-                                            repeat: Infinity,
-                                            repeatType: "loop",
-                                        }}
-                                    />
-                                    <div className="flex items-center justify-between mb-3">
-                                        <h4 className="text-sm font-semibold text-white">Health Tips</h4>
-                                        <motion.div
-                                            animate={{ rotate: [0, 15, 0] }}
-                                            transition={{ duration: 2, repeat: Infinity, repeatDelay: 5 }}
-                                        >
-                                            <BoltIcon className="h-5 w-5 text-white" />
-                                        </motion.div>
-                                    </div>
-                                    <p className="text-sm text-gray-300 mb-4">
-                                        Stay hydrated! Drink at least 8 glasses of water daily for optimal health.
-                                    </p>
-                                    <div className="flex items-center justify-between">
-                                        <span className="text-xs text-gray-400">Updated daily</span>
-                                        <motion.button
-                                            whileHover={{ scale: 1.05 }}
-                                            whileTap={{ scale: 0.95 }}
-                                            className="text-sm text-white hover:text-gray-300 font-medium"
-                                        >
-                                            More tips
-                                        </motion.button>
-                                    </div>
-                                </motion.div>
+                        {/* Simple Health Tip */}
+                        <div className="px-6 py-4 border-t border-gray-200">
+                            <div className="bg-gray-50 rounded-lg p-4">
+                                <div className="flex items-center mb-2">
+                                    <BoltIcon className="h-4 w-4 text-primary-600" />
+                                    <h4 className="ml-2 text-xs font-medium text-gray-900">Daily Tip</h4>
+                                </div>
+                                <p className="text-xs text-gray-600">
+                                    Stay hydrated! Drink at least 8 glasses of water daily.
+                                </p>
                             </div>
                         </div>
-                    </motion.div>
-                )}
-            </AnimatePresence>
-
-            {/* Sidebar Toggle Button (Desktop) */}
-            {!isSidebarOpen && (
-                <motion.button
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    transition={{ delay: 0.2 }}
-                    onClick={toggleSidebar}
-                    className="fixed top-4 left-4 z-40 p-2 rounded-full bg-white text-black shadow-lg backdrop-blur-sm"
-                >
-                    <ChevronRightIcon className="h-5 w-5" />
-                </motion.button>
-            )}
+                    </div>
+                </div>
+            </div>
 
             {/* Main Content */}
-            <div className={`flex-1 flex flex-col overflow-hidden ${isSidebarOpen ? 'md:ml-72' : ''}`}>
-                <main className="flex-1 overflow-y-auto p-6">
+            <div className={`flex-1 ${isSidebarOpen ? 'md:ml-64' : ''}`}>
+                <main className="p-6">
                     {children}
                 </main>
             </div>

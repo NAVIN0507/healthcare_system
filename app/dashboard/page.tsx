@@ -2,7 +2,6 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { motion, AnimatePresence } from 'framer-motion';
 import {
     ChartBarIcon,
     UserGroupIcon,
@@ -195,13 +194,9 @@ export default function DashboardPage() {
     return (
         <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100">
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-                {/* Welcome Section with 3D Visualization */}
+                {/* Welcome Section with Health Visualization */}
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
-                    <motion.div
-                        initial={{ opacity: 0, y: 20 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ duration: 0.5 }}
-                    >
+                    <div>
                         <h1 className="text-3xl font-bold text-gray-900">
                             Welcome back, <span className="text-primary-600">{userName}</span>! 👋
                         </h1>
@@ -209,35 +204,27 @@ export default function DashboardPage() {
                             Here's your health dashboard overview
                         </p>
                         <div className="mt-6 flex space-x-4">
-                            <motion.button
-                                whileHover={{ scale: 1.05 }}
-                                whileTap={{ scale: 0.95 }}
-                                className="px-4 py-2 bg-primary-600 text-white rounded-lg shadow-lg hover:bg-primary-700 transition-colors"
+                            <button
                                 onClick={() => setShowAchievements(true)}
+                                className="px-4 py-2 bg-primary-600 text-white rounded-lg shadow-lg hover:bg-primary-700 transition-colors"
                             >
                                 <SparklesIcon className="h-5 w-5 inline-block mr-2" />
                                 View Achievements
-                            </motion.button>
-                            <motion.button
-                                whileHover={{ scale: 1.05 }}
-                                whileTap={{ scale: 0.95 }}
+                            </button>
+                            <button
                                 className="px-4 py-2 bg-white text-gray-700 rounded-lg shadow-lg hover:bg-gray-50 transition-colors"
                             >
                                 <StarIcon className="h-5 w-5 inline-block mr-2" />
                                 Track Progress
-                            </motion.button>
+                            </button>
                         </div>
-                    </motion.div>
+                    </div>
                     <HealthVisualization />
                 </div>
 
-                {/* Quick Stats with Interactive Cards */}
+                {/* Quick Stats */}
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-                    <motion.div
-                        initial={{ opacity: 0, y: 20 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ duration: 0.5, delay: 0.1 }}
-                        whileHover={{ scale: 1.02 }}
+                    <div
                         className="bg-white rounded-2xl shadow-lg p-6 hover:shadow-xl transition-all duration-300 cursor-pointer"
                         onClick={() => setActiveTab('fitness')}
                     >
@@ -257,13 +244,9 @@ export default function DashboardPage() {
                                 <span className="text-gray-500 ml-2">from last week</span>
                             </div>
                         </div>
-                    </motion.div>
+                    </div>
 
-                    <motion.div
-                        initial={{ opacity: 0, y: 20 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ duration: 0.5, delay: 0.2 }}
-                        whileHover={{ scale: 1.02 }}
+                    <div
                         className="bg-white rounded-2xl shadow-lg p-6 hover:shadow-xl transition-all duration-300 cursor-pointer"
                         onClick={() => setActiveTab('nutrition')}
                     >
@@ -283,13 +266,9 @@ export default function DashboardPage() {
                                 <span className="text-gray-500 ml-2">from yesterday</span>
                             </div>
                         </div>
-                    </motion.div>
+                    </div>
 
-                    <motion.div
-                        initial={{ opacity: 0, y: 20 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ duration: 0.5, delay: 0.3 }}
-                        whileHover={{ scale: 1.02 }}
+                    <div
                         className="bg-white rounded-2xl shadow-lg p-6 hover:shadow-xl transition-all duration-300 cursor-pointer"
                         onClick={() => setActiveTab('progress')}
                     >
@@ -307,13 +286,9 @@ export default function DashboardPage() {
                                 <span className="text-gray-500">Today's meals</span>
                             </div>
                         </div>
-                    </motion.div>
+                    </div>
 
-                    <motion.div
-                        initial={{ opacity: 0, y: 20 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ duration: 0.5, delay: 0.4 }}
-                        whileHover={{ scale: 1.02 }}
+                    <div
                         className="bg-white rounded-2xl shadow-lg p-6 hover:shadow-xl transition-all duration-300 cursor-pointer"
                         onClick={() => setActiveTab('nutrition')}
                     >
@@ -331,17 +306,15 @@ export default function DashboardPage() {
                                 <span className="text-green-500 font-medium">On track</span>
                             </div>
                         </div>
-                    </motion.div>
+                    </div>
                 </div>
 
-                {/* Interactive Tabs */}
+                {/* Tabs */}
                 <div className="mb-8">
                     <div className="flex space-x-4 overflow-x-auto pb-4">
                         {['overview', 'fitness', 'nutrition', 'progress'].map((tab) => (
-                            <motion.button
+                            <button
                                 key={tab}
-                                whileHover={{ scale: 1.05 }}
-                                whileTap={{ scale: 0.95 }}
                                 onClick={() => setActiveTab(tab)}
                                 className={`px-6 py-2 rounded-lg text-sm font-medium transition-colors ${activeTab === tab
                                     ? 'bg-primary-600 text-white'
@@ -349,315 +322,200 @@ export default function DashboardPage() {
                                     }`}
                             >
                                 {tab.charAt(0).toUpperCase() + tab.slice(1)}
-                            </motion.button>
+                            </button>
                         ))}
                     </div>
                 </div>
 
                 {/* Tab Content */}
-                <AnimatePresence mode="wait">
-                    <motion.div
-                        key={activeTab}
-                        initial={{ opacity: 0, y: 20 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        exit={{ opacity: 0, y: -20 }}
-                        transition={{ duration: 0.3 }}
-                    >
-                        {activeTab === 'overview' && (
-                            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-                                <motion.div
-                                    initial={{ opacity: 0, x: -20 }}
-                                    animate={{ opacity: 1, x: 0 }}
-                                    transition={{ duration: 0.5, delay: 0.5 }}
-                                    className="bg-white rounded-2xl shadow-lg p-6"
-                                >
-                                    <h3 className="text-lg font-semibold text-gray-900 mb-4">Weekly Activity</h3>
-                                    <div className="h-64">
-                                        <Line options={{
-                                            ...chartOptions,
-                                            maintainAspectRatio: false,
-                                            plugins: {
-                                                ...chartOptions.plugins,
-                                                legend: {
-                                                    position: 'bottom' as const,
-                                                    labels: {
-                                                        boxWidth: 12,
-                                                        padding: 8,
-                                                        font: {
-                                                            size: 10
-                                                        }
-                                                    }
-                                                }
-                                            }
-                                        }} data={activityData} />
-                                    </div>
-                                </motion.div>
-
-                                <motion.div
-                                    initial={{ opacity: 0, x: 20 }}
-                                    animate={{ opacity: 1, x: 0 }}
-                                    transition={{ duration: 0.5, delay: 0.5 }}
-                                    className="bg-white rounded-2xl shadow-lg p-6"
-                                >
-                                    <h3 className="text-lg font-semibold text-gray-900 mb-4">Goals Progress</h3>
-                                    <div className="h-64">
-                                        <Doughnut options={{
-                                            ...chartOptions,
-                                            maintainAspectRatio: false,
-                                            plugins: {
-                                                ...chartOptions.plugins,
-                                                legend: {
-                                                    position: 'bottom' as const,
-                                                    labels: {
-                                                        boxWidth: 12,
-                                                        padding: 8,
-                                                        font: {
-                                                            size: 10
-                                                        }
-                                                    }
-                                                }
-                                            }
-                                        }} data={goalProgressData} />
-                                    </div>
-                                </motion.div>
+                <div>
+                    {activeTab === 'overview' && (
+                        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                            <div className="bg-white rounded-2xl shadow-lg p-6">
+                                <h3 className="text-lg font-semibold text-gray-900 mb-4">Weekly Activity</h3>
+                                <div className="h-64">
+                                    <Line options={chartOptions} data={activityData} />
+                                </div>
                             </div>
-                        )}
 
-                        {activeTab === 'fitness' && (
-                            <div className="grid grid-cols-1 gap-8 lg:grid-cols-2 mb-8">
-                                <motion.div
-                                    initial={{ opacity: 0, x: -20 }}
-                                    animate={{ opacity: 1, x: 0 }}
-                                    transition={{ duration: 0.5, delay: 0.5 }}
-                                    className="bg-white rounded-2xl shadow-lg p-6"
-                                >
-                                    <h3 className="text-lg font-semibold text-gray-900 mb-4">Weight Progress</h3>
-                                    <div className="h-64">
-                                        <Line options={{
-                                            ...chartOptions,
-                                            maintainAspectRatio: false,
-                                            plugins: {
-                                                ...chartOptions.plugins,
-                                                legend: {
-                                                    position: 'bottom' as const,
-                                                    labels: {
-                                                        boxWidth: 12,
-                                                        padding: 8,
-                                                        font: {
-                                                            size: 10
-                                                        }
-                                                    }
-                                                }
-                                            }
-                                        }} data={weightData} />
-                                    </div>
-                                </motion.div>
-
-                                <motion.div
-                                    initial={{ opacity: 0, x: 20 }}
-                                    animate={{ opacity: 1, x: 0 }}
-                                    transition={{ duration: 0.5, delay: 0.6 }}
-                                    className="bg-white rounded-2xl shadow-lg p-6"
-                                >
-                                    <h3 className="text-lg font-semibold text-gray-900 mb-4">Physical Activity</h3>
-                                    <div className="h-64">
-                                        <Line options={{
-                                            ...chartOptions,
-                                            maintainAspectRatio: false,
-                                            plugins: {
-                                                ...chartOptions.plugins,
-                                                legend: {
-                                                    position: 'bottom' as const,
-                                                    labels: {
-                                                        boxWidth: 12,
-                                                        padding: 8,
-                                                        font: {
-                                                            size: 10
-                                                        }
-                                                    }
-                                                }
-                                            }
-                                        }} data={activityData} />
-                                    </div>
-                                </motion.div>
+                            <div className="bg-white rounded-2xl shadow-lg p-6">
+                                <h3 className="text-lg font-semibold text-gray-900 mb-4">Goals Progress</h3>
+                                <div className="h-64">
+                                    <Doughnut options={chartOptions} data={goalProgressData} />
+                                </div>
                             </div>
-                        )}
+                        </div>
+                    )}
 
-                        {activeTab === 'nutrition' && (
-                            <div className="grid grid-cols-1 gap-8 lg:grid-cols-2 mb-8">
-                                <motion.div
-                                    initial={{ opacity: 0, y: 20 }}
-                                    animate={{ opacity: 1, y: 0 }}
-                                    transition={{ duration: 0.5, delay: 0.7 }}
-                                    className="bg-white rounded-2xl shadow-lg overflow-hidden"
-                                >
-                                    <div className="px-6 py-5 border-b border-gray-200">
-                                        <h3 className="text-lg font-semibold text-gray-900">Nutrition</h3>
-                                    </div>
-                                    <div className="p-6">
-                                        <table className="min-w-full divide-y divide-gray-200">
-                                            <thead>
-                                                <tr>
-                                                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Metric</th>
-                                                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Progress</th>
-                                                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Goal</th>
-                                                </tr>
-                                            </thead>
-                                            <tbody className="divide-y divide-gray-200">
-                                                <tr>
-                                                    <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-900">Water Intake</td>
-                                                    <td className="px-4 py-3 whitespace-nowrap">
-                                                        <div className="w-full bg-gray-200 rounded-full h-2.5">
-                                                            <div className="bg-cyan-600 h-2.5 rounded-full transition-all duration-500" style={{ width: '72%' }}></div>
-                                                        </div>
-                                                    </td>
-                                                    <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-500">2.5 L</td>
-                                                </tr>
-                                                <tr>
-                                                    <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-900">Calories</td>
-                                                    <td className="px-4 py-3 whitespace-nowrap">
-                                                        <div className="w-full bg-gray-200 rounded-full h-2.5">
-                                                            <div className="bg-yellow-600 h-2.5 rounded-full transition-all duration-500" style={{ width: '65%' }}></div>
-                                                        </div>
-                                                    </td>
-                                                    <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-500">2,000</td>
-                                                </tr>
-                                                <tr>
-                                                    <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-900">Protein</td>
-                                                    <td className="px-4 py-3 whitespace-nowrap">
-                                                        <div className="w-full bg-gray-200 rounded-full h-2.5">
-                                                            <div className="bg-red-600 h-2.5 rounded-full transition-all duration-500" style={{ width: '90%' }}></div>
-                                                        </div>
-                                                    </td>
-                                                    <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-500">65g</td>
-                                                </tr>
-                                            </tbody>
-                                        </table>
-                                    </div>
-                                </motion.div>
+                    {activeTab === 'fitness' && (
+                        <div className="grid grid-cols-1 gap-8 lg:grid-cols-2 mb-8">
+                            <div className="bg-white rounded-2xl shadow-lg p-6">
+                                <h3 className="text-lg font-semibold text-gray-900 mb-4">Weight Progress</h3>
+                                <div className="h-64">
+                                    <Line options={chartOptions} data={weightData} />
+                                </div>
                             </div>
-                        )}
 
-                        {activeTab === 'progress' && (
-                            <div className="grid grid-cols-1 gap-8 lg:grid-cols-2 mb-8">
-                                <motion.div
-                                    initial={{ opacity: 0, y: 20 }}
-                                    animate={{ opacity: 1, y: 0 }}
-                                    transition={{ duration: 0.5, delay: 0.7 }}
-                                    className="bg-white rounded-2xl shadow-lg overflow-hidden"
-                                >
-                                    <div className="px-6 py-5 border-b border-gray-200">
-                                        <h3 className="text-lg font-semibold text-gray-900">Physical Activity</h3>
-                                    </div>
-                                    <div className="p-6">
-                                        <table className="min-w-full divide-y divide-gray-200">
-                                            <thead>
-                                                <tr>
-                                                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Metric</th>
-                                                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Progress</th>
-                                                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Goal</th>
-                                                </tr>
-                                            </thead>
-                                            <tbody className="divide-y divide-gray-200">
-                                                <tr>
-                                                    <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-900">Daily Steps</td>
-                                                    <td className="px-4 py-3 whitespace-nowrap">
-                                                        <div className="w-full bg-gray-200 rounded-full h-2.5">
-                                                            <div className="bg-blue-600 h-2.5 rounded-full transition-all duration-500" style={{ width: '85%' }}></div>
-                                                        </div>
-                                                    </td>
-                                                    <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-500">10,000</td>
-                                                </tr>
-                                                <tr>
-                                                    <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-900">Workout Days</td>
-                                                    <td className="px-4 py-3 whitespace-nowrap">
-                                                        <div className="w-full bg-gray-200 rounded-full h-2.5">
-                                                            <div className="bg-purple-600 h-2.5 rounded-full transition-all duration-500" style={{ width: '80%' }}></div>
-                                                        </div>
-                                                    </td>
-                                                    <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-500">5/week</td>
-                                                </tr>
-                                                <tr>
-                                                    <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-900">Active Minutes</td>
-                                                    <td className="px-4 py-3 whitespace-nowrap">
-                                                        <div className="w-full bg-gray-200 rounded-full h-2.5">
-                                                            <div className="bg-green-600 h-2.5 rounded-full transition-all duration-500" style={{ width: '75%' }}></div>
-                                                        </div>
-                                                    </td>
-                                                    <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-500">30/day</td>
-                                                </tr>
-                                            </tbody>
-                                        </table>
-                                    </div>
-                                </motion.div>
+                            <div className="bg-white rounded-2xl shadow-lg p-6">
+                                <h3 className="text-lg font-semibold text-gray-900 mb-4">Physical Activity</h3>
+                                <div className="h-64">
+                                    <Line options={chartOptions} data={activityData} />
+                                </div>
                             </div>
-                        )}
-                    </motion.div>
-                </AnimatePresence>
+                        </div>
+                    )}
+
+                    {activeTab === 'nutrition' && (
+                        <div className="grid grid-cols-1 gap-8 lg:grid-cols-2 mb-8">
+                            <div className="bg-white rounded-2xl shadow-lg overflow-hidden">
+                                <div className="px-6 py-5 border-b border-gray-200">
+                                    <h3 className="text-lg font-semibold text-gray-900">Nutrition</h3>
+                                </div>
+                                <div className="p-6">
+                                    <table className="min-w-full divide-y divide-gray-200">
+                                        <thead>
+                                            <tr>
+                                                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Metric</th>
+                                                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Progress</th>
+                                                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Goal</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody className="divide-y divide-gray-200">
+                                            <tr>
+                                                <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-900">Water Intake</td>
+                                                <td className="px-4 py-3 whitespace-nowrap">
+                                                    <div className="w-full bg-gray-200 rounded-full h-2.5">
+                                                        <div className="bg-cyan-600 h-2.5 rounded-full transition-all duration-500" style={{ width: '72%' }}></div>
+                                                    </div>
+                                                </td>
+                                                <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-500">2.5 L</td>
+                                            </tr>
+                                            <tr>
+                                                <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-900">Calories</td>
+                                                <td className="px-4 py-3 whitespace-nowrap">
+                                                    <div className="w-full bg-gray-200 rounded-full h-2.5">
+                                                        <div className="bg-yellow-600 h-2.5 rounded-full transition-all duration-500" style={{ width: '65%' }}></div>
+                                                    </div>
+                                                </td>
+                                                <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-500">2,000</td>
+                                            </tr>
+                                            <tr>
+                                                <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-900">Protein</td>
+                                                <td className="px-4 py-3 whitespace-nowrap">
+                                                    <div className="w-full bg-gray-200 rounded-full h-2.5">
+                                                        <div className="bg-red-600 h-2.5 rounded-full transition-all duration-500" style={{ width: '90%' }}></div>
+                                                    </div>
+                                                </td>
+                                                <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-500">65g</td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    )}
+
+                    {activeTab === 'progress' && (
+                        <div className="grid grid-cols-1 gap-8 lg:grid-cols-2 mb-8">
+                            <div className="bg-white rounded-2xl shadow-lg overflow-hidden">
+                                <div className="px-6 py-5 border-b border-gray-200">
+                                    <h3 className="text-lg font-semibold text-gray-900">Physical Activity</h3>
+                                </div>
+                                <div className="p-6">
+                                    <table className="min-w-full divide-y divide-gray-200">
+                                        <thead>
+                                            <tr>
+                                                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Metric</th>
+                                                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Progress</th>
+                                                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Goal</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody className="divide-y divide-gray-200">
+                                            <tr>
+                                                <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-900">Daily Steps</td>
+                                                <td className="px-4 py-3 whitespace-nowrap">
+                                                    <div className="w-full bg-gray-200 rounded-full h-2.5">
+                                                        <div className="bg-blue-600 h-2.5 rounded-full transition-all duration-500" style={{ width: '85%' }}></div>
+                                                    </div>
+                                                </td>
+                                                <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-500">10,000</td>
+                                            </tr>
+                                            <tr>
+                                                <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-900">Workout Days</td>
+                                                <td className="px-4 py-3 whitespace-nowrap">
+                                                    <div className="w-full bg-gray-200 rounded-full h-2.5">
+                                                        <div className="bg-purple-600 h-2.5 rounded-full transition-all duration-500" style={{ width: '80%' }}></div>
+                                                    </div>
+                                                </td>
+                                                <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-500">5/week</td>
+                                            </tr>
+                                            <tr>
+                                                <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-900">Active Minutes</td>
+                                                <td className="px-4 py-3 whitespace-nowrap">
+                                                    <div className="w-full bg-gray-200 rounded-full h-2.5">
+                                                        <div className="bg-green-600 h-2.5 rounded-full transition-all duration-500" style={{ width: '75%' }}></div>
+                                                    </div>
+                                                </td>
+                                                <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-500">30/day</td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    )}
+                </div>
 
                 {/* Achievements Modal */}
-                <AnimatePresence>
-                    {showAchievements && (
-                        <motion.div
-                            initial={{ opacity: 0 }}
-                            animate={{ opacity: 1 }}
-                            exit={{ opacity: 0 }}
-                            className="fixed inset-0 bg-black/50 flex items-center justify-center z-50"
-                            onClick={() => setShowAchievements(false)}
+                {showAchievements && (
+                    <div
+                        className="fixed inset-0 bg-black/50 flex items-center justify-center z-50"
+                        onClick={() => setShowAchievements(false)}
+                    >
+                        <div
+                            className="bg-white rounded-2xl p-6 max-w-2xl w-full mx-4"
+                            onClick={e => e.stopPropagation()}
                         >
-                            <motion.div
-                                initial={{ scale: 0.9, opacity: 0 }}
-                                animate={{ scale: 1, opacity: 1 }}
-                                exit={{ scale: 0.9, opacity: 0 }}
-                                className="bg-white rounded-2xl p-6 max-w-2xl w-full mx-4"
-                                onClick={e => e.stopPropagation()}
-                            >
-                                <div className="flex justify-between items-center mb-6">
-                                    <h2 className="text-2xl font-bold text-gray-900">Your Achievements</h2>
-                                    <button
-                                        onClick={() => setShowAchievements(false)}
-                                        className="text-gray-500 hover:text-gray-700"
+                            <div className="flex justify-between items-center mb-6">
+                                <h2 className="text-2xl font-bold text-gray-900">Your Achievements</h2>
+                                <button
+                                    onClick={() => setShowAchievements(false)}
+                                    className="text-gray-500 hover:text-gray-700"
+                                >
+                                    <XMarkIcon className="h-6 w-6" />
+                                </button>
+                            </div>
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                {[
+                                    { title: 'Fitness Master', icon: TrophyIcon, progress: 75 },
+                                    { title: 'Nutrition Expert', icon: HeartIcon, progress: 60 },
+                                    { title: 'Wellness Guru', icon: SparklesIcon, progress: 90 },
+                                    { title: 'Goal Crusher', icon: FlagIcon, progress: 85 },
+                                ].map((achievement, index) => (
+                                    <div
+                                        key={index}
+                                        className="bg-gray-50 rounded-xl p-4"
                                     >
-                                        <XMarkIcon className="h-6 w-6" />
-                                    </button>
-                                </div>
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                    {[
-                                        { title: 'Fitness Master', icon: TrophyIcon, progress: 75 },
-                                        { title: 'Nutrition Expert', icon: HeartIcon, progress: 60 },
-                                        { title: 'Wellness Guru', icon: SparklesIcon, progress: 90 },
-                                        { title: 'Goal Crusher', icon: FlagIcon, progress: 85 },
-                                    ].map((achievement, index) => (
-                                        <motion.div
-                                            key={index}
-                                            initial={{ opacity: 0, y: 20 }}
-                                            animate={{ opacity: 1, y: 0 }}
-                                            transition={{ delay: index * 0.1 }}
-                                            className="bg-gray-50 rounded-xl p-4"
-                                        >
-                                            <div className="flex items-center space-x-4">
-                                                <div className="p-3 bg-primary-100 rounded-lg">
-                                                    <achievement.icon className="h-6 w-6 text-primary-600" />
-                                                </div>
-                                                <div className="flex-1">
-                                                    <h3 className="font-medium text-gray-900">{achievement.title}</h3>
-                                                    <div className="mt-2 h-2 bg-gray-200 rounded-full overflow-hidden">
-                                                        <motion.div
-                                                            initial={{ width: 0 }}
-                                                            animate={{ width: `${achievement.progress}%` }}
-                                                            transition={{ duration: 1, delay: index * 0.1 }}
-                                                            className="h-full bg-primary-600"
-                                                        />
-                                                    </div>
+                                        <div className="flex items-center space-x-4">
+                                            <div className="p-3 bg-primary-100 rounded-lg">
+                                                <achievement.icon className="h-6 w-6 text-primary-600" />
+                                            </div>
+                                            <div className="flex-1">
+                                                <h3 className="font-medium text-gray-900">{achievement.title}</h3>
+                                                <div className="mt-2 h-2 bg-gray-200 rounded-full overflow-hidden">
+                                                    <div
+                                                        className="h-full bg-primary-600"
+                                                        style={{ width: `${achievement.progress}%` }}
+                                                    />
                                                 </div>
                                             </div>
-                                        </motion.div>
-                                    ))}
-                                </div>
-                            </motion.div>
-                        </motion.div>
-                    )}
-                </AnimatePresence>
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+                    </div>
+                )}
             </div>
         </div>
     );

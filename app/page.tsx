@@ -461,40 +461,14 @@ function Home() {
               transition={{ duration: 0.8 }}
               className="relative h-[500px] bg-gradient-to-br from-primary-50 to-accent-50 rounded-2xl overflow-hidden shadow-xl"
             >
-              <Canvas camera={{ position: [0, 0, 8], fov: 45 }}>
+              <Canvas>
                 <ambientLight intensity={0.5} />
-                <spotLight
-                  position={[10, 10, 10]}
-                  angle={0.15}
-                  penumbra={1}
-                  intensity={1}
-                  castShadow
-                />
-                <pointLight position={[-10, -10, -10]} intensity={0.5} />
+                <spotLight position={[10, 10, 10]} angle={0.15} penumbra={1} />
                 <Environment preset="sunset" />
-                <OrbitControls
-                  enableZoom={false}
-                  minPolarAngle={Math.PI / 3}
-                  maxPolarAngle={Math.PI / 1.5}
-                  enablePan={false}
-                  autoRotate
-                  autoRotateSpeed={1}
-                />
+                <OrbitControls enableZoom={false} />
                 <WellnessModel />
               </Canvas>
-              <div className="absolute inset-0 bg-gradient-to-t from-primary-50/80 to-transparent pointer-events-none"></div>
-              <div className="absolute bottom-4 left-4 right-4 text-center">
-                <motion.div
-                  initial={{ opacity: 0, y: 20 }}
-                  whileInView={{ opacity: 1, y: 0 }}
-                  viewport={{ once: true }}
-                  transition={{ duration: 0.5, delay: 0.2 }}
-                >
-                  <span className="text-sm text-neutral-600 bg-white/80 px-4 py-2 rounded-full backdrop-blur-sm">
-                    Interactive 3D Wellness Visualization
-                  </span>
-                </motion.div>
-              </div>
+              <div className="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-white to-transparent"></div>
             </motion.div>
 
             {/* Statistics and Charts */}

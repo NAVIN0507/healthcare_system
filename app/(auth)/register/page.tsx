@@ -778,8 +778,8 @@ export default function RegisterPage() {
                             onClick={prevStep}
                             disabled={currentStep === 1}
                             className={`flex items-center px-4 py-2 border border-transparent rounded-xl text-sm font-medium text-white ${currentStep === 1
-                                    ? 'opacity-50 cursor-not-allowed'
-                                    : 'hover:bg-white/10 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-white/50'
+                                ? 'opacity-50 cursor-not-allowed'
+                                : 'hover:bg-white/10 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-white/50'
                                 } transition-all duration-200`}
                             whileHover={{ scale: currentStep === 1 ? 1 : 1.02 }}
                             whileTap={{ scale: currentStep === 1 ? 1 : 0.98 }}

@@ -1,9 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/app/api/auth/[...nextauth]/route';
-import dbConnect from '@/lib/dbConnect';
+
 import Community from '@/app/models/Community';
 import { z } from 'zod';
+import connectDB from '@/app/lib/db';
 
 // Schema for validating community creation request
 const createCommunitySchema = z.object({
@@ -28,7 +29,7 @@ export async function POST(req: NextRequest) {
         }
 
         // Connect to database
-        await dbConnect();
+       await connectDB()
 
         // Parse and validate request body
         const body = await req.json();

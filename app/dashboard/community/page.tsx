@@ -777,12 +777,12 @@ export default function CommunityPage() {
                                                             </div>
                                                         )}
                                                         <div className="mt-4 flex flex-wrap gap-2">
-                                                            {post.author.bio?.split(' ').map((word) => (
+                                                            {post.tags?.map((tag, index) => (
                                                                 <span
-                                                                    key={word}
+                                                                    key={`${tag}-${index}`}
                                                                     className="px-3 py-1 bg-indigo-50 text-indigo-600 rounded-full text-sm"
                                                                 >
-                                                                    #{word}
+                                                                    #{tag}
                                                                 </span>
                                                             ))}
                                                         </div>
@@ -1072,6 +1072,7 @@ export default function CommunityPage() {
                                                 disabled={isSubmitting}
                                                 className={`px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors ${isSubmitting ? 'opacity-50 cursor-not-allowed' : ''
                                                     }`}
+                                                    
                                             >
                                                 {isSubmitting ? 'Creating...' : 'Create Post'}
                                             </button>

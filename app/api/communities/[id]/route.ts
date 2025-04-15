@@ -1,9 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/app/api/auth/[...nextauth]/route';
-import dbConnect from '@/lib/dbConnect';
+
 import Community from '@/app/models/Community';
 import { z } from 'zod';
+import connectDB from '@/app/lib/db';
 
 // Schema for validating community updates
 const updateCommunitySchema = z.object({
@@ -28,7 +29,7 @@ export async function GET(
     { params }: { params: { id: string } }
 ) {
     try {
-        await dbConnect();
+        await connectDB();
 
         const community = await Community.findById(params.id)
             .populate('creator', 'name image')

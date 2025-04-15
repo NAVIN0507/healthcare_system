@@ -147,25 +147,42 @@ export default function ProfilePage() {
     }
 
     const tabs = [
-        { id: 'personal', name: 'Personal Info', icon: UserCircleIcon, activeIcon: UserCircleSolidIcon },
-        { id: 'health', name: 'Health Details', icon: HeartIcon, activeIcon: HeartSolidIcon },
-        { id: 'security', name: 'Security', icon: ShieldCheckIcon, activeIcon: ShieldCheckSolidIcon },
-        { id: 'preferences', name: 'Preferences', icon: CogIcon, activeIcon: CogSolidIcon }
+        {
+            id: 'personal',
+            name: 'Personal Info',
+            icon: UserCircleIcon,
+            activeIcon: UserCircleSolidIcon,
+            description: 'Basic information about you'
+        },
+        {
+            id: 'health',
+            name: 'Health Details',
+            icon: HeartIcon,
+            activeIcon: HeartSolidIcon,
+            description: 'Your health metrics and history'
+        },
+        {
+            id: 'security',
+            name: 'Security',
+            icon: ShieldCheckIcon,
+            activeIcon: ShieldCheckSolidIcon,
+            description: 'Manage your account security'
+        }
     ];
 
     return (
-        <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 py-8">
-            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 py-12">
+            <div className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8">
                 {/* Header */}
                 <motion.div
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ duration: 0.5 }}
-                    className="mb-8 flex justify-between items-center"
+                    className="mb-12 flex justify-between items-center"
                 >
                     <div>
-                        <h1 className="text-3xl font-bold text-gray-900 bg-clip-text text-transparent bg-gradient-to-r from-primary-600 to-primary-800">Profile</h1>
-                        <p className="mt-2 text-gray-600">
+                        <h1 className="text-4xl font-bold text-gray-900 bg-clip-text text-transparent bg-gradient-to-r from-primary-600 to-primary-800">Profile</h1>
+                        <p className="mt-3 text-lg text-gray-600">
                             Manage your personal information and account settings
                         </p>
                     </div>
@@ -215,16 +232,16 @@ export default function ProfilePage() {
                     )}
                 </AnimatePresence>
 
-                <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
+                <div className="grid grid-cols-1 lg:grid-cols-5 gap-8">
                     {/* Sidebar */}
                     <motion.div
                         initial={{ opacity: 0, x: -20 }}
                         animate={{ opacity: 1, x: 0 }}
                         transition={{ duration: 0.5, delay: 0.1 }}
-                        className="lg:col-span-1"
+                        className="lg:col-span-2"
                     >
                         <div className="bg-white rounded-2xl shadow-lg overflow-hidden border border-gray-100">
-                            <div className="p-6">
+                            <div className="p-8 bg-gradient-to-br from-primary-500/10 to-primary-600/5">
                                 <div className="flex flex-col items-center">
                                     <motion.div
                                         className="relative"
@@ -233,7 +250,7 @@ export default function ProfilePage() {
                                         whileHover={{ scale: 1.05 }}
                                         transition={{ type: "spring", stiffness: 400, damping: 10 }}
                                     >
-                                        <div className="w-28 h-28 rounded-full bg-gradient-to-r from-primary-500 to-primary-600 flex items-center justify-center text-white text-4xl font-bold mb-4 shadow-lg">
+                                        <div className="w-40 h-40 rounded-full bg-gradient-to-r from-primary-500 to-primary-600 flex items-center justify-center text-white text-6xl font-bold shadow-xl ring-4 ring-white">
                                             {userData?.firstName ? userData.firstName.charAt(0) : 'U'}
                                         </div>
                                         <AnimatePresence>
@@ -244,26 +261,26 @@ export default function ProfilePage() {
                                                     exit={{ opacity: 0 }}
                                                     className="absolute inset-0 flex items-center justify-center rounded-full bg-black bg-opacity-50"
                                                 >
-                                                    <button className="p-2 bg-white rounded-full shadow-md">
+                                                    <button className="p-2 bg-white rounded-full shadow-md hover:scale-110 transition-transform">
                                                         <PhotoIcon className="h-5 w-5 text-primary-600" />
                                                     </button>
                                                 </motion.div>
                                             )}
                                         </AnimatePresence>
                                     </motion.div>
-                                    <h2 className="text-xl font-bold text-gray-900">
+                                    <h2 className="text-2xl font-bold text-gray-900 mt-6">
                                         {userData?.firstName} {userData?.lastName}
                                     </h2>
-                                    <p className="text-gray-500">{userData?.email}</p>
-                                    <div className="mt-4 flex items-center text-sm text-green-600 bg-green-50 px-3 py-1 rounded-full">
-                                        <div className="w-2 h-2 rounded-full bg-green-500 mr-2 animate-pulse"></div>
+                                    <p className="text-lg text-gray-500 mt-2">{userData?.email}</p>
+                                    <div className="mt-6 flex items-center text-sm text-primary-600 bg-primary-50 px-4 py-2 rounded-full shadow-sm">
+                                        <div className="w-2 h-2 rounded-full bg-primary-500 mr-2 animate-pulse"></div>
                                         Active Now
                                     </div>
                                 </div>
                             </div>
                             <div className="border-t border-gray-200">
-                                <nav className="p-4">
-                                    <ul className="space-y-2">
+                                <nav className="px-4 py-6">
+                                    <ul className="space-y-4">
                                         {tabs.map((tab) => {
                                             const Icon = tab.icon;
                                             const ActiveIcon = tab.activeIcon;
@@ -277,17 +294,22 @@ export default function ProfilePage() {
                                                 >
                                                     <button
                                                         onClick={() => setActiveTab(tab.id)}
-                                                        className={`w-full flex items-center px-4 py-3 rounded-lg text-sm font-medium transition-colors ${isActive
+                                                        className={`w-full flex flex-col px-4 py-4 rounded-xl text-sm transition-all duration-200 ${isActive
                                                                 ? 'bg-primary-50 text-primary-700 shadow-sm'
                                                                 : 'text-gray-700 hover:bg-gray-50'
                                                             }`}
                                                     >
-                                                        {isActive ? (
-                                                            <ActiveIcon className="h-5 w-5 mr-3 text-primary-600" />
-                                                        ) : (
-                                                            <Icon className="h-5 w-5 mr-3 text-gray-400" />
-                                                        )}
-                                                        {tab.name}
+                                                        <div className="flex items-center">
+                                                            {isActive ? (
+                                                                <ActiveIcon className="h-5 w-5 mr-3 text-primary-600" />
+                                                            ) : (
+                                                                <Icon className="h-5 w-5 mr-3 text-gray-400" />
+                                                            )}
+                                                            <span className="font-medium">{tab.name}</span>
+                                                        </div>
+                                                        <p className={`mt-1 ml-8 text-xs ${isActive ? 'text-primary-600/70' : 'text-gray-500'}`}>
+                                                            {tab.description}
+                                                        </p>
                                                     </button>
                                                 </motion.li>
                                             );
@@ -306,12 +328,12 @@ export default function ProfilePage() {
                         className="lg:col-span-3"
                     >
                         <div className="bg-white rounded-2xl shadow-lg overflow-hidden border border-gray-100">
-                            <div className="px-6 py-5 border-b border-gray-200 flex justify-between items-center bg-gradient-to-r from-gray-50 to-white">
+                            <div className="px-8 py-6 border-b border-gray-200 flex justify-between items-center bg-gradient-to-r from-gray-50 to-white">
                                 <div className="flex items-center">
-                                    <h3 className="text-lg font-semibold text-gray-900">
+                                    <h3 className="text-xl font-semibold text-gray-900">
                                         {tabs.find(tab => tab.id === activeTab)?.name}
                                     </h3>
-                                    <SparklesIcon className="h-5 w-5 text-primary-500 ml-2" />
+                                    <SparklesIcon className="h-6 w-6 text-primary-500 ml-2" />
                                 </div>
                                 {!isEditing ? (
                                     <motion.button
@@ -346,7 +368,7 @@ export default function ProfilePage() {
                                     </div>
                                 )}
                             </div>
-                            <div className="p-6">
+                            <div className="p-8">
                                 {/* Personal Info Tab */}
                                 <AnimatePresence mode="wait">
                                     {activeTab === 'personal' && (
@@ -629,85 +651,6 @@ export default function ProfilePage() {
                                                 >
                                                     Enable 2FA
                                                 </motion.button>
-                                            </div>
-                                        </motion.div>
-                                    )}
-
-                                    {/* Preferences Tab */}
-                                    {activeTab === 'preferences' && (
-                                        <motion.div
-                                            key="preferences"
-                                            initial={{ opacity: 0, y: 20 }}
-                                            animate={{ opacity: 1, y: 0 }}
-                                            exit={{ opacity: 0, y: -20 }}
-                                            transition={{ duration: 0.3 }}
-                                            className="space-y-6"
-                                        >
-                                            <div className="bg-gradient-to-r from-gray-50 to-white p-6 rounded-lg border border-gray-100 shadow-sm">
-                                                <h4 className="text-md font-medium text-gray-900 mb-2">Notification Settings</h4>
-                                                <p className="text-sm text-gray-600 mb-4">
-                                                    Manage how you receive notifications
-                                                </p>
-                                                <div className="space-y-4">
-                                                    <div className="flex items-center justify-between p-3 bg-white rounded-lg border border-gray-100">
-                                                        <div>
-                                                            <p className="text-sm font-medium text-gray-900">Email Notifications</p>
-                                                            <p className="text-xs text-gray-500">Receive updates via email</p>
-                                                        </div>
-                                                        <label className="relative inline-flex items-center cursor-pointer">
-                                                            <input type="checkbox" className="sr-only peer" defaultChecked />
-                                                            <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-primary-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary-600"></div>
-                                                        </label>
-                                                    </div>
-                                                    <div className="flex items-center justify-between p-3 bg-white rounded-lg border border-gray-100">
-                                                        <div>
-                                                            <p className="text-sm font-medium text-gray-900">SMS Notifications</p>
-                                                            <p className="text-xs text-gray-500">Receive updates via SMS</p>
-                                                        </div>
-                                                        <label className="relative inline-flex items-center cursor-pointer">
-                                                            <input type="checkbox" className="sr-only peer" />
-                                                            <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-primary-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary-600"></div>
-                                                        </label>
-                                                    </div>
-                                                    <div className="flex items-center justify-between p-3 bg-white rounded-lg border border-gray-100">
-                                                        <div>
-                                                            <p className="text-sm font-medium text-gray-900">App Notifications</p>
-                                                            <p className="text-xs text-gray-500">Receive updates in the app</p>
-                                                        </div>
-                                                        <label className="relative inline-flex items-center cursor-pointer">
-                                                            <input type="checkbox" className="sr-only peer" defaultChecked />
-                                                            <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-primary-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary-600"></div>
-                                                        </label>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                            <div className="bg-gradient-to-r from-gray-50 to-white p-6 rounded-lg border border-gray-100 shadow-sm">
-                                                <h4 className="text-md font-medium text-gray-900 mb-2">Privacy Settings</h4>
-                                                <p className="text-sm text-gray-600 mb-4">
-                                                    Control who can see your profile information
-                                                </p>
-                                                <div className="space-y-4">
-                                                    <div className="flex items-center justify-between p-3 bg-white rounded-lg border border-gray-100">
-                                                        <div>
-                                                            <p className="text-sm font-medium text-gray-900">Profile Visibility</p>
-                                                            <p className="text-xs text-gray-500">Make your profile visible to other users</p>
-                                                        </div>
-                                                        <label className="relative inline-flex items-center cursor-pointer">
-                                                            <input type="checkbox" className="sr-only peer" defaultChecked />
-                                                            <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-primary-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary-600"></div>
-                                                        </label>
-                                                    </div>
-                                                    <div className="flex items-center justify-between p-3 bg-white rounded-lg border border-gray-100">
-                                                        <div>
-                                                            <p className="text-sm font-medium text-gray-900">Health Data Sharing</p>
-                                                            <p className="text-xs text-gray-500">Allow sharing of health data with healthcare providers</p>
-                                                        </div>
-                                                        <label className="relative inline-flex items-center cursor-pointer">
-                                                            <input type="checkbox" className="sr-only peer" />
-                                                            <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-primary-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary-600"></div>
-                                                        </label>
-                                                    </div>
-                                                </div>
                                             </div>
                                         </motion.div>
                                     )}

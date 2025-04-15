@@ -37,7 +37,6 @@ import {
     ArcElement
 } from 'chart.js';
 import { Line, Bar, Doughnut } from 'react-chartjs-2';
-import dynamic from 'next/dynamic';
 
 // Register ChartJS components
 ChartJS.register(
@@ -68,16 +67,6 @@ const chartOptions = {
         },
     },
 };
-
-// Dynamically import the HealthVisualization component
-const HealthVisualization = dynamic(() => import('@/components/HealthVisualization'), {
-    ssr: false,
-    loading: () => (
-        <div className="w-full h-[400px] bg-gradient-to-br from-gray-900 to-gray-800 rounded-2xl flex items-center justify-center">
-            <div className="w-12 h-12 border-4 border-primary-600 border-t-transparent rounded-full animate-spin" />
-        </div>
-    ),
-});
 
 export default function DashboardPage() {
     const router = useRouter();
@@ -148,29 +137,6 @@ export default function DashboardPage() {
         ],
     };
 
-    const nutritionData = {
-        labels: ['Protein', 'Carbs', 'Fat', 'Fiber'],
-        datasets: [
-            {
-                label: 'Daily Intake',
-                data: [65, 250, 55, 30],
-                backgroundColor: [
-                    'rgba(239, 68, 68, 0.5)',
-                    'rgba(59, 130, 246, 0.5)',
-                    'rgba(245, 158, 11, 0.5)',
-                    'rgba(16, 185, 129, 0.5)',
-                ],
-                borderColor: [
-                    'rgb(239, 68, 68)',
-                    'rgb(59, 130, 246)',
-                    'rgb(245, 158, 11)',
-                    'rgb(16, 185, 129)',
-                ],
-                borderWidth: 1,
-            },
-        ],
-    };
-
     const goalProgressData = {
         labels: ['Completed', 'In Progress', 'Not Started'],
         datasets: [
@@ -194,32 +160,29 @@ export default function DashboardPage() {
     return (
         <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100">
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-                {/* Welcome Section with Health Visualization */}
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
-                    <div>
-                        <h1 className="text-3xl font-bold text-gray-900">
-                            Welcome back, <span className="text-primary-600">{userName}</span>! 👋
-                        </h1>
-                        <p className="mt-2 text-gray-600">
-                            Here's your health dashboard overview
-                        </p>
-                        <div className="mt-6 flex space-x-4">
-                            <button
-                                onClick={() => setShowAchievements(true)}
-                                className="px-4 py-2 bg-primary-600 text-white rounded-lg shadow-lg hover:bg-primary-700 transition-colors"
-                            >
-                                <SparklesIcon className="h-5 w-5 inline-block mr-2" />
-                                View Achievements
-                            </button>
-                            <button
-                                className="px-4 py-2 bg-white text-gray-700 rounded-lg shadow-lg hover:bg-gray-50 transition-colors"
-                            >
-                                <StarIcon className="h-5 w-5 inline-block mr-2" />
-                                Track Progress
-                            </button>
-                        </div>
+                {/* Welcome Section */}
+                <div className="mb-8">
+                    <h1 className="text-3xl font-bold text-gray-900">
+                        Welcome back, <span className="text-primary-600">{userName}</span>! 👋
+                    </h1>
+                    <p className="mt-2 text-gray-600">
+                        Here's your health dashboard overview
+                    </p>
+                    <div className="mt-6 flex space-x-4">
+                        <button
+                            onClick={() => setShowAchievements(true)}
+                            className="px-4 py-2 bg-primary-600 text-white rounded-lg shadow-lg hover:bg-primary-700 transition-colors"
+                        >
+                            <SparklesIcon className="h-5 w-5 inline-block mr-2" />
+                            View Achievements
+                        </button>
+                        <button
+                            className="px-4 py-2 bg-white text-gray-700 rounded-lg shadow-lg hover:bg-gray-50 transition-colors"
+                        >
+                            <StarIcon className="h-5 w-5 inline-block mr-2" />
+                            Track Progress
+                        </button>
                     </div>
-                    <HealthVisualization />
                 </div>
 
                 {/* Quick Stats */}
@@ -248,7 +211,7 @@ export default function DashboardPage() {
 
                     <div
                         className="bg-white rounded-2xl shadow-lg p-6 hover:shadow-xl transition-all duration-300 cursor-pointer"
-                        onClick={() => setActiveTab('nutrition')}
+                        onClick={() => setActiveTab('activity')}
                     >
                         <div className="flex items-center">
                             <div className="p-3 rounded-full bg-blue-100">
@@ -270,7 +233,7 @@ export default function DashboardPage() {
 
                     <div
                         className="bg-white rounded-2xl shadow-lg p-6 hover:shadow-xl transition-all duration-300 cursor-pointer"
-                        onClick={() => setActiveTab('progress')}
+                        onClick={() => setActiveTab('nutrition')}
                     >
                         <div className="flex items-center">
                             <div className="p-3 rounded-full bg-green-100">
@@ -290,7 +253,7 @@ export default function DashboardPage() {
 
                     <div
                         className="bg-white rounded-2xl shadow-lg p-6 hover:shadow-xl transition-all duration-300 cursor-pointer"
-                        onClick={() => setActiveTab('nutrition')}
+                        onClick={() => setActiveTab('goals')}
                     >
                         <div className="flex items-center">
                             <div className="p-3 rounded-full bg-purple-100">
@@ -348,7 +311,7 @@ export default function DashboardPage() {
                     )}
 
                     {activeTab === 'fitness' && (
-                        <div className="grid grid-cols-1 gap-8 lg:grid-cols-2 mb-8">
+                        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
                             <div className="bg-white rounded-2xl shadow-lg p-6">
                                 <h3 className="text-lg font-semibold text-gray-900 mb-4">Weight Progress</h3>
                                 <div className="h-64">

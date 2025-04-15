@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
+import { Suspense } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 
 export default function LoginPage() {
@@ -116,6 +117,7 @@ export default function LoginPage() {
     const tiltY = (mousePosition.x - 50) / -10;
 
     return (
+        <Suspense fallback={<div>Loading...</div>}>
         <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-primary-900 via-primary-800 to-primary-900 py-12 px-4 sm:px-6 lg:px-8 relative overflow-hidden">
             {/* Animated background with particles */}
             <div className="absolute inset-0 overflow-hidden">
@@ -358,5 +360,6 @@ export default function LoginPage() {
                 </motion.div>
             </motion.div>
         </div>
+        </Suspense>
     );
 } 

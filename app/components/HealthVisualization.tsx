@@ -175,8 +175,8 @@ export default function HealthVisualization() {
                         whileTap={{ scale: 0.95 }}
                         onClick={() => setActiveAnimation(animation)}
                         className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${activeAnimation === animation
-                                ? 'bg-primary-600 text-white'
-                                : 'bg-white/10 text-white hover:bg-white/20'
+                            ? 'bg-primary-600 text-white'
+                            : 'bg-white/10 text-white hover:bg-white/20'
                             }`}
                     >
                         {animation.charAt(0).toUpperCase() + animation.slice(1)}

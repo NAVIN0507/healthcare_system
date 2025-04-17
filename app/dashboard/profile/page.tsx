@@ -295,8 +295,8 @@ export default function ProfilePage() {
                                                     <button
                                                         onClick={() => setActiveTab(tab.id)}
                                                         className={`w-full flex flex-col px-4 py-4 rounded-xl text-sm transition-all duration-200 ${isActive
-                                                                ? 'bg-primary-50 text-primary-700 shadow-sm'
-                                                                : 'text-gray-700 hover:bg-gray-50'
+                                                            ? 'bg-primary-50 text-primary-700 shadow-sm'
+                                                            : 'text-gray-700 hover:bg-gray-50'
                                                             }`}
                                                     >
                                                         <div className="flex items-center">

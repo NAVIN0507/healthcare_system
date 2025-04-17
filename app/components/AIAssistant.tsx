@@ -161,8 +161,8 @@ Just let me know what you're interested in!`;
                                 >
                                     <div
                                         className={`max-w-[80%] p-3 rounded-2xl ${message.role === 'user'
-                                                ? 'bg-gradient-to-r from-primary-600 to-primary-700 text-white'
-                                                : 'bg-gray-50 text-gray-800 border border-gray-100'
+                                            ? 'bg-gradient-to-r from-primary-600 to-primary-700 text-white'
+                                            : 'bg-gray-50 text-gray-800 border border-gray-100'
                                             }`}
                                     >
                                         <p className="text-sm">{message.content}</p>

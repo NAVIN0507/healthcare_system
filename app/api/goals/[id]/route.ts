@@ -4,6 +4,8 @@ import { authOptions } from '@/app/api/auth/[...nextauth]/route';
 import dbConnect from '@/lib/dbConnect';
 import Goal from '@/app/models/Goal';
 import { z } from 'zod';
+import { clientPromise } from '@/app/lib/db';
+import { ObjectId } from 'mongodb';
 
 // Schema for validating goal updates
 const updateGoalSchema = z.object({
@@ -13,20 +15,15 @@ const updateGoalSchema = z.object({
     targetValue: z.number().positive().optional(),
     currentValue: z.number().min(0).optional(),
     unit: z.string().optional(),
-    targetDate: z.string().transform(str => new Date(str)).optional(),
-    status: z.enum(['Not Started', 'In Progress', 'On Track', 'Behind Schedule', 'Completed', 'Abandoned']).optional(),
-    milestones: z.array(
-        z.object({
-            value: z.number(),
-            achieved: z.boolean().optional(),
-            achievedDate: z.string().transform(str => new Date(str)).optional(),
-        })
-    ).optional(),
+    startDate: z.string().optional(),
+    targetDate: z.string().optional(),
+    progress: z.number().min(0).max(100).optional(),
+    status: z.enum(['In Progress', 'Completed']).optional(),
     reminders: z.object({
-        frequency: z.enum(['daily', 'weekly', 'monthly', 'none']).optional(),
-        time: z.string().optional(),
-        enabled: z.boolean().optional(),
-    }).optional(),
+        frequency: z.enum(['daily', 'weekly', 'monthly', 'none']),
+        time: z.string(),
+        enabled: z.boolean()
+    }).optional()
 });
 
 // Helper function to check if user owns the goal
@@ -78,91 +75,63 @@ export async function GET(
     }
 }
 
-export async function PATCH(
-    req: NextRequest,
+export async function PUT(
+    request: Request,
     { params }: { params: { id: string } }
 ) {
     try {
-        const session = await getServerSession(authOptions);
-        if (!session?.user) {
-            return NextResponse.json(
-                { error: 'Authentication required' },
-                { status: 401 }
-            );
-        }
-
-        await dbConnect();
-
-        // Check authorization
-        if (!(await isAuthorized(params.id, session.user.id))) {
-            return NextResponse.json(
-                { error: 'Unauthorized' },
-                { status: 403 }
-            );
-        }
-
-        // Parse and validate request body
-        const body = await req.json();
+        const body = await request.json();
         const validatedData = updateGoalSchema.parse(body);
 
-        // Update goal
-        const updatedGoal = await Goal.findByIdAndUpdate(
-            params.id,
+        const client = await clientPromise;
+        const db = client.db('healthcare_system');
+        const goalsCollection = db.collection('goals');
+
+        const result = await goalsCollection.findOneAndUpdate(
+            { _id: new ObjectId(params.id) },
             { $set: validatedData },
-            { new: true, runValidators: true }
+            { returnDocument: 'after' }
         );
 
-        if (!updatedGoal) {
+        if (!result) {
             return NextResponse.json(
                 { error: 'Goal not found' },
                 { status: 404 }
             );
         }
 
-        return NextResponse.json(updatedGoal);
+        return NextResponse.json({ goal: result });
     } catch (error) {
+        console.error('Error updating goal:', error);
+
         if (error instanceof z.ZodError) {
             return NextResponse.json(
-                { error: 'Invalid request data', details: error.errors },
+                { error: 'Validation error', details: error.errors },
                 { status: 400 }
             );
         }
 
-        console.error('Error updating goal:', error);
         return NextResponse.json(
-            { error: 'Internal server error' },
+            { error: 'Failed to update goal' },
             { status: 500 }
         );
     }
 }
 
 export async function DELETE(
-    req: NextRequest,
+    request: Request,
     { params }: { params: { id: string } }
 ) {
     try {
-        const session = await getServerSession(authOptions);
-        if (!session?.user) {
-            return NextResponse.json(
-                { error: 'Authentication required' },
-                { status: 401 }
-            );
-        }
+        const client = await clientPromise;
+        const db = client.db('healthcare_system');
+        const goalsCollection = db.collection('goals');
 
-        await dbConnect();
+        const result = await goalsCollection.deleteOne({
+            _id: new ObjectId(params.id)
+        });
 
-        // Check authorization
-        if (!(await isAuthorized(params.id, session.user.id))) {
-            return NextResponse.json(
-                { error: 'Unauthorized' },
-                { status: 403 }
-            );
-        }
-
-        // Delete goal
-        const deletedGoal = await Goal.findByIdAndDelete(params.id);
-
-        if (!deletedGoal) {
+        if (result.deletedCount === 0) {
             return NextResponse.json(
                 { error: 'Goal not found' },
                 { status: 404 }
@@ -176,7 +145,7 @@ export async function DELETE(
     } catch (error) {
         console.error('Error deleting goal:', error);
         return NextResponse.json(
-            { error: 'Internal server error' },
+            { error: 'Failed to delete goal' },
             { status: 500 }
         );
     }

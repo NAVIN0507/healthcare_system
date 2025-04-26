@@ -27,223 +27,193 @@ import {
     ClockIcon as ClockSolidIcon
 } from '@heroicons/react/24/solid';
 
-type GoalCategory = 'fitness' | 'nutrition' | 'weight' | 'health' | 'custom';
-type GoalStatus = 'in-progress' | 'completed' | 'failed';
-type GoalFrequency = 'daily' | 'weekly' | 'monthly' | 'one-time';
-
 interface Goal {
-    id: string;
+    _id: string;
     title: string;
-    description: string;
-    category: GoalCategory;
-    status: GoalStatus;
-    frequency: GoalFrequency;
-    target: number;
-    current: number;
+    description?: string;
+    category: 'Weight Loss' | 'Muscle Gain' | 'Cardio' | 'Strength' | 'Nutrition' | 'Mental Health' | 'Other';
+    targetValue: number;
+    currentValue: number;
     unit: string;
     startDate: string;
-    endDate: string;
+    targetDate: string;
     progress: number;
-    streak: number;
-    isFavorite: boolean;
+    status: 'In Progress' | 'Completed';
+    createdAt: string;
+    reminders?: {
+        frequency: 'daily' | 'weekly' | 'monthly' | 'none';
+        time: string;
+        enabled: boolean;
+    };
 }
 
 export default function GoalsPage() {
     const [goals, setGoals] = useState<Goal[]>([]);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState<string | null>(null);
     const [showAddGoal, setShowAddGoal] = useState(false);
     const [showEditGoal, setShowEditGoal] = useState(false);
     const [selectedGoal, setSelectedGoal] = useState<Goal | null>(null);
-    const [activeCategory, setActiveCategory] = useState<GoalCategory | 'all'>('all');
-    const [activeStatus, setActiveStatus] = useState<GoalStatus | 'all'>('all');
+    const [activeCategory, setActiveCategory] = useState<Goal['category'] | 'all'>('all');
+    const [activeStatus, setActiveStatus] = useState<Goal['status'] | 'all'>('all');
     const [newGoal, setNewGoal] = useState<Partial<Goal>>({
         title: '',
         description: '',
-        category: 'fitness',
-        frequency: 'daily',
-        target: 0,
+        category: 'Cardio',
+        targetValue: 0,
         unit: '',
         startDate: new Date().toISOString().split('T')[0],
-        endDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
-        isFavorite: false
+        targetDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+        reminders: {
+            frequency: 'none',
+            time: '09:00',
+            enabled: false
+        }
     });
 
-    // Sample goals data
+    // Fetch goals from API
     useEffect(() => {
-        const sampleGoals: Goal[] = [
-            {
-                id: '1',
-                title: 'Run 5K',
-                description: 'Complete a 5K run without stopping',
-                category: 'fitness',
-                status: 'in-progress',
-                frequency: 'one-time',
-                target: 5,
-                current: 3.2,
-                unit: 'km',
-                startDate: '2023-06-01',
-                endDate: '2023-07-15',
-                progress: 64,
-                streak: 5,
-                isFavorite: true
-            },
-            {
-                id: '2',
-                title: 'Drink Water',
-                description: 'Drink 8 glasses of water daily',
-                category: 'health',
-                status: 'in-progress',
-                frequency: 'daily',
-                target: 8,
-                current: 6,
-                unit: 'glasses',
-                startDate: '2023-06-01',
-                endDate: '2023-12-31',
-                progress: 75,
-                streak: 12,
-                isFavorite: false
-            },
-            {
-                id: '3',
-                title: 'Weight Loss',
-                description: 'Lose 5kg in 3 months',
-                category: 'weight',
-                status: 'in-progress',
-                frequency: 'monthly',
-                target: 5,
-                current: 2.3,
-                unit: 'kg',
-                startDate: '2023-05-01',
-                endDate: '2023-07-31',
-                progress: 46,
-                streak: 2,
-                isFavorite: true
-            },
-            {
-                id: '4',
-                title: 'Protein Intake',
-                description: 'Consume 120g of protein daily',
-                category: 'nutrition',
-                status: 'in-progress',
-                frequency: 'daily',
-                target: 120,
-                current: 95,
-                unit: 'g',
-                startDate: '2023-06-01',
-                endDate: '2023-12-31',
-                progress: 79,
-                streak: 8,
-                isFavorite: false
-            },
-            {
-                id: '5',
-                title: 'Meditation',
-                description: 'Meditate for 10 minutes daily',
-                category: 'health',
-                status: 'completed',
-                frequency: 'daily',
-                target: 10,
-                current: 10,
-                unit: 'minutes',
-                startDate: '2023-05-01',
-                endDate: '2023-05-31',
-                progress: 100,
-                streak: 31,
-                isFavorite: true
-            },
-            {
-                id: '6',
-                title: 'Push-ups',
-                description: 'Do 50 push-ups daily',
-                category: 'fitness',
-                status: 'failed',
-                frequency: 'daily',
-                target: 50,
-                current: 30,
-                unit: 'push-ups',
-                startDate: '2023-04-01',
-                endDate: '2023-04-30',
-                progress: 60,
-                streak: 0,
-                isFavorite: false
+        const fetchGoals = async () => {
+            try {
+                setLoading(true);
+                const response = await fetch('/api/goals');
+                if (!response.ok) {
+                    throw new Error('Failed to fetch goals');
+                }
+                const data = await response.json();
+                setGoals(data.goals);
+            } catch (err) {
+                setError(err instanceof Error ? err.message : 'Failed to fetch goals');
+            } finally {
+                setLoading(false);
             }
-        ];
-        setGoals(sampleGoals);
-    }, []);
-
-    const handleAddGoal = () => {
-        if (!newGoal.title || !newGoal.description || !newGoal.unit) return;
-
-        const goal: Goal = {
-            id: Date.now().toString(),
-            title: newGoal.title,
-            description: newGoal.description,
-            category: newGoal.category as GoalCategory,
-            status: 'in-progress',
-            frequency: newGoal.frequency as GoalFrequency,
-            target: newGoal.target || 0,
-            current: 0,
-            unit: newGoal.unit,
-            startDate: newGoal.startDate || new Date().toISOString().split('T')[0],
-            endDate: newGoal.endDate || new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
-            progress: 0,
-            streak: 0,
-            isFavorite: newGoal.isFavorite || false
         };
 
-        setGoals([...goals, goal]);
-        setShowAddGoal(false);
-        setNewGoal({
-            title: '',
-            description: '',
-            category: 'fitness',
-            frequency: 'daily',
-            target: 0,
-            unit: '',
-            startDate: new Date().toISOString().split('T')[0],
-            endDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
-            isFavorite: false
-        });
+        fetchGoals();
+    }, []);
+
+    const handleAddGoal = async () => {
+        if (!newGoal.title || !newGoal.unit) return;
+
+        try {
+            const response = await fetch('/api/goals', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(newGoal),
+            });
+
+            if (!response.ok) {
+                throw new Error('Failed to create goal');
+            }
+
+            const data = await response.json();
+            setGoals(prevGoals => [...prevGoals, data.goal]);
+            setShowAddGoal(false);
+            setNewGoal({
+                title: '',
+                description: '',
+                category: 'Cardio',
+                targetValue: 0,
+                unit: '',
+                startDate: new Date().toISOString().split('T')[0],
+                targetDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+                reminders: {
+                    frequency: 'none',
+                    time: '09:00',
+                    enabled: false
+                }
+            });
+        } catch (err) {
+            setError(err instanceof Error ? err.message : 'Failed to create goal');
+        }
     };
 
-    const handleEditGoal = () => {
+    const handleEditGoal = async () => {
         if (!selectedGoal) return;
 
-        const updatedGoals = goals.map(goal =>
-            goal.id === selectedGoal.id ? selectedGoal : goal
-        );
+        try {
+            const response = await fetch(`/api/goals/${selectedGoal._id}`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(selectedGoal),
+            });
 
-        setGoals(updatedGoals);
-        setShowEditGoal(false);
-        setSelectedGoal(null);
-    };
-
-    const handleDeleteGoal = (id: string) => {
-        setGoals(goals.filter(goal => goal.id !== id));
-    };
-
-    const handleUpdateProgress = (id: string, increment: number) => {
-        const updatedGoals = goals.map(goal => {
-            if (goal.id === id) {
-                const newCurrent = Math.min(goal.current + increment, goal.target);
-                const newProgress = Math.round((newCurrent / goal.target) * 100);
-                const newStatus = newProgress >= 100 ? 'completed' : goal.status;
-
-                return {
-                    ...goal,
-                    current: newCurrent,
-                    progress: newProgress,
-                    status: newStatus
-                };
+            if (!response.ok) {
+                throw new Error('Failed to update goal');
             }
-            return goal;
-        });
 
-        setGoals(updatedGoals);
+            const data = await response.json();
+            setGoals(prevGoals =>
+                prevGoals.map(goal =>
+                    goal._id === selectedGoal._id ? data.goal : goal
+                )
+            );
+            setShowEditGoal(false);
+        } catch (err) {
+            setError(err instanceof Error ? err.message : 'Failed to update goal');
+        }
+    };
+
+    const handleDeleteGoal = async (id: string) => {
+        try {
+            const response = await fetch(`/api/goals/${id}`, {
+                method: 'DELETE',
+            });
+
+            if (!response.ok) {
+                throw new Error('Failed to delete goal');
+            }
+
+            setGoals(prevGoals => prevGoals.filter(goal => goal._id !== id));
+        } catch (err) {
+            setError(err instanceof Error ? err.message : 'Failed to delete goal');
+        }
+    };
+
+    const handleUpdateProgress = async (id: string, increment: number) => {
+        const goal = goals.find(g => g._id === id);
+        if (!goal) return;
+
+        const newCurrentValue = Math.min(goal.currentValue + increment, goal.targetValue);
+        const newProgress = Math.round((newCurrentValue / goal.targetValue) * 100);
+        const newStatus = newProgress >= 100 ? 'Completed' : 'In Progress';
+
+        try {
+            const response = await fetch(`/api/goals/${id}`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    ...goal,
+                    currentValue: newCurrentValue,
+                    progress: newProgress,
+                    status: newStatus,
+                }),
+            });
+
+            if (!response.ok) {
+                throw new Error('Failed to update goal progress');
+            }
+
+            const data = await response.json();
+            setGoals(prevGoals =>
+                prevGoals.map(g =>
+                    g._id === id ? data.goal : g
+                )
+            );
+        } catch (err) {
+            setError(err instanceof Error ? err.message : 'Failed to update goal progress');
+        }
     };
 
     const handleToggleFavorite = (id: string) => {
         const updatedGoals = goals.map(goal =>
-            goal.id === id ? { ...goal, isFavorite: !goal.isFavorite } : goal
+            goal._id === id ? { ...goal, isFavorite: !goal.isFavorite } : goal
         );
 
         setGoals(updatedGoals);
@@ -255,33 +225,35 @@ export default function GoalsPage() {
         return true;
     });
 
-    const getCategoryIcon = (category: GoalCategory) => {
+    const getCategoryIcon = (category: Goal['category']) => {
         switch (category) {
-            case 'fitness':
-                return <FireIcon className="h-6 w-6 text-orange-500" />;
-            case 'nutrition':
-                return <HeartIcon className="h-6 w-6 text-red-500" />;
-            case 'weight':
+            case 'Weight Loss':
                 return <ArrowTrendingDownIcon className="h-6 w-6 text-blue-500" />;
-            case 'health':
+            case 'Muscle Gain':
+                return <ArrowTrendingUpIcon className="h-6 w-6 text-green-500" />;
+            case 'Cardio':
+                return <HeartIcon className="h-6 w-6 text-red-500" />;
+            case 'Strength':
+                return <BoltIcon className="h-6 w-6 text-purple-500" />;
+            case 'Nutrition':
+                return <HeartIcon className="h-6 w-6 text-red-500" />;
+            case 'Mental Health':
                 return <SparklesIcon className="h-6 w-6 text-purple-500" />;
             default:
                 return <StarIcon className="h-6 w-6 text-yellow-500" />;
         }
     };
 
-    const getStatusIcon = (status: GoalStatus) => {
+    const getStatusIcon = (status: Goal['status']) => {
         switch (status) {
-            case 'completed':
+            case 'Completed':
                 return <CheckCircleSolidIcon className="h-6 w-6 text-green-500" />;
-            case 'failed':
-                return <XCircleIcon className="h-6 w-6 text-red-500" />;
             default:
                 return <ClockSolidIcon className="h-6 w-6 text-blue-500" />;
         }
     };
 
-    const getFrequencyIcon = (frequency: GoalFrequency) => {
+    const getFrequencyIcon = (frequency: 'daily' | 'weekly' | 'monthly' | 'none') => {
         switch (frequency) {
             case 'daily':
                 return <CalendarIcon className="h-5 w-5 text-gray-500" />;
@@ -330,7 +302,7 @@ export default function GoalsPage() {
                         <div>
                             <p className="text-sm font-medium text-gray-500">Active Goals</p>
                             <p className="text-2xl font-bold text-gray-900 mt-1">
-                                {goals.filter(g => g.status === 'in-progress').length}
+                                {goals.filter(g => g.status === 'In Progress').length}
                             </p>
                         </div>
                         <div className="p-3 bg-blue-100 rounded-full">
@@ -344,7 +316,7 @@ export default function GoalsPage() {
                         <div>
                             <p className="text-sm font-medium text-gray-500">Completed</p>
                             <p className="text-2xl font-bold text-gray-900 mt-1">
-                                {goals.filter(g => g.status === 'completed').length}
+                                {goals.filter(g => g.status === 'Completed').length}
                             </p>
                         </div>
                         <div className="p-3 bg-green-100 rounded-full">
@@ -356,24 +328,10 @@ export default function GoalsPage() {
                 <div className="bg-white rounded-xl shadow-sm p-6 border border-gray-100">
                     <div className="flex items-center justify-between">
                         <div>
-                            <p className="text-sm font-medium text-gray-500">Longest Streak</p>
-                            <p className="text-2xl font-bold text-gray-900 mt-1">
-                                {Math.max(...goals.map(g => g.streak), 0)}
-                            </p>
-                        </div>
-                        <div className="p-3 bg-orange-100 rounded-full">
-                            <FireSolidIcon className="h-6 w-6 text-orange-600" />
-                        </div>
-                    </div>
-                </div>
-
-                <div className="bg-white rounded-xl shadow-sm p-6 border border-gray-100">
-                    <div className="flex items-center justify-between">
-                        <div>
                             <p className="text-sm font-medium text-gray-500">Success Rate</p>
                             <p className="text-2xl font-bold text-gray-900 mt-1">
                                 {goals.length > 0
-                                    ? Math.round((goals.filter(g => g.status === 'completed').length / goals.length) * 100)
+                                    ? Math.round((goals.filter(g => g.status === 'Completed').length / goals.length) * 100)
                                     : 0}%
                             </p>
                         </div>
@@ -396,15 +354,17 @@ export default function GoalsPage() {
                         <label className="block text-sm font-medium text-gray-700 mb-1">Category</label>
                         <select
                             value={activeCategory}
-                            onChange={(e) => setActiveCategory(e.target.value as GoalCategory | 'all')}
+                            onChange={(e) => setActiveCategory(e.target.value as Goal['category'] | 'all')}
                             className="w-full rounded-lg border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500"
                         >
                             <option value="all">All Categories</option>
-                            <option value="fitness">Fitness</option>
-                            <option value="nutrition">Nutrition</option>
-                            <option value="weight">Weight</option>
-                            <option value="health">Health</option>
-                            <option value="custom">Custom</option>
+                            <option value="Weight Loss">Weight Loss</option>
+                            <option value="Muscle Gain">Muscle Gain</option>
+                            <option value="Cardio">Cardio</option>
+                            <option value="Strength">Strength</option>
+                            <option value="Nutrition">Nutrition</option>
+                            <option value="Mental Health">Mental Health</option>
+                            <option value="Other">Other</option>
                         </select>
                     </div>
 
@@ -412,13 +372,12 @@ export default function GoalsPage() {
                         <label className="block text-sm font-medium text-gray-700 mb-1">Status</label>
                         <select
                             value={activeStatus}
-                            onChange={(e) => setActiveStatus(e.target.value as GoalStatus | 'all')}
+                            onChange={(e) => setActiveStatus(e.target.value as Goal['status'] | 'all')}
                             className="w-full rounded-lg border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500"
                         >
                             <option value="all">All Statuses</option>
-                            <option value="in-progress">In Progress</option>
-                            <option value="completed">Completed</option>
-                            <option value="failed">Failed</option>
+                            <option value="In Progress">In Progress</option>
+                            <option value="Completed">Completed</option>
                         </select>
                     </div>
                 </div>
@@ -433,15 +392,13 @@ export default function GoalsPage() {
             >
                 {filteredGoals.map((goal, index) => (
                     <motion.div
-                        key={goal.id}
+                        key={goal._id}
                         initial={{ opacity: 0, y: 20 }}
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ duration: 0.3, delay: index * 0.1 }}
-                        className={`bg-white rounded-xl shadow-sm overflow-hidden border ${goal.status === 'completed'
+                        className={`bg-white rounded-xl shadow-sm overflow-hidden border ${goal.status === 'Completed'
                             ? 'border-green-200'
-                            : goal.status === 'failed'
-                                ? 'border-red-200'
-                                : 'border-gray-100'
+                            : 'border-gray-100'
                             }`}
                     >
                         <div className="p-6">
@@ -453,28 +410,24 @@ export default function GoalsPage() {
                                     <div className="ml-3">
                                         <h3 className="text-lg font-semibold text-gray-900">{goal.title}</h3>
                                         <div className="flex items-center mt-1">
-                                            <span className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-medium ${goal.status === 'completed'
+                                            <span className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-medium ${goal.status === 'Completed'
                                                 ? 'bg-green-100 text-green-800'
-                                                : goal.status === 'failed'
-                                                    ? 'bg-red-100 text-red-800'
-                                                    : 'bg-blue-100 text-blue-800'
+                                                : 'bg-blue-100 text-blue-800'
                                                 }`}>
-                                                {goal.status === 'completed'
+                                                {goal.status === 'Completed'
                                                     ? 'Completed'
-                                                    : goal.status === 'failed'
-                                                        ? 'Failed'
-                                                        : 'In Progress'}
+                                                    : 'In Progress'}
                                             </span>
                                             <span className="ml-2 text-xs text-gray-500 flex items-center">
-                                                {getFrequencyIcon(goal.frequency)}
-                                                <span className="ml-1">{goal.frequency}</span>
+                                                {getFrequencyIcon(goal.reminders?.frequency || 'none')}
+                                                <span className="ml-1">{goal.reminders?.frequency || 'None'}</span>
                                             </span>
                                         </div>
                                     </div>
                                 </div>
                                 <div className="flex space-x-2">
                                     <button
-                                        onClick={() => handleToggleFavorite(goal.id)}
+                                        onClick={() => handleToggleFavorite(goal._id)}
                                         className="p-1 rounded-full hover:bg-gray-100"
                                     >
                                         {goal.isFavorite ? (
@@ -493,7 +446,7 @@ export default function GoalsPage() {
                                         <PencilIcon className="h-5 w-5 text-gray-500" />
                                     </button>
                                     <button
-                                        onClick={() => handleDeleteGoal(goal.id)}
+                                        onClick={() => handleDeleteGoal(goal._id)}
                                         className="p-1 rounded-full hover:bg-gray-100"
                                     >
                                         <TrashIcon className="h-5 w-5 text-red-500" />
@@ -510,31 +463,29 @@ export default function GoalsPage() {
                                 </div>
                                 <div className="w-full bg-gray-200 rounded-full h-2.5">
                                     <div
-                                        className={`h-2.5 rounded-full ${goal.status === 'completed'
+                                        className={`h-2.5 rounded-full ${goal.status === 'Completed'
                                             ? 'bg-green-500'
-                                            : goal.status === 'failed'
-                                                ? 'bg-red-500'
-                                                : 'bg-primary-500'
+                                            : 'bg-primary-500'
                                             }`}
                                         style={{ width: `${goal.progress}%` }}
                                     ></div>
                                 </div>
                                 <div className="flex justify-between mt-1 text-xs text-gray-500">
-                                    <span>{goal.current} {goal.unit}</span>
-                                    <span>{goal.target} {goal.unit}</span>
+                                    <span>{goal.currentValue} {goal.unit}</span>
+                                    <span>{goal.targetValue} {goal.unit}</span>
                                 </div>
                             </div>
 
-                            {goal.status === 'in-progress' && (
+                            {goal.status === 'In Progress' && (
                                 <div className="mt-4 flex space-x-2">
                                     <button
-                                        onClick={() => handleUpdateProgress(goal.id, -1)}
+                                        onClick={() => handleUpdateProgress(goal._id, -1)}
                                         className="flex-1 py-1 px-3 bg-gray-100 text-gray-700 rounded-lg text-sm font-medium hover:bg-gray-200 transition-colors"
                                     >
                                         -
                                     </button>
                                     <button
-                                        onClick={() => handleUpdateProgress(goal.id, 1)}
+                                        onClick={() => handleUpdateProgress(goal._id, 1)}
                                         className="flex-1 py-1 px-3 bg-primary-100 text-primary-700 rounded-lg text-sm font-medium hover:bg-primary-200 transition-colors"
                                     >
                                         +
@@ -545,11 +496,11 @@ export default function GoalsPage() {
                             <div className="mt-4 pt-4 border-t border-gray-100 flex justify-between text-xs text-gray-500">
                                 <div className="flex items-center">
                                     <CalendarIcon className="h-4 w-4 mr-1" />
-                                    <span>{new Date(goal.startDate).toLocaleDateString()} - {new Date(goal.endDate).toLocaleDateString()}</span>
+                                    <span>{new Date(goal.startDate).toLocaleDateString()} - {new Date(goal.targetDate).toLocaleDateString()}</span>
                                 </div>
                                 <div className="flex items-center">
                                     <FireIcon className="h-4 w-4 mr-1 text-orange-500" />
-                                    <span>{goal.streak} day streak</span>
+                                    <span>{goal.reminders?.frequency === 'daily' ? 'Daily' : ''}</span>
                                 </div>
                             </div>
                         </div>
@@ -625,14 +576,16 @@ export default function GoalsPage() {
                                                         <select
                                                             id="category"
                                                             value={newGoal.category}
-                                                            onChange={(e) => setNewGoal({ ...newGoal, category: e.target.value as GoalCategory })}
+                                                            onChange={(e) => setNewGoal({ ...newGoal, category: e.target.value as Goal['category'] })}
                                                             className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-primary-500 focus:border-primary-500 sm:text-sm"
                                                         >
-                                                            <option value="fitness">Fitness</option>
-                                                            <option value="nutrition">Nutrition</option>
-                                                            <option value="weight">Weight</option>
-                                                            <option value="health">Health</option>
-                                                            <option value="custom">Custom</option>
+                                                            <option value="Weight Loss">Weight Loss</option>
+                                                            <option value="Muscle Gain">Muscle Gain</option>
+                                                            <option value="Cardio">Cardio</option>
+                                                            <option value="Strength">Strength</option>
+                                                            <option value="Nutrition">Nutrition</option>
+                                                            <option value="Mental Health">Mental Health</option>
+                                                            <option value="Other">Other</option>
                                                         </select>
                                                     </div>
 
@@ -642,14 +595,14 @@ export default function GoalsPage() {
                                                         </label>
                                                         <select
                                                             id="frequency"
-                                                            value={newGoal.frequency}
-                                                            onChange={(e) => setNewGoal({ ...newGoal, frequency: e.target.value as GoalFrequency })}
+                                                            value={newGoal.reminders?.frequency}
+                                                            onChange={(e) => setNewGoal({ ...newGoal, reminders: { ...newGoal.reminders, frequency: e.target.value as 'daily' | 'weekly' | 'monthly' | 'none' } })}
                                                             className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-primary-500 focus:border-primary-500 sm:text-sm"
                                                         >
                                                             <option value="daily">Daily</option>
                                                             <option value="weekly">Weekly</option>
                                                             <option value="monthly">Monthly</option>
-                                                            <option value="one-time">One-time</option>
+                                                            <option value="none">None</option>
                                                         </select>
                                                     </div>
                                                 </div>
@@ -662,8 +615,8 @@ export default function GoalsPage() {
                                                         <input
                                                             type="number"
                                                             id="target"
-                                                            value={newGoal.target}
-                                                            onChange={(e) => setNewGoal({ ...newGoal, target: parseFloat(e.target.value) })}
+                                                            value={newGoal.targetValue}
+                                                            onChange={(e) => setNewGoal({ ...newGoal, targetValue: parseFloat(e.target.value) })}
                                                             className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-primary-500 focus:border-primary-500 sm:text-sm"
                                                             placeholder="e.g., 5"
                                                         />
@@ -705,8 +658,8 @@ export default function GoalsPage() {
                                                         <input
                                                             type="date"
                                                             id="endDate"
-                                                            value={newGoal.endDate}
-                                                            onChange={(e) => setNewGoal({ ...newGoal, endDate: e.target.value })}
+                                                            value={newGoal.targetDate}
+                                                            onChange={(e) => setNewGoal({ ...newGoal, targetDate: e.target.value })}
                                                             className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-primary-500 focus:border-primary-500 sm:text-sm"
                                                         />
                                                     </div>
@@ -818,14 +771,16 @@ export default function GoalsPage() {
                                                         <select
                                                             id="edit-category"
                                                             value={selectedGoal.category}
-                                                            onChange={(e) => setSelectedGoal({ ...selectedGoal, category: e.target.value as GoalCategory })}
+                                                            onChange={(e) => setSelectedGoal({ ...selectedGoal, category: e.target.value as Goal['category'] })}
                                                             className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-primary-500 focus:border-primary-500 sm:text-sm"
                                                         >
-                                                            <option value="fitness">Fitness</option>
-                                                            <option value="nutrition">Nutrition</option>
-                                                            <option value="weight">Weight</option>
-                                                            <option value="health">Health</option>
-                                                            <option value="custom">Custom</option>
+                                                            <option value="Weight Loss">Weight Loss</option>
+                                                            <option value="Muscle Gain">Muscle Gain</option>
+                                                            <option value="Cardio">Cardio</option>
+                                                            <option value="Strength">Strength</option>
+                                                            <option value="Nutrition">Nutrition</option>
+                                                            <option value="Mental Health">Mental Health</option>
+                                                            <option value="Other">Other</option>
                                                         </select>
                                                     </div>
 
@@ -835,14 +790,14 @@ export default function GoalsPage() {
                                                         </label>
                                                         <select
                                                             id="edit-frequency"
-                                                            value={selectedGoal.frequency}
-                                                            onChange={(e) => setSelectedGoal({ ...selectedGoal, frequency: e.target.value as GoalFrequency })}
+                                                            value={selectedGoal.reminders?.frequency}
+                                                            onChange={(e) => setSelectedGoal({ ...selectedGoal, reminders: { ...selectedGoal.reminders, frequency: e.target.value as 'daily' | 'weekly' | 'monthly' | 'none' } })}
                                                             className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-primary-500 focus:border-primary-500 sm:text-sm"
                                                         >
                                                             <option value="daily">Daily</option>
                                                             <option value="weekly">Weekly</option>
                                                             <option value="monthly">Monthly</option>
-                                                            <option value="one-time">One-time</option>
+                                                            <option value="none">None</option>
                                                         </select>
                                                     </div>
                                                 </div>
@@ -855,8 +810,8 @@ export default function GoalsPage() {
                                                         <input
                                                             type="number"
                                                             id="edit-target"
-                                                            value={selectedGoal.target}
-                                                            onChange={(e) => setSelectedGoal({ ...selectedGoal, target: parseFloat(e.target.value) })}
+                                                            value={selectedGoal.targetValue}
+                                                            onChange={(e) => setSelectedGoal({ ...selectedGoal, targetValue: parseFloat(e.target.value) })}
                                                             className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-primary-500 focus:border-primary-500 sm:text-sm"
                                                         />
                                                     </div>
@@ -896,8 +851,8 @@ export default function GoalsPage() {
                                                         <input
                                                             type="date"
                                                             id="edit-endDate"
-                                                            value={selectedGoal.endDate}
-                                                            onChange={(e) => setSelectedGoal({ ...selectedGoal, endDate: e.target.value })}
+                                                            value={selectedGoal.targetDate}
+                                                            onChange={(e) => setSelectedGoal({ ...selectedGoal, targetDate: e.target.value })}
                                                             className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-primary-500 focus:border-primary-500 sm:text-sm"
                                                         />
                                                     </div>

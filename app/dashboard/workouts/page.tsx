@@ -19,9 +19,31 @@ import {
     CalendarIcon,
     UserGroupIcon,
     TrophyIcon,
-    StarIcon
+    StarIcon,
+    PlusIcon,
+    XMarkIcon
 } from '@heroicons/react/24/outline';
 import { format } from 'date-fns';
+import { useRouter } from 'next/navigation';
+
+interface Exercise {
+    name: string;
+    sets: number;
+    reps: string;
+    rest: string;
+}
+
+interface Workout {
+    _id?: string;
+    title: string;
+    description: string;
+    difficulty: 'Beginner' | 'Intermediate' | 'Advanced';
+    duration: string;
+    frequency: string;
+    category: string;
+    exercises: Exercise[];
+    color?: string;
+}
 
 // Sample workout data
 const workouts = [
@@ -176,6 +198,7 @@ const monthlyStats = {
 };
 
 export default function WorkoutsPage() {
+    const router = useRouter();
     const [selectedCategory, setSelectedCategory] = useState('All');
     const [selectedWorkout, setSelectedWorkout] = useState(null);
     const [isWorkoutModalOpen, setIsWorkoutModalOpen] = useState(false);
@@ -184,6 +207,17 @@ export default function WorkoutsPage() {
     const [isPlaying, setIsPlaying] = useState(false);
     const [currentTime, setCurrentTime] = useState(0);
     const [workoutTimer, setWorkoutTimer] = useState(null);
+    const [workouts, setWorkouts] = useState<Workout[]>([]);
+    const [showForm, setShowForm] = useState(false);
+    const [formData, setFormData] = useState<Workout>({
+        title: '',
+        description: '',
+        difficulty: 'Beginner',
+        duration: '',
+        frequency: '',
+        category: 'Strength',
+        exercises: [{ name: '', sets: 3, reps: '', rest: '60 sec' }]
+    });
 
     // Filter workouts based on selected category and search query
     const filteredWorkouts = workouts.filter(workout => {
@@ -244,6 +278,87 @@ export default function WorkoutsPage() {
             }
         };
     }, [workoutTimer]);
+
+    const fetchWorkouts = async () => {
+        try {
+            const response = await fetch('/api/workouts');
+            if (response.ok) {
+                const data = await response.json();
+                setWorkouts(data);
+            }
+        } catch (error) {
+            console.error('Error fetching workouts:', error);
+        }
+    };
+
+    useEffect(() => {
+        fetchWorkouts();
+    }, []);
+
+    const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
+        const { name, value } = e.target;
+        setFormData(prev => ({
+            ...prev,
+            [name]: value
+        }));
+    };
+
+    const handleExerciseChange = (index: number, field: keyof Exercise, value: string | number) => {
+        setFormData(prev => {
+            const newExercises = [...prev.exercises];
+            newExercises[index] = {
+                ...newExercises[index],
+                [field]: value
+            };
+            return {
+                ...prev,
+                exercises: newExercises
+            };
+        });
+    };
+
+    const addExercise = () => {
+        setFormData(prev => ({
+            ...prev,
+            exercises: [...prev.exercises, { name: '', sets: 3, reps: '', rest: '60 sec' }]
+        }));
+    };
+
+    const removeExercise = (index: number) => {
+        setFormData(prev => ({
+            ...prev,
+            exercises: prev.exercises.filter((_, i) => i !== index)
+        }));
+    };
+
+    const handleSubmit = async (e: React.FormEvent) => {
+        e.preventDefault();
+        try {
+            const response = await fetch('/api/workouts', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(formData),
+            });
+
+            if (response.ok) {
+                setShowForm(false);
+                setFormData({
+                    title: '',
+                    description: '',
+                    difficulty: 'Beginner',
+                    duration: '',
+                    frequency: '',
+                    category: 'Strength',
+                    exercises: [{ name: '', sets: 3, reps: '', rest: '60 sec' }]
+                });
+                fetchWorkouts();
+            }
+        } catch (error) {
+            console.error('Error creating workout:', error);
+        }
+    };
 
     return (
         <div className="space-y-6">
@@ -696,6 +811,203 @@ export default function WorkoutsPage() {
                         </div>
                     </motion.div>
                 </motion.div>
+            )}
+
+            {showForm && (
+                <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+                    <div className="bg-white rounded-2xl shadow-xl p-6 w-full max-w-3xl max-h-[90vh] overflow-y-auto">
+                        <div className="flex justify-between items-center mb-6">
+                            <h2 className="text-2xl font-bold text-gray-900">Create New Workout</h2>
+                            <button
+                                onClick={() => setShowForm(false)}
+                                className="text-gray-500 hover:text-gray-700"
+                            >
+                                <XMarkIcon className="h-6 w-6" />
+                            </button>
+                        </div>
+
+                        <form onSubmit={handleSubmit} className="space-y-6">
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                                        Title
+                                    </label>
+                                    <input
+                                        type="text"
+                                        name="title"
+                                        value={formData.title}
+                                        onChange={handleInputChange}
+                                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                                        required
+                                    />
+                                </div>
+
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                                        Category
+                                    </label>
+                                    <select
+                                        name="category"
+                                        value={formData.category}
+                                        onChange={handleInputChange}
+                                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                                    >
+                                        <option value="Strength">Strength</option>
+                                        <option value="Cardio">Cardio</option>
+                                        <option value="Full Body">Full Body</option>
+                                        <option value="Core">Core</option>
+                                    </select>
+                                </div>
+
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                                        Difficulty
+                                    </label>
+                                    <select
+                                        name="difficulty"
+                                        value={formData.difficulty}
+                                        onChange={handleInputChange}
+                                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                                    >
+                                        <option value="Beginner">Beginner</option>
+                                        <option value="Intermediate">Intermediate</option>
+                                        <option value="Advanced">Advanced</option>
+                                    </select>
+                                </div>
+
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                                        Duration
+                                    </label>
+                                    <input
+                                        type="text"
+                                        name="duration"
+                                        value={formData.duration}
+                                        onChange={handleInputChange}
+                                        placeholder="e.g., 45 min"
+                                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                                        required
+                                    />
+                                </div>
+
+                                <div className="md:col-span-2">
+                                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                                        Description
+                                    </label>
+                                    <textarea
+                                        name="description"
+                                        value={formData.description}
+                                        onChange={handleInputChange}
+                                        rows={3}
+                                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                                        required
+                                    />
+                                </div>
+                            </div>
+
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-2">
+                                    Frequency
+                                </label>
+                                <input
+                                    type="text"
+                                    name="frequency"
+                                    value={formData.frequency}
+                                    onChange={handleInputChange}
+                                    placeholder="e.g., 3x per week"
+                                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                                    required
+                                />
+                            </div>
+
+                            <div>
+                                <div className="flex justify-between items-center mb-4">
+                                    <label className="block text-sm font-medium text-gray-700">
+                                        Exercises
+                                    </label>
+                                    <button
+                                        type="button"
+                                        onClick={addExercise}
+                                        className="text-primary-600 hover:text-primary-700 text-sm font-medium"
+                                    >
+                                        + Add Exercise
+                                    </button>
+                                </div>
+                                <div className="space-y-4">
+                                    {formData.exercises.map((exercise, index) => (
+                                        <div key={index} className="flex items-center space-x-4 bg-gray-50 p-4 rounded-lg">
+                                            <div className="flex-1">
+                                                <input
+                                                    type="text"
+                                                    value={exercise.name}
+                                                    onChange={(e) => handleExerciseChange(index, 'name', e.target.value)}
+                                                    placeholder="Exercise name"
+                                                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                                                    required
+                                                />
+                                            </div>
+                                            <div className="w-20">
+                                                <input
+                                                    type="number"
+                                                    value={exercise.sets}
+                                                    onChange={(e) => handleExerciseChange(index, 'sets', parseInt(e.target.value))}
+                                                    placeholder="Sets"
+                                                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                                                    required
+                                                />
+                                            </div>
+                                            <div className="w-32">
+                                                <input
+                                                    type="text"
+                                                    value={exercise.reps}
+                                                    onChange={(e) => handleExerciseChange(index, 'reps', e.target.value)}
+                                                    placeholder="Reps"
+                                                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                                                    required
+                                                />
+                                            </div>
+                                            <div className="w-32">
+                                                <input
+                                                    type="text"
+                                                    value={exercise.rest}
+                                                    onChange={(e) => handleExerciseChange(index, 'rest', e.target.value)}
+                                                    placeholder="Rest"
+                                                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                                                    required
+                                                />
+                                            </div>
+                                            {formData.exercises.length > 1 && (
+                                                <button
+                                                    type="button"
+                                                    onClick={() => removeExercise(index)}
+                                                    className="text-red-500 hover:text-red-700"
+                                                >
+                                                    <XMarkIcon className="h-5 w-5" />
+                                                </button>
+                                            )}
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
+
+                            <div className="flex justify-end space-x-4">
+                                <button
+                                    type="button"
+                                    onClick={() => setShowForm(false)}
+                                    className="px-6 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50"
+                                >
+                                    Cancel
+                                </button>
+                                <button
+                                    type="submit"
+                                    className="px-6 py-2 bg-gradient-to-r from-primary-600 to-primary-500 text-white rounded-lg shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 transition-all duration-200"
+                                >
+                                    Create Workout
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
             )}
         </div>
     );

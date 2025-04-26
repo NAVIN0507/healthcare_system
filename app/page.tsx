@@ -752,33 +752,7 @@ function Home() {
             ))}
           </div>
 
-          {/* Interactive Achievement Badges */}
-          <div className="mt-16 grid grid-cols-2 md:grid-cols-4 gap-6">
-            {[...Array(4)].map((_, index) => (
-              <motion.div
-                key={index}
-                initial={{ opacity: 0, scale: 0.8 }}
-                whileInView={{ opacity: 1, scale: 1 }}
-                viewport={{ once: true }}
-                transition={{ duration: 0.5, delay: index * 0.1 }}
-                whileHover={{ scale: 1.05, rotate: 5 }}
-                className="bg-white rounded-full p-6 shadow-soft aspect-square flex items-center justify-center group cursor-pointer"
-              >
-                <div className="text-center">
-                  <motion.div
-                    className="w-16 h-16 mx-auto mb-4 rounded-full bg-gradient-to-br from-primary-400 to-accent-400 flex items-center justify-center"
-                    whileHover={{ rotate: 360 }}
-                    transition={{ duration: 0.8 }}
-                  >
-                    <svg className="w-8 h-8 text-white transform group-hover:scale-110 transition-transform duration-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                    </svg>
-                  </motion.div>
-                  <span className="text-sm font-medium text-neutral-600">Achievement {index + 1}</span>
-                </div>
-              </motion.div>
-            ))}
-          </div>
+      
         </div>
       </section>
 

@@ -9,6 +9,7 @@ export async function POST(request: Request) {
 
         // Get the request body
         const body = await request.json();
+        console.log('Registration request body:', body);
 
         // Check if user already exists
         const existingUser = await User.findOne({ email: body.email });
@@ -19,42 +20,47 @@ export async function POST(request: Request) {
             );
         }
 
-        // Create new user
+        // Create new user with required fields
         const user = await User.create({
-            firstName: body.firstName,
-            lastName: body.lastName,
+            firstName: body.firstName || '',
+            lastName: body.lastName || '',
             email: body.email,
             password: body.password,
-            gender: body.gender,
-            dateOfBirth: new Date(body.dateOfBirth),
-            height: body.height,
-            weight: body.weight,
-            bloodType: body.bloodType,
-            pastMedicalIssues: body.pastMedicalIssues,
-            allergies: body.allergies,
-            currentHealthIssues: body.currentHealthIssues
+            dateOfBirth: body.dateOfBirth ? new Date(body.dateOfBirth) : undefined,
+            gender: body.gender || undefined,
+            height: body.height ? parseFloat(body.height) : undefined,
+            weight: body.weight ? parseFloat(body.weight) : undefined,
+            bloodType: body.bloodType || undefined,
+            allergies: body.allergies || '',
+            currentHealthIssues: body.currentHealthIssues || '',
+            pastMedicalIssues: body.pastMedicalIssues || ''
         });
 
-        // Remove password from response
-        const userResponse = user.toObject();
-        delete userResponse.password;
-
         return NextResponse.json(
-            {
-                message: 'User registered successfully',
-                user: userResponse
-            },
+            { message: 'User registered successfully' },
             { status: 201 }
         );
 
     } catch (error: any) {
         console.error('Registration error:', error);
+        console.error('Error name:', error.name);
+        console.error('Error message:', error.message);
+        if (error.errors) {
+            console.error('Validation errors:', JSON.stringify(error.errors, null, 2));
+        }
 
         // Handle validation errors
         if (error.name === 'ValidationError') {
-            const validationErrors = Object.values(error.errors).map((err: any) => err.message);
+            const validationErrors = {};
+            for (let field in error.errors) {
+                validationErrors[field] = error.errors[field].message;
+            }
+
             return NextResponse.json(
-                { error: 'Validation failed', details: validationErrors },
+                {
+                    error: 'Validation failed',
+                    details: validationErrors
+                },
                 { status: 400 }
             );
         }

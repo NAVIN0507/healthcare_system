@@ -1,12 +1,23 @@
 import mongoose from 'mongoose';
 import bcrypt from 'bcryptjs';
 
+// Delete the existing model if it exists
+if (mongoose.models.User) {
+    delete mongoose.models.User;
+}
+
 const userSchema = new mongoose.Schema({
-    name: {
+    firstName: {
         type: String,
-        required: [true, 'Name is required'],
+        required: [true, 'First name is required'],
         trim: true,
-        maxlength: [50, 'Name cannot exceed 50 characters']
+        maxlength: [50, 'First name cannot exceed 50 characters']
+    },
+    lastName: {
+        type: String,
+        required: [true, 'Last name is required'],
+        trim: true,
+        maxlength: [50, 'Last name cannot exceed 50 characters']
     },
     email: {
         type: String,
@@ -21,6 +32,38 @@ const userSchema = new mongoose.Schema({
         required: [true, 'Password is required'],
         minlength: [6, 'Password must be at least 6 characters']
     },
+    dateOfBirth: {
+        type: Date
+    },
+    gender: {
+        type: String,
+        enum: ['male', 'female', 'other']
+    },
+    height: {
+        type: Number
+    },
+    weight: {
+        type: Number
+    },
+    bloodType: {
+        type: String,
+        enum: ['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-']
+    },
+    allergies: {
+        type: String,
+        trim: true,
+        default: ''
+    },
+    currentHealthIssues: {
+        type: String,
+        trim: true,
+        default: ''
+    },
+    pastMedicalIssues: {
+        type: String,
+        trim: true,
+        default: ''
+    },
     image: {
         type: String,
         default: ''
@@ -30,15 +73,6 @@ const userSchema = new mongoose.Schema({
         enum: ['user', 'admin'],
         default: 'user'
     },
-    bio: {
-        type: String,
-        maxlength: [200, 'Bio cannot exceed 200 characters'],
-        default: ''
-    },
-    goals: [{
-        type: String,
-        trim: true
-    }],
     preferences: {
         notifications: {
             type: Boolean,
@@ -55,7 +89,14 @@ const userSchema = new mongoose.Schema({
         }
     }
 }, {
-    timestamps: true
+    timestamps: true,
+    toJSON: { virtuals: true },
+    toObject: { virtuals: true }
+});
+
+// Virtual for full name
+userSchema.virtual('name').get(function () {
+    return `${this.firstName} ${this.lastName}`;
 });
 
 // Hash password before saving
@@ -82,6 +123,6 @@ userSchema.methods.comparePassword = async function (candidatePassword: string) 
     }
 };
 
-const User = mongoose.models.User || mongoose.model('User', userSchema);
+const User = mongoose.model('User', userSchema);
 
 export default User; 

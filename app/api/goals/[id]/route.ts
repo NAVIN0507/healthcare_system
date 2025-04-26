@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/app/api/auth/[...nextauth]/route';
-import dbConnect from '@/lib/dbConnect';
+import { connectDB } from '@/app/lib/db';
 import Goal from '@/app/models/Goal';
 import { z } from 'zod';
 import { clientPromise } from '@/app/lib/db';
@@ -46,7 +46,7 @@ export async function GET(
             );
         }
 
-        await dbConnect();
+        await connectDB();
 
         const goal = await Goal.findById(params.id);
 

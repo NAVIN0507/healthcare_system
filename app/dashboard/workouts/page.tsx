@@ -21,7 +21,11 @@ import {
     TrophyIcon,
     StarIcon,
     PlusIcon,
-    XMarkIcon
+    XMarkIcon,
+    ClipboardDocumentListIcon,
+    ShoppingCartIcon,
+    ScissorsIcon,
+    LightBulbIcon
 } from '@heroicons/react/24/outline';
 import { format } from 'date-fns';
 import { useRouter } from 'next/navigation';
@@ -43,123 +47,29 @@ interface Workout {
     category: string;
     exercises: Exercise[];
     color?: string;
+    completed?: boolean;
+    date?: Date;
 }
 
-// Sample workout data
-const workouts = [
-    {
-        id: 1,
-        title: 'Full Body HIIT',
-        description: 'High-intensity interval training targeting all major muscle groups',
-        duration: 45,
-        calories: 450,
-        difficulty: 'Advanced',
-        category: 'HIIT',
-        image: 'https://images.unsplash.com/photo-1544367567-0f2fcb009e0b?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1000&q=80',
-        completed: true,
-        date: new Date(2023, 5, 15),
-        stats: {
-            heartRate: 145,
-            steps: 8500,
-            distance: 3.2
-        }
-    },
-    {
-        id: 2,
-        title: 'Upper Body Strength',
-        description: 'Focus on chest, shoulders, and arms with weighted exercises',
-        duration: 60,
-        calories: 380,
-        difficulty: 'Intermediate',
-        category: 'Strength',
-        image: 'https://images.unsplash.com/photo-1581009146145-b5ef050c2e1e?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1000&q=80',
-        completed: false,
-        date: new Date(2023, 5, 18),
-        stats: {
-            heartRate: 120,
-            steps: 4200,
-            distance: 1.8
-        }
-    },
-    {
-        id: 3,
-        title: 'Core Crusher',
-        description: 'Intensive ab and core workout with planks and crunches',
-        duration: 30,
-        calories: 250,
-        difficulty: 'Intermediate',
-        category: 'Core',
-        image: 'https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1000&q=80',
-        completed: true,
-        date: new Date(2023, 5, 20),
-        stats: {
-            heartRate: 130,
-            steps: 3500,
-            distance: 1.5
-        }
-    },
-    {
-        id: 4,
-        title: 'Lower Body Power',
-        description: 'Squats, lunges, and deadlifts for strong legs',
-        duration: 50,
-        calories: 420,
-        difficulty: 'Advanced',
-        category: 'Strength',
-        image: 'https://images.unsplash.com/photo-1599058917765-a780eda07a3e?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1000&q=80',
-        completed: false,
-        date: new Date(2023, 5, 22),
-        stats: {
-            heartRate: 135,
-            steps: 5200,
-            distance: 2.5
-        }
-    },
-    {
-        id: 5,
-        title: 'Cardio Blast',
-        description: 'Running, jumping rope, and burpees for maximum cardio',
-        duration: 40,
-        calories: 500,
-        difficulty: 'Advanced',
-        category: 'Cardio',
-        image: 'https://images.unsplash.com/photo-1538805060514-97d9cc17730c?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1000&q=80',
-        completed: true,
-        date: new Date(2023, 5, 25),
-        stats: {
-            heartRate: 160,
-            steps: 9200,
-            distance: 4.2
-        }
-    },
-    {
-        id: 6,
-        title: 'Yoga Flow',
-        description: 'Relaxing yoga session for flexibility and mindfulness',
-        duration: 60,
-        calories: 200,
-        difficulty: 'Beginner',
-        category: 'Flexibility',
-        image: 'https://images.unsplash.com/photo-1544367567-0f2fcb009e0b?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1000&q=80',
-        completed: false,
-        date: new Date(2023, 5, 28),
-        stats: {
-            heartRate: 95,
-            steps: 2800,
-            distance: 1.2
-        }
-    }
-];
+interface MealPrepStep {
+    step: string;
+    duration: string;
+    tasks: string[];
+    tips: string;
+    icon: string;
+}
 
-// Workout categories
-const categories = [
-    { name: 'All', count: workouts.length },
-    { name: 'HIIT', count: workouts.filter(w => w.category === 'HIIT').length },
-    { name: 'Strength', count: workouts.filter(w => w.category === 'Strength').length },
-    { name: 'Core', count: workouts.filter(w => w.category === 'Core').length },
-    { name: 'Cardio', count: workouts.filter(w => w.category === 'Cardio').length },
-    { name: 'Flexibility', count: workouts.filter(w => w.category === 'Flexibility').length }
-];
+interface MealPreparation {
+    _id: string;
+    title: string;
+    description: string;
+    totalTime: string;
+    scheduledDate: string;
+    steps: MealPrepStep[];
+    status: 'planned' | 'in_progress' | 'completed';
+    createdAt: string;
+    updatedAt: string;
+}
 
 // Difficulty colors
 const difficultyColors = {
@@ -188,6 +98,114 @@ const weeklyProgress = [
     { day: 'Sun', workouts: 0, minutes: 0, calories: 0 }
 ];
 
+// Meal schedule
+const mealSchedule = [
+    {
+        time: '7:00 AM',
+        meal: 'Breakfast',
+        calories: 450,
+        protein: 25,
+        carbs: 55,
+        fat: 15,
+        details: 'Oatmeal with berries, banana, and protein shake'
+    },
+    {
+        time: '10:00 AM',
+        meal: 'Morning Snack',
+        calories: 200,
+        protein: 12,
+        carbs: 25,
+        fat: 8,
+        details: 'Greek yogurt with almonds'
+    },
+    {
+        time: '1:00 PM',
+        meal: 'Lunch',
+        calories: 650,
+        protein: 40,
+        carbs: 70,
+        fat: 22,
+        details: 'Grilled chicken salad with quinoa'
+    },
+    {
+        time: '4:00 PM',
+        meal: 'Pre-Workout',
+        calories: 250,
+        protein: 15,
+        carbs: 35,
+        fat: 6,
+        details: 'Banana and protein bar'
+    },
+    {
+        time: '7:00 PM',
+        meal: 'Dinner',
+        calories: 550,
+        protein: 35,
+        carbs: 45,
+        fat: 20,
+        details: 'Salmon with sweet potato and vegetables'
+    }
+];
+
+// Meal preparation steps
+const mealPreparationSteps = [
+    {
+        step: 'Weekly Planning',
+        duration: '30 mins',
+        tasks: [
+            'Review meal schedule',
+            'Create shopping list',
+            'Check pantry inventory'
+        ],
+        tips: 'Plan meals that share common ingredients to reduce waste',
+        icon: 'ClipboardDocumentListIcon'
+    },
+    {
+        step: 'Grocery Shopping',
+        duration: '1 hour',
+        tasks: [
+            'Buy fresh produce',
+            'Get protein sources',
+            'Stock up on staples'
+        ],
+        tips: 'Shop the perimeter of the store first for fresh foods',
+        icon: 'ShoppingCartIcon'
+    },
+    {
+        step: 'Prep Work',
+        duration: '1.5 hours',
+        tasks: [
+            'Wash and cut vegetables',
+            'Portion proteins',
+            'Cook grains and legumes'
+        ],
+        tips: 'Use different colored containers for different food groups',
+        icon: 'ScissorsIcon'
+    },
+    {
+        step: 'Batch Cooking',
+        duration: '2 hours',
+        tasks: [
+            'Cook protein sources',
+            'Roast vegetables',
+            'Prepare sauces'
+        ],
+        tips: 'Use multiple cooking methods simultaneously to save time',
+        icon: 'FireIcon'
+    },
+    {
+        step: 'Portioning',
+        duration: '45 mins',
+        tasks: [
+            'Divide into containers',
+            'Label with dates',
+            'Store properly'
+        ],
+        tips: 'Use the FIFO method (First In, First Out) for storage',
+        icon: 'ArchiveBoxIcon'
+    }
+];
+
 // Monthly stats
 const monthlyStats = {
     totalWorkouts: 24,
@@ -200,7 +218,7 @@ const monthlyStats = {
 export default function WorkoutsPage() {
     const router = useRouter();
     const [selectedCategory, setSelectedCategory] = useState('All');
-    const [selectedWorkout, setSelectedWorkout] = useState(null);
+    const [selectedWorkout, setSelectedWorkout] = useState<Workout | null>(null);
     const [isWorkoutModalOpen, setIsWorkoutModalOpen] = useState(false);
     const [activeTab, setActiveTab] = useState('upcoming'); // 'upcoming', 'completed', 'favorites'
     const [searchQuery, setSearchQuery] = useState('');
@@ -218,8 +236,34 @@ export default function WorkoutsPage() {
         category: 'Strength',
         exercises: [{ name: '', sets: 3, reps: '', rest: '60 sec' }]
     });
+    const [mealPreps, setMealPreps] = useState<MealPreparation[]>([]);
+    const [showMealPrepForm, setShowMealPrepForm] = useState(false);
+    const [mealPrepFormData, setMealPrepFormData] = useState({
+        title: '',
+        description: '',
+        totalTime: '',
+        scheduledDate: new Date().toISOString().split('T')[0],
+        steps: [
+            {
+                step: '',
+                duration: '',
+                tasks: [''],
+                tips: '',
+                icon: 'ClipboardDocumentListIcon'
+            }
+        ],
+        status: 'planned' as const
+    });
 
-    // Filter workouts based on selected category and search query
+    const categories = [
+        { name: 'All', count: workouts.length },
+        { name: 'HIIT', count: workouts.filter(w => w.category === 'HIIT').length },
+        { name: 'Strength', count: workouts.filter(w => w.category === 'Strength').length },
+        { name: 'Core', count: workouts.filter(w => w.category === 'Core').length },
+        { name: 'Cardio', count: workouts.filter(w => w.category === 'Cardio').length },
+        { name: 'Flexibility', count: workouts.filter(w => w.category === 'Flexibility').length }
+    ];
+
     const filteredWorkouts = workouts.filter(workout => {
         const categoryMatch = selectedCategory === 'All' || workout.category === selectedCategory;
         const searchMatch = workout.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -227,28 +271,22 @@ export default function WorkoutsPage() {
         return categoryMatch && searchMatch;
     });
 
-    // Get upcoming workouts
     const upcomingWorkouts = filteredWorkouts.filter(workout => !workout.completed);
-
-    // Get completed workouts
     const completedWorkouts = filteredWorkouts.filter(workout => workout.completed);
 
-    // Handle workout selection
     const handleWorkoutSelect = (workout) => {
         setSelectedWorkout(workout);
         setIsWorkoutModalOpen(true);
     };
 
-    // Handle workout completion
     const handleWorkoutComplete = (workoutId) => {
         const updatedWorkouts = workouts.map(workout =>
-            workout.id === workoutId ? { ...workout, completed: !workout.completed } : workout
+            workout._id === workoutId ? { ...workout, completed: !workout.completed } : workout
         );
         // In a real app, you would update the state or make an API call here
         console.log('Workout completed:', workoutId);
     };
 
-    // Start workout timer
     const startWorkoutTimer = () => {
         setIsPlaying(true);
         const timer = setInterval(() => {
@@ -257,20 +295,17 @@ export default function WorkoutsPage() {
         setWorkoutTimer(timer);
     };
 
-    // Pause workout timer
     const pauseWorkoutTimer = () => {
         setIsPlaying(false);
         clearInterval(workoutTimer);
     };
 
-    // Format time (seconds to MM:SS)
     const formatTime = (seconds) => {
         const mins = Math.floor(seconds / 60);
         const secs = seconds % 60;
         return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
     };
 
-    // Clean up timer on unmount
     useEffect(() => {
         return () => {
             if (workoutTimer) {
@@ -282,10 +317,9 @@ export default function WorkoutsPage() {
     const fetchWorkouts = async () => {
         try {
             const response = await fetch('/api/workouts');
-            if (response.ok) {
-                const data = await response.json();
-                setWorkouts(data);
-            }
+            if (!response.ok) throw new Error('Failed to fetch workouts');
+            const data = await response.json();
+            setWorkouts(data);
         } catch (error) {
             console.error('Error fetching workouts:', error);
         }
@@ -336,33 +370,146 @@ export default function WorkoutsPage() {
         try {
             const response = await fetch('/api/workouts', {
                 method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify(formData),
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(formData)
             });
 
-            if (response.ok) {
-                setShowForm(false);
-                setFormData({
-                    title: '',
-                    description: '',
-                    difficulty: 'Beginner',
-                    duration: '',
-                    frequency: '',
-                    category: 'Strength',
-                    exercises: [{ name: '', sets: 3, reps: '', rest: '60 sec' }]
-                });
-                fetchWorkouts();
-            }
+            if (!response.ok) throw new Error('Failed to create workout');
+
+            await fetchWorkouts();
+            setShowForm(false);
+            setFormData({
+                title: '',
+                description: '',
+                difficulty: 'Beginner',
+                duration: '',
+                frequency: '',
+                category: 'Strength',
+                exercises: [{ name: '', sets: 3, reps: '', rest: '60 sec' }]
+            });
         } catch (error) {
             console.error('Error creating workout:', error);
         }
     };
 
+    const fetchMealPreps = async () => {
+        try {
+            const response = await fetch('/api/meal-prep');
+            if (!response.ok) throw new Error('Failed to fetch meal preparations');
+            const data = await response.json();
+            setMealPreps(data);
+        } catch (error) {
+            console.error('Error fetching meal preparations:', error);
+        }
+    };
+
+    const handleMealPrepSubmit = async (e: React.FormEvent) => {
+        e.preventDefault();
+        try {
+            const response = await fetch('/api/meal-prep', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(mealPrepFormData)
+            });
+
+            if (!response.ok) throw new Error('Failed to create meal preparation');
+
+            await fetchMealPreps();
+            setShowMealPrepForm(false);
+            setMealPrepFormData({
+                title: '',
+                description: '',
+                totalTime: '',
+                scheduledDate: new Date().toISOString().split('T')[0],
+                steps: [
+                    {
+                        step: '',
+                        duration: '',
+                        tasks: [''],
+                        tips: '',
+                        icon: 'ClipboardDocumentListIcon'
+                    }
+                ],
+                status: 'planned'
+            });
+        } catch (error) {
+            console.error('Error creating meal preparation:', error);
+        }
+    };
+
+    const handleStepChange = (index: number, field: keyof MealPrepStep, value: any) => {
+        setMealPrepFormData(prev => {
+            const newSteps = [...prev.steps];
+            newSteps[index] = {
+                ...newSteps[index],
+                [field]: value
+            };
+            return {
+                ...prev,
+                steps: newSteps
+            };
+        });
+    };
+
+    const addStep = () => {
+        setMealPrepFormData(prev => ({
+            ...prev,
+            steps: [...prev.steps, {
+                step: '',
+                duration: '',
+                tasks: [''],
+                tips: '',
+                icon: 'ClipboardDocumentListIcon'
+            }]
+        }));
+    };
+
+    const removeStep = (index: number) => {
+        setMealPrepFormData(prev => ({
+            ...prev,
+            steps: prev.steps.filter((_, i) => i !== index)
+        }));
+    };
+
+    const addTask = (stepIndex: number) => {
+        setMealPrepFormData(prev => {
+            const newSteps = [...prev.steps];
+            newSteps[stepIndex].tasks.push('');
+            return {
+                ...prev,
+                steps: newSteps
+            };
+        });
+    };
+
+    const removeTask = (stepIndex: number, taskIndex: number) => {
+        setMealPrepFormData(prev => {
+            const newSteps = [...prev.steps];
+            newSteps[stepIndex].tasks = newSteps[stepIndex].tasks.filter((_, i) => i !== taskIndex);
+            return {
+                ...prev,
+                steps: newSteps
+            };
+        });
+    };
+
+    const handleTaskChange = (stepIndex: number, taskIndex: number, value: string) => {
+        setMealPrepFormData(prev => {
+            const newSteps = [...prev.steps];
+            newSteps[stepIndex].tasks[taskIndex] = value;
+            return {
+                ...prev,
+                steps: newSteps
+            };
+        });
+    };
+
+    useEffect(() => {
+        fetchMealPreps();
+    }, []);
+
     return (
         <div className="space-y-6">
-            {/* Header */}
             <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
                 <div>
                     <h1 className="text-2xl font-bold text-white">Workouts</h1>
@@ -372,12 +519,12 @@ export default function WorkoutsPage() {
                     whileHover={{ scale: 1.05 }}
                     whileTap={{ scale: 0.95 }}
                     className="flex items-center justify-center px-4 py-2 bg-gradient-to-r from-violet-500 to-cyan-500 text-white rounded-lg shadow-lg"
+                    onClick={() => setShowForm(true)}
                 >
                     <span>New Workout</span>
                 </motion.button>
             </div>
 
-            {/* Stats Overview */}
             <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
                 <motion.div
                     initial={{ opacity: 0, y: 20 }}
@@ -464,7 +611,6 @@ export default function WorkoutsPage() {
                 </motion.div>
             </div>
 
-            {/* Weekly Progress Chart */}
             <motion.div
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
@@ -505,9 +651,330 @@ export default function WorkoutsPage() {
                 </div>
             </motion.div>
 
-            {/* Tabs and Filters */}
+            <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.5, delay: 0.5 }}
+                className="bg-gray-900/80 backdrop-blur-sm rounded-xl p-6 shadow-lg border border-violet-500/20"
+            >
+                <div className="flex items-center justify-between mb-6">
+                    <h3 className="text-lg font-semibold text-white">Daily Meal Schedule</h3>
+                    <div className="flex items-center space-x-4">
+                        <div className="flex items-center">
+                            <div className="w-3 h-3 rounded-full bg-emerald-500 mr-2"></div>
+                            <span className="text-xs text-gray-400">Protein</span>
+                        </div>
+                        <div className="flex items-center">
+                            <div className="w-3 h-3 rounded-full bg-blue-500 mr-2"></div>
+                            <span className="text-xs text-gray-400">Carbs</span>
+                        </div>
+                        <div className="flex items-center">
+                            <div className="w-3 h-3 rounded-full bg-amber-500 mr-2"></div>
+                            <span className="text-xs text-gray-400">Fat</span>
+                        </div>
+                    </div>
+                </div>
+                <div className="space-y-6">
+                    {mealSchedule.map((meal, index) => (
+                        <div key={meal.time} className="relative">
+                            {index < mealSchedule.length - 1 && (
+                                <div className="absolute left-[1.65rem] top-10 w-0.5 h-16 bg-gray-700"></div>
+                            )}
+                            <div className="flex items-start space-x-4">
+                                <div className="flex-shrink-0 w-14 text-sm text-gray-400 pt-2">
+                                    {meal.time}
+                                </div>
+                                <div className="flex-shrink-0 w-10 h-10 rounded-full bg-violet-500/20 flex items-center justify-center">
+                                    <ClockIcon className="w-6 h-6 text-violet-400" />
+                                </div>
+                                <div className="flex-grow bg-gray-800/50 rounded-xl p-4">
+                                    <div className="flex items-center justify-between mb-2">
+                                        <h4 className="text-white font-medium">{meal.meal}</h4>
+                                        <span className="text-sm text-gray-400">{meal.calories} cal</span>
+                                    </div>
+                                    <p className="text-sm text-gray-400 mb-3">{meal.details}</p>
+                                    <div className="flex items-center space-x-4">
+                                        <div className="flex-1 bg-gray-700 rounded-full h-2">
+                                            <div
+                                                className="bg-emerald-500 h-2 rounded-full"
+                                                style={{ width: `${(meal.protein / (meal.protein + meal.carbs + meal.fat)) * 100}%` }}
+                                            ></div>
+                                        </div>
+                                        <div className="flex-1 bg-gray-700 rounded-full h-2">
+                                            <div
+                                                className="bg-blue-500 h-2 rounded-full"
+                                                style={{ width: `${(meal.carbs / (meal.protein + meal.carbs + meal.fat)) * 100}%` }}
+                                            ></div>
+                                        </div>
+                                        <div className="flex-1 bg-gray-700 rounded-full h-2">
+                                            <div
+                                                className="bg-amber-500 h-2 rounded-full"
+                                                style={{ width: `${(meal.fat / (meal.protein + meal.carbs + meal.fat)) * 100}%` }}
+                                            ></div>
+                                        </div>
+                                    </div>
+                                    <div className="flex items-center justify-between mt-2 text-xs text-gray-400">
+                                        <span>P: {meal.protein}g</span>
+                                        <span>C: {meal.carbs}g</span>
+                                        <span>F: {meal.fat}g</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    ))}
+                </div>
+            </motion.div>
+
+            <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.5, delay: 0.6 }}
+                className="bg-gray-900/80 backdrop-blur-sm rounded-xl p-6 shadow-lg border border-violet-500/20"
+            >
+                <div className="flex items-center justify-between mb-6">
+                    <h3 className="text-lg font-semibold text-white">Meal Preparations</h3>
+                    <button
+                        onClick={() => setShowMealPrepForm(true)}
+                        className="px-4 py-2 bg-violet-500 text-white rounded-lg hover:bg-violet-600 transition-colors flex items-center gap-2"
+                    >
+                        <PlusIcon className="w-5 h-5" />
+                        New Meal Prep
+                    </button>
+                </div>
+
+                {mealPreps.length === 0 ? (
+                    <div className="text-center py-8">
+                        <p className="text-gray-400">No meal preparations found. Create your first meal prep plan!</p>
+                    </div>
+                ) : (
+                    <div className="space-y-6">
+                        {mealPreps.map((prep) => (
+                            <div key={prep._id} className="bg-gray-800/50 rounded-xl p-4">
+                                <div className="flex items-center justify-between mb-4">
+                                    <div>
+                                        <h4 className="text-white font-medium">{prep.title}</h4>
+                                        <p className="text-sm text-gray-400">{prep.description}</p>
+                                    </div>
+                                    <div className="flex items-center gap-4">
+                                        <span className={`px-3 py-1 rounded-full text-xs font-medium ${prep.status === 'completed' ? 'bg-green-500/20 text-green-400' :
+                                                prep.status === 'in_progress' ? 'bg-blue-500/20 text-blue-400' :
+                                                    'bg-gray-500/20 text-gray-400'
+                                            }`}>
+                                            {prep.status.replace('_', ' ')}
+                                        </span>
+                                        <span className="text-sm text-violet-400">{prep.totalTime}</span>
+                                    </div>
+                                </div>
+
+                                <div className="space-y-4">
+                                    {prep.steps.map((step, index) => (
+                                        <div key={index} className="flex items-start gap-4">
+                                            <div className="flex-shrink-0 w-8 h-8 rounded-full bg-violet-500/20 flex items-center justify-center">
+                                                <FireIcon className="w-5 h-5 text-violet-400" />
+                                            </div>
+                                            <div className="flex-grow">
+                                                <div className="flex items-center justify-between">
+                                                    <h5 className="text-white">{step.step}</h5>
+                                                    <span className="text-sm text-violet-400">{step.duration}</span>
+                                                </div>
+                                                <div className="mt-2 space-y-1">
+                                                    {step.tasks.map((task, taskIndex) => (
+                                                        <div key={taskIndex} className="flex items-center gap-2">
+                                                            <div className="w-1.5 h-1.5 rounded-full bg-violet-400"></div>
+                                                            <span className="text-sm text-gray-300">{task}</span>
+                                                        </div>
+                                                    ))}
+                                                </div>
+                                                <p className="text-xs text-amber-400 mt-2">{step.tips}</p>
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
+
+                                <div className="mt-4 pt-4 border-t border-gray-700">
+                                    <div className="flex items-center justify-between text-sm text-gray-400">
+                                        <span>Scheduled: {new Date(prep.scheduledDate).toLocaleDateString()}</span>
+                                        <span>Last updated: {new Date(prep.updatedAt).toLocaleDateString()}</span>
+                                    </div>
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+                )}
+
+                {showMealPrepForm && (
+                    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+                        <div className="bg-gray-900 rounded-xl p-6 max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+                            <div className="flex justify-between items-center mb-6">
+                                <h2 className="text-xl font-bold text-white">Create New Meal Preparation</h2>
+                                <button
+                                    onClick={() => setShowMealPrepForm(false)}
+                                    className="text-gray-400 hover:text-white"
+                                >
+                                    <XCircleIcon className="w-6 h-6" />
+                                </button>
+                            </div>
+
+                            <form onSubmit={handleMealPrepSubmit} className="space-y-6">
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-300 mb-1">Title</label>
+                                    <input
+                                        type="text"
+                                        value={mealPrepFormData.title}
+                                        onChange={(e) => setMealPrepFormData(prev => ({ ...prev, title: e.target.value }))}
+                                        className="w-full bg-gray-800 text-white rounded-lg px-4 py-2 focus:ring-2 focus:ring-violet-500"
+                                        required
+                                    />
+                                </div>
+
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-300 mb-1">Description</label>
+                                    <textarea
+                                        value={mealPrepFormData.description}
+                                        onChange={(e) => setMealPrepFormData(prev => ({ ...prev, description: e.target.value }))}
+                                        className="w-full bg-gray-800 text-white rounded-lg px-4 py-2 focus:ring-2 focus:ring-violet-500"
+                                        rows={3}
+                                        required
+                                    />
+                                </div>
+
+                                <div className="grid grid-cols-2 gap-4">
+                                    <div>
+                                        <label className="block text-sm font-medium text-gray-300 mb-1">Total Time</label>
+                                        <input
+                                            type="text"
+                                            value={mealPrepFormData.totalTime}
+                                            onChange={(e) => setMealPrepFormData(prev => ({ ...prev, totalTime: e.target.value }))}
+                                            className="w-full bg-gray-800 text-white rounded-lg px-4 py-2 focus:ring-2 focus:ring-violet-500"
+                                            placeholder="e.g., 2.5 hours"
+                                            required
+                                        />
+                                    </div>
+                                    <div>
+                                        <label className="block text-sm font-medium text-gray-300 mb-1">Scheduled Date</label>
+                                        <input
+                                            type="date"
+                                            value={mealPrepFormData.scheduledDate}
+                                            onChange={(e) => setMealPrepFormData(prev => ({ ...prev, scheduledDate: e.target.value }))}
+                                            className="w-full bg-gray-800 text-white rounded-lg px-4 py-2 focus:ring-2 focus:ring-violet-500"
+                                            required
+                                        />
+                                    </div>
+                                </div>
+
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-300 mb-1">Steps</label>
+                                    <div className="space-y-4">
+                                        {mealPrepFormData.steps.map((step, stepIndex) => (
+                                            <div key={stepIndex} className="bg-gray-800/50 rounded-lg p-4">
+                                                <div className="grid grid-cols-2 gap-4 mb-4">
+                                                    <div>
+                                                        <input
+                                                            type="text"
+                                                            value={step.step}
+                                                            onChange={(e) => handleStepChange(stepIndex, 'step', e.target.value)}
+                                                            placeholder="Step name"
+                                                            className="w-full bg-gray-700 text-white rounded-lg px-4 py-2"
+                                                            required
+                                                        />
+                                                    </div>
+                                                    <div>
+                                                        <input
+                                                            type="text"
+                                                            value={step.duration}
+                                                            onChange={(e) => handleStepChange(stepIndex, 'duration', e.target.value)}
+                                                            placeholder="Duration"
+                                                            className="w-full bg-gray-700 text-white rounded-lg px-4 py-2"
+                                                            required
+                                                        />
+                                                    </div>
+                                                </div>
+
+                                                <div className="space-y-2">
+                                                    {step.tasks.map((task, taskIndex) => (
+                                                        <div key={taskIndex} className="flex items-center gap-2">
+                                                            <input
+                                                                type="text"
+                                                                value={task}
+                                                                onChange={(e) => handleTaskChange(stepIndex, taskIndex, e.target.value)}
+                                                                placeholder="Task description"
+                                                                className="flex-grow bg-gray-700 text-white rounded-lg px-4 py-2"
+                                                                required
+                                                            />
+                                                            {step.tasks.length > 1 && (
+                                                                <button
+                                                                    type="button"
+                                                                    onClick={() => removeTask(stepIndex, taskIndex)}
+                                                                    className="text-red-400 hover:text-red-300"
+                                                                >
+                                                                    <XCircleIcon className="w-5 h-5" />
+                                                                </button>
+                                                            )}
+                                                        </div>
+                                                    ))}
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => addTask(stepIndex)}
+                                                        className="text-sm text-violet-400 hover:text-violet-300"
+                                                    >
+                                                        + Add Task
+                                                    </button>
+                                                </div>
+
+                                                <div className="mt-4">
+                                                    <input
+                                                        type="text"
+                                                        value={step.tips}
+                                                        onChange={(e) => handleStepChange(stepIndex, 'tips', e.target.value)}
+                                                        placeholder="Tips"
+                                                        className="w-full bg-gray-700 text-white rounded-lg px-4 py-2"
+                                                        required
+                                                    />
+                                                </div>
+
+                                                {mealPrepFormData.steps.length > 1 && (
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => removeStep(stepIndex)}
+                                                        className="mt-4 text-red-400 hover:text-red-300"
+                                                    >
+                                                        Remove Step
+                                                    </button>
+                                                )}
+                                            </div>
+                                        ))}
+                                    </div>
+                                    <button
+                                        type="button"
+                                        onClick={addStep}
+                                        className="mt-4 text-violet-400 hover:text-violet-300"
+                                    >
+                                        + Add Step
+                                    </button>
+                                </div>
+
+                                <div className="flex justify-end gap-4">
+                                    <button
+                                        type="button"
+                                        onClick={() => setShowMealPrepForm(false)}
+                                        className="px-4 py-2 bg-gray-700 text-white rounded-lg hover:bg-gray-600"
+                                    >
+                                        Cancel
+                                    </button>
+                                    <button
+                                        type="submit"
+                                        className="px-4 py-2 bg-violet-500 text-white rounded-lg hover:bg-violet-600"
+                                    >
+                                        Create Meal Prep
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                )}
+            </motion.div>
+
             <div className="flex flex-col md:flex-row gap-4">
-                {/* Tabs */}
                 <div className="flex items-center bg-gray-900/80 rounded-lg p-1">
                     <button
                         onClick={() => setActiveTab('upcoming')}
@@ -535,7 +1002,6 @@ export default function WorkoutsPage() {
                     </button>
                 </div>
 
-                {/* Search */}
                 <div className="relative flex-1">
                     <input
                         type="text"
@@ -551,7 +1017,6 @@ export default function WorkoutsPage() {
                     </div>
                 </div>
 
-                {/* Category Filters */}
                 <div className="flex flex-wrap gap-2">
                     {categories.map((category) => (
                         <button
@@ -568,17 +1033,14 @@ export default function WorkoutsPage() {
                 </div>
             </div>
 
-            {/* Workout Grid */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                 {(activeTab === 'upcoming' ? upcomingWorkouts :
                     activeTab === 'completed' ? completedWorkouts :
                         filteredWorkouts).map((workout) => (
                             <motion.div
-                                key={workout.id}
+                                key={workout._id}
                                 initial={{ opacity: 0, y: 20 }}
                                 animate={{ opacity: 1, y: 0 }}
-                                transition={{ duration: 0.5 }}
-                                whileHover={{ scale: 1.02 }}
                                 className="bg-gray-900/80 backdrop-blur-sm rounded-xl overflow-hidden shadow-lg border border-gray-700/30"
                             >
                                 <div className="relative h-48">
@@ -615,7 +1077,7 @@ export default function WorkoutsPage() {
                                         </div>
                                         <div className="flex items-center text-sm text-gray-300">
                                             <CalendarIcon className="h-4 w-4 mr-1" />
-                                            <span>{format(workout.date, 'MMM d')}</span>
+                                            <span>{workout.date ? format(new Date(workout.date), 'MMM d, yyyy') : 'No date set'}</span>
                                         </div>
                                     </div>
                                     <div className="mt-4 flex items-center justify-between">
@@ -631,7 +1093,7 @@ export default function WorkoutsPage() {
                                         <motion.button
                                             whileHover={{ scale: 1.05 }}
                                             whileTap={{ scale: 0.95 }}
-                                            onClick={() => handleWorkoutComplete(workout.id)}
+                                            onClick={() => handleWorkoutComplete(workout._id)}
                                             className={`p-2 rounded-full ${workout.completed ? 'bg-emerald-500/20 text-emerald-400' : 'bg-gray-700/50 text-gray-300'
                                                 }`}
                                         >
@@ -647,7 +1109,6 @@ export default function WorkoutsPage() {
                         ))}
             </div>
 
-            {/* Empty State */}
             {filteredWorkouts.length === 0 && (
                 <motion.div
                     initial={{ opacity: 0, y: 20 }}
@@ -662,13 +1123,189 @@ export default function WorkoutsPage() {
                         whileHover={{ scale: 1.05 }}
                         whileTap={{ scale: 0.95 }}
                         className="mt-4 flex items-center justify-center px-4 py-2 bg-gradient-to-r from-violet-500 to-cyan-500 text-white rounded-lg shadow-lg mx-auto"
+                        onClick={() => setShowForm(true)}
                     >
                         <span>Create Workout</span>
                     </motion.button>
                 </motion.div>
             )}
 
-            {/* Workout Modal */}
+            {showForm && (
+                <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4">
+                    <div className="bg-white rounded-xl p-6 max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+                        <div className="flex justify-between items-center mb-6">
+                            <h2 className="text-2xl font-bold">Create New Workout</h2>
+                            <button
+                                onClick={() => setShowForm(false)}
+                                className="text-gray-500 hover:text-gray-700"
+                            >
+                                <XCircleIcon className="w-6 h-6" />
+                            </button>
+                        </div>
+                        <form onSubmit={handleSubmit}>
+                            <div className="space-y-4">
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                                        Title
+                                    </label>
+                                    <input
+                                        type="text"
+                                        name="title"
+                                        value={formData.title}
+                                        onChange={handleInputChange}
+                                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                        required
+                                    />
+                                </div>
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                                        Description
+                                    </label>
+                                    <textarea
+                                        name="description"
+                                        value={formData.description}
+                                        onChange={handleInputChange}
+                                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                        rows={3}
+                                        required
+                                    />
+                                </div>
+                                <div className="grid grid-cols-2 gap-4">
+                                    <div>
+                                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                                            Difficulty
+                                        </label>
+                                        <select
+                                            name="difficulty"
+                                            value={formData.difficulty}
+                                            onChange={handleInputChange}
+                                            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                        >
+                                            <option value="Beginner">Beginner</option>
+                                            <option value="Intermediate">Intermediate</option>
+                                            <option value="Advanced">Advanced</option>
+                                        </select>
+                                    </div>
+                                    <div>
+                                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                                            Category
+                                        </label>
+                                        <select
+                                            name="category"
+                                            value={formData.category}
+                                            onChange={handleInputChange}
+                                            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                        >
+                                            <option value="HIIT">HIIT</option>
+                                            <option value="Strength">Strength</option>
+                                            <option value="Core">Core</option>
+                                            <option value="Cardio">Cardio</option>
+                                            <option value="Flexibility">Flexibility</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <div className="grid grid-cols-2 gap-4">
+                                    <div>
+                                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                                            Duration (e.g., "45 min")
+                                        </label>
+                                        <input
+                                            type="text"
+                                            name="duration"
+                                            value={formData.duration}
+                                            onChange={handleInputChange}
+                                            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                            required
+                                        />
+                                    </div>
+                                    <div>
+                                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                                            Frequency (e.g., "3x per week")
+                                        </label>
+                                        <input
+                                            type="text"
+                                            name="frequency"
+                                            value={formData.frequency}
+                                            onChange={handleInputChange}
+                                            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                            required
+                                        />
+                                    </div>
+                                </div>
+
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                                        Exercises
+                                    </label>
+                                    {formData.exercises.map((exercise, index) => (
+                                        <div key={index} className="grid grid-cols-4 gap-2 mb-2">
+                                            <input
+                                                type="text"
+                                                placeholder="Exercise name"
+                                                value={exercise.name}
+                                                onChange={(e) => handleExerciseChange(index, 'name', e.target.value)}
+                                                className="col-span-2 px-3 py-2 border border-gray-300 rounded-lg"
+                                                required
+                                            />
+                                            <input
+                                                type="text"
+                                                placeholder="Sets x Reps"
+                                                value={exercise.reps}
+                                                onChange={(e) => handleExerciseChange(index, 'reps', e.target.value)}
+                                                className="px-3 py-2 border border-gray-300 rounded-lg"
+                                                required
+                                            />
+                                            <div className="flex gap-2">
+                                                <input
+                                                    type="text"
+                                                    placeholder="Rest"
+                                                    value={exercise.rest}
+                                                    onChange={(e) => handleExerciseChange(index, 'rest', e.target.value)}
+                                                    className="flex-1 px-3 py-2 border border-gray-300 rounded-lg"
+                                                    required
+                                                />
+                                                {index > 0 && (
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => removeExercise(index)}
+                                                        className="px-3 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600"
+                                                    >
+                                                        ×
+                                                    </button>
+                                                )}
+                                            </div>
+                                        </div>
+                                    ))}
+                                    <button
+                                        type="button"
+                                        onClick={addExercise}
+                                        className="mt-2 px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200"
+                                    >
+                                        Add Exercise
+                                    </button>
+                                </div>
+
+                                <div className="flex justify-end gap-4 mt-6">
+                                    <button
+                                        type="button"
+                                        onClick={() => setShowForm(false)}
+                                        className="px-4 py-2 text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200"
+                                    >
+                                        Cancel
+                                    </button>
+                                    <button
+                                        type="submit"
+                                        className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600"
+                                    >
+                                        Create Workout
+                                    </button>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            )}
+
             {isWorkoutModalOpen && selectedWorkout && (
                 <motion.div
                     initial={{ opacity: 0 }}
@@ -811,203 +1448,6 @@ export default function WorkoutsPage() {
                         </div>
                     </motion.div>
                 </motion.div>
-            )}
-
-            {showForm && (
-                <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-                    <div className="bg-white rounded-2xl shadow-xl p-6 w-full max-w-3xl max-h-[90vh] overflow-y-auto">
-                        <div className="flex justify-between items-center mb-6">
-                            <h2 className="text-2xl font-bold text-gray-900">Create New Workout</h2>
-                            <button
-                                onClick={() => setShowForm(false)}
-                                className="text-gray-500 hover:text-gray-700"
-                            >
-                                <XMarkIcon className="h-6 w-6" />
-                            </button>
-                        </div>
-
-                        <form onSubmit={handleSubmit} className="space-y-6">
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                <div>
-                                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                                        Title
-                                    </label>
-                                    <input
-                                        type="text"
-                                        name="title"
-                                        value={formData.title}
-                                        onChange={handleInputChange}
-                                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
-                                        required
-                                    />
-                                </div>
-
-                                <div>
-                                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                                        Category
-                                    </label>
-                                    <select
-                                        name="category"
-                                        value={formData.category}
-                                        onChange={handleInputChange}
-                                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
-                                    >
-                                        <option value="Strength">Strength</option>
-                                        <option value="Cardio">Cardio</option>
-                                        <option value="Full Body">Full Body</option>
-                                        <option value="Core">Core</option>
-                                    </select>
-                                </div>
-
-                                <div>
-                                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                                        Difficulty
-                                    </label>
-                                    <select
-                                        name="difficulty"
-                                        value={formData.difficulty}
-                                        onChange={handleInputChange}
-                                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
-                                    >
-                                        <option value="Beginner">Beginner</option>
-                                        <option value="Intermediate">Intermediate</option>
-                                        <option value="Advanced">Advanced</option>
-                                    </select>
-                                </div>
-
-                                <div>
-                                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                                        Duration
-                                    </label>
-                                    <input
-                                        type="text"
-                                        name="duration"
-                                        value={formData.duration}
-                                        onChange={handleInputChange}
-                                        placeholder="e.g., 45 min"
-                                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
-                                        required
-                                    />
-                                </div>
-
-                                <div className="md:col-span-2">
-                                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                                        Description
-                                    </label>
-                                    <textarea
-                                        name="description"
-                                        value={formData.description}
-                                        onChange={handleInputChange}
-                                        rows={3}
-                                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
-                                        required
-                                    />
-                                </div>
-                            </div>
-
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-2">
-                                    Frequency
-                                </label>
-                                <input
-                                    type="text"
-                                    name="frequency"
-                                    value={formData.frequency}
-                                    onChange={handleInputChange}
-                                    placeholder="e.g., 3x per week"
-                                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
-                                    required
-                                />
-                            </div>
-
-                            <div>
-                                <div className="flex justify-between items-center mb-4">
-                                    <label className="block text-sm font-medium text-gray-700">
-                                        Exercises
-                                    </label>
-                                    <button
-                                        type="button"
-                                        onClick={addExercise}
-                                        className="text-primary-600 hover:text-primary-700 text-sm font-medium"
-                                    >
-                                        + Add Exercise
-                                    </button>
-                                </div>
-                                <div className="space-y-4">
-                                    {formData.exercises.map((exercise, index) => (
-                                        <div key={index} className="flex items-center space-x-4 bg-gray-50 p-4 rounded-lg">
-                                            <div className="flex-1">
-                                                <input
-                                                    type="text"
-                                                    value={exercise.name}
-                                                    onChange={(e) => handleExerciseChange(index, 'name', e.target.value)}
-                                                    placeholder="Exercise name"
-                                                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
-                                                    required
-                                                />
-                                            </div>
-                                            <div className="w-20">
-                                                <input
-                                                    type="number"
-                                                    value={exercise.sets}
-                                                    onChange={(e) => handleExerciseChange(index, 'sets', parseInt(e.target.value))}
-                                                    placeholder="Sets"
-                                                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
-                                                    required
-                                                />
-                                            </div>
-                                            <div className="w-32">
-                                                <input
-                                                    type="text"
-                                                    value={exercise.reps}
-                                                    onChange={(e) => handleExerciseChange(index, 'reps', e.target.value)}
-                                                    placeholder="Reps"
-                                                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
-                                                    required
-                                                />
-                                            </div>
-                                            <div className="w-32">
-                                                <input
-                                                    type="text"
-                                                    value={exercise.rest}
-                                                    onChange={(e) => handleExerciseChange(index, 'rest', e.target.value)}
-                                                    placeholder="Rest"
-                                                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
-                                                    required
-                                                />
-                                            </div>
-                                            {formData.exercises.length > 1 && (
-                                                <button
-                                                    type="button"
-                                                    onClick={() => removeExercise(index)}
-                                                    className="text-red-500 hover:text-red-700"
-                                                >
-                                                    <XMarkIcon className="h-5 w-5" />
-                                                </button>
-                                            )}
-                                        </div>
-                                    ))}
-                                </div>
-                            </div>
-
-                            <div className="flex justify-end space-x-4">
-                                <button
-                                    type="button"
-                                    onClick={() => setShowForm(false)}
-                                    className="px-6 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50"
-                                >
-                                    Cancel
-                                </button>
-                                <button
-                                    type="submit"
-                                    className="px-6 py-2 bg-gradient-to-r from-primary-600 to-primary-500 text-white rounded-lg shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 transition-all duration-200"
-                                >
-                                    Create Workout
-                                </button>
-                            </div>
-                        </form>
-                    </div>
-                </div>
             )}
         </div>
     );

@@ -10,6 +10,9 @@ import {
     HeartIcon,
     BoltIcon,
     ArrowTrendingUpIcon,
+    ClockIcon,
+    CalendarIcon,
+    ClipboardDocumentListIcon
 } from '@heroicons/react/24/outline';
 import GoalSection from '../components/GoalSection';
 
@@ -43,90 +46,39 @@ interface Workout {
     }>;
 }
 
+interface MealPreparation {
+    _id: string;
+    title: string;
+    description: string;
+    totalTime: string;
+    scheduledDate: string;
+    steps: Array<{
+        step: string;
+        duration: string;
+        tasks: string[];
+        tips: string;
+        icon: string;
+    }>;
+    status: 'planned' | 'in_progress' | 'completed';
+    createdAt: string;
+    updatedAt: string;
+}
+
 export default function DashboardPage() {
     const router = useRouter();
     const [userData, setUserData] = useState<any>(null);
     const [isLoading, setIsLoading] = useState(true);
     const [showAchievements, setShowAchievements] = useState(false);
     const [workouts, setWorkouts] = useState<Workout[]>([]);
-
-    const workoutPlans: WorkoutPlan[] = [
-        {
-            id: '1',
-            title: 'Full Body Strength',
-            description: 'Build overall strength with compound exercises',
-            difficulty: 'Intermediate',
-            duration: '45-60 min',
-            frequency: '3x per week',
-            category: 'Strength',
-            color: 'from-purple-500 to-indigo-600',
-            exercises: [
-                { name: 'Barbell Squats', sets: 4, reps: '8-10', rest: '90 sec' },
-                { name: 'Bench Press', sets: 4, reps: '8-10', rest: '90 sec' },
-                { name: 'Deadlifts', sets: 3, reps: '8-10', rest: '120 sec' },
-                { name: 'Shoulder Press', sets: 3, reps: '10-12', rest: '60 sec' },
-                { name: 'Pull-ups', sets: 3, reps: '8-12', rest: '90 sec' }
-            ]
-        },
-        {
-            id: '2',
-            title: 'HIIT Cardio Blast',
-            description: 'High-intensity intervals for maximum fat burn',
-            difficulty: 'Advanced',
-            duration: '30 min',
-            frequency: '2-3x per week',
-            category: 'Cardio',
-            color: 'from-red-500 to-pink-600',
-            exercises: [
-                { name: 'Burpees', sets: 3, reps: '45 sec', rest: '15 sec' },
-                { name: 'Mountain Climbers', sets: 3, reps: '45 sec', rest: '15 sec' },
-                { name: 'Jump Squats', sets: 3, reps: '45 sec', rest: '15 sec' },
-                { name: 'High Knees', sets: 3, reps: '45 sec', rest: '15 sec' },
-                { name: 'Plank to Push-up', sets: 3, reps: '45 sec', rest: '15 sec' }
-            ]
-        },
-        {
-            id: '3',
-            title: 'Beginner Fitness',
-            description: 'Perfect for those starting their fitness journey',
-            difficulty: 'Beginner',
-            duration: '30-40 min',
-            frequency: '3x per week',
-            category: 'Full Body',
-            color: 'from-orange-500 to-yellow-500',
-            exercises: [
-                { name: 'Bodyweight Squats', sets: 3, reps: '12-15', rest: '60 sec' },
-                { name: 'Push-ups (Modified)', sets: 3, reps: '8-12', rest: '60 sec' },
-                { name: 'Dumbbell Rows', sets: 3, reps: '12-15', rest: '60 sec' },
-                { name: 'Walking Lunges', sets: 2, reps: '10 each leg', rest: '60 sec' },
-                { name: 'Plank Hold', sets: 3, reps: '30 sec', rest: '30 sec' }
-            ]
-        },
-        {
-            id: '4',
-            title: 'Core & Flexibility',
-            description: 'Strengthen your core and improve flexibility',
-            difficulty: 'Beginner',
-            duration: '40 min',
-            frequency: '2-3x per week',
-            category: 'Core',
-            color: 'from-blue-500 to-cyan-500',
-            exercises: [
-                { name: 'Plank Variations', sets: 3, reps: '45 sec', rest: '30 sec' },
-                { name: 'Russian Twists', sets: 3, reps: '20 each side', rest: '45 sec' },
-                { name: 'Superman Holds', sets: 3, reps: '30 sec', rest: '30 sec' },
-                { name: 'Bird Dogs', sets: 3, reps: '12 each side', rest: '45 sec' },
-                { name: 'Dead Bug', sets: 3, reps: '12 each side', rest: '45 sec' }
-            ]
-        }
-    ];
+    const [mealPreps, setMealPreps] = useState<MealPreparation[]>([]);
 
     useEffect(() => {
         const fetchData = async () => {
             try {
-                const [userResponse, workoutsResponse] = await Promise.all([
+                const [userResponse, workoutsResponse, mealPrepsResponse] = await Promise.all([
                     fetch('/api/auth/me'),
-                    fetch('/api/workouts')
+                    fetch('/api/workouts'),
+                    fetch('/api/meal-prep')
                 ]);
 
                 if (!userResponse.ok) {
@@ -136,9 +88,11 @@ export default function DashboardPage() {
 
                 const userData = await userResponse.json();
                 const workoutsData = workoutsResponse.ok ? await workoutsResponse.json() : [];
+                const mealPrepsData = mealPrepsResponse.ok ? await mealPrepsResponse.json() : [];
 
                 setUserData(userData.user);
                 setWorkouts(workoutsData);
+                setMealPreps(mealPrepsData);
             } catch (error) {
                 console.error('Error fetching data:', error);
                 router.push('/login');
@@ -233,9 +187,9 @@ export default function DashboardPage() {
                                 className="bg-white rounded-2xl shadow-lg hover:shadow-xl transform hover:-translate-y-1 transition-all duration-200 overflow-hidden"
                             >
                                 <div className={`h-2 bg-gradient-to-r ${workout.category === 'Strength' ? 'from-purple-500 to-indigo-600' :
-                                        workout.category === 'Cardio' ? 'from-red-500 to-pink-600' :
-                                            workout.category === 'Full Body' ? 'from-orange-500 to-yellow-500' :
-                                                'from-blue-500 to-cyan-500'
+                                    workout.category === 'Cardio' ? 'from-red-500 to-pink-600' :
+                                        workout.category === 'Full Body' ? 'from-orange-500 to-yellow-500' :
+                                            'from-blue-500 to-cyan-500'
                                     }`} />
                                 <div className="p-6">
                                     <h3 className="text-xl font-bold text-gray-900 mb-2">{workout.title}</h3>
@@ -244,8 +198,8 @@ export default function DashboardPage() {
                                         <div className="flex items-center justify-between">
                                             <span className="text-sm text-gray-500">Difficulty:</span>
                                             <span className={`px-2 py-1 rounded-full text-xs font-medium ${workout.difficulty === 'Beginner' ? 'bg-green-100 text-green-700' :
-                                                    workout.difficulty === 'Intermediate' ? 'bg-yellow-100 text-yellow-700' :
-                                                        'bg-red-100 text-red-700'
+                                                workout.difficulty === 'Intermediate' ? 'bg-yellow-100 text-yellow-700' :
+                                                    'bg-red-100 text-red-700'
                                                 }`}>
                                                 {workout.difficulty}
                                             </span>
@@ -268,6 +222,89 @@ export default function DashboardPage() {
                                 </div>
                             </div>
                         ))}
+                    </div>
+                </div>
+
+                {/* Meal Preparations Section */}
+                <div className="mb-8">
+                    <div className="flex items-center space-x-4 mb-8">
+                        <div className="p-3 bg-gradient-to-br from-emerald-500 to-teal-600 rounded-xl">
+                            <ClipboardDocumentListIcon className="h-8 w-8 text-white" />
+                        </div>
+                        <div className="flex justify-between items-center flex-1">
+                            <h2 className="text-2xl font-bold text-gray-900">Meal Preparations</h2>
+                            <button
+                                onClick={() => router.push('/dashboard/workouts')}
+                                className="text-primary-600 hover:text-primary-700 font-medium"
+                            >
+                                View All
+                            </button>
+                        </div>
+                    </div>
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                        {mealPreps.slice(0, 3).map((prep) => (
+                            <div
+                                key={prep._id}
+                                className="bg-white rounded-2xl shadow-lg hover:shadow-xl transform hover:-translate-y-1 transition-all duration-200 overflow-hidden"
+                            >
+                                <div className="h-2 bg-gradient-to-r from-emerald-500 to-teal-500" />
+                                <div className="p-6">
+                                    <div className="flex items-center justify-between mb-4">
+                                        <h3 className="text-xl font-bold text-gray-900">{prep.title}</h3>
+                                        <span className={`px-3 py-1 rounded-full text-xs font-medium ${prep.status === 'completed' ? 'bg-green-100 text-green-700' :
+                                                prep.status === 'in_progress' ? 'bg-blue-100 text-blue-700' :
+                                                    'bg-gray-100 text-gray-700'
+                                            }`}>
+                                            {prep.status.replace('_', ' ')}
+                                        </span>
+                                    </div>
+                                    <p className="text-gray-600 mb-4">{prep.description}</p>
+                                    <div className="space-y-2">
+                                        <div className="flex items-center text-gray-500">
+                                            <ClockIcon className="h-5 w-5 mr-2" />
+                                            <span>{prep.totalTime}</span>
+                                        </div>
+                                        <div className="flex items-center text-gray-500">
+                                            <CalendarIcon className="h-5 w-5 mr-2" />
+                                            <span>{new Date(prep.scheduledDate).toLocaleDateString()}</span>
+                                        </div>
+                                    </div>
+                                    <div className="mt-4 space-y-2">
+                                        {prep.steps.slice(0, 2).map((step, index) => (
+                                            <div key={index} className="flex items-start space-x-2">
+                                                <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 mt-2" />
+                                                <div>
+                                                    <p className="text-sm font-medium text-gray-700">{step.step}</p>
+                                                    <p className="text-xs text-gray-500">{step.duration}</p>
+                                                </div>
+                                            </div>
+                                        ))}
+                                        {prep.steps.length > 2 && (
+                                            <p className="text-sm text-gray-500">+{prep.steps.length - 2} more steps</p>
+                                        )}
+                                    </div>
+                                    <button
+                                        onClick={() => router.push('/dashboard/meal-prep')}
+                                        className="mt-4 w-full px-4 py-2 bg-gradient-to-r from-emerald-600 to-teal-600 text-white rounded-xl hover:from-emerald-500 hover:to-teal-500 transform hover:-translate-y-0.5 transition-all duration-200"
+                                    >
+                                        View Details
+                                    </button>
+                                </div>
+                            </div>
+                        ))}
+                        {mealPreps.length === 0 && (
+                            <div className="col-span-full bg-white rounded-2xl shadow-lg p-6 text-center">
+                                <ClipboardDocumentListIcon className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+                                <h3 className="text-lg font-medium text-gray-900 mb-2">No Meal Preparations</h3>
+                                <p className="text-gray-600 mb-4">Start planning your meals for better nutrition tracking</p>
+                                <button
+                                    onClick={() => router.push('/dashboard/meal-prep')}
+                                    className="px-4 py-2 bg-gradient-to-r from-emerald-600 to-teal-600 text-white rounded-xl hover:from-emerald-500 hover:to-teal-500 transform hover:-translate-y-0.5 transition-all duration-200"
+                                >
+                                    Create Meal Prep
+                                </button>
+                            </div>
+                        )}
                     </div>
                 </div>
             </div>

@@ -25,10 +25,13 @@ import {
     ClipboardDocumentListIcon,
     ShoppingCartIcon,
     ScissorsIcon,
-    LightBulbIcon
+    LightBulbIcon,
+    ArrowPathIcon
 } from '@heroicons/react/24/outline';
 import { format } from 'date-fns';
 import { useRouter } from 'next/navigation';
+import WorkoutAchievements from '@/app/components/WorkoutAchievements';
+import RestTimer from '@/app/components/RestTimer';
 
 interface Exercise {
     name: string;
@@ -59,26 +62,6 @@ interface Workout {
     image?: string;
     stats?: WorkoutStats;
     calories?: number;
-}
-
-interface MealPrepStep {
-    step: string;
-    duration: string;
-    tasks: string[];
-    tips: string;
-    icon: string;
-}
-
-interface MealPreparation {
-    _id: string;
-    title: string;
-    description: string;
-    totalTime: string;
-    scheduledDate: string;
-    steps: MealPrepStep[];
-    status: 'planned' | 'in_progress' | 'completed';
-    createdAt: string;
-    updatedAt: string;
 }
 
 // Difficulty colors
@@ -225,6 +208,21 @@ const monthlyStats = {
     improvement: 12
 };
 
+// Add these helper functions near the top with other utility functions
+const calculateTimerProgress = (currentTime: number, totalTime: number = 3600) => {
+    return (currentTime / totalTime) * 100;
+};
+
+const formatTimeDetailed = (seconds: number) => {
+    const hours = Math.floor(seconds / 3600);
+    const minutes = Math.floor((seconds % 3600) / 60);
+    const secs = seconds % 60;
+    if (hours > 0) {
+        return `${hours}:${minutes.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+    }
+    return `${minutes.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+};
+
 export default function WorkoutsPage() {
     const router = useRouter();
     const [selectedCategory, setSelectedCategory] = useState('All');
@@ -234,7 +232,7 @@ export default function WorkoutsPage() {
     const [searchQuery, setSearchQuery] = useState('');
     const [isPlaying, setIsPlaying] = useState(false);
     const [currentTime, setCurrentTime] = useState(0);
-    const [workoutTimer, setWorkoutTimer] = useState(null);
+    const [workoutTimer, setWorkoutTimer] = useState<NodeJS.Timeout | null>(null);
     const [workouts, setWorkouts] = useState<Workout[]>([]);
     const [showForm, setShowForm] = useState(false);
     const [formData, setFormData] = useState<Workout>({
@@ -244,25 +242,8 @@ export default function WorkoutsPage() {
         duration: '',
         frequency: '',
         category: 'Strength',
-        exercises: [{ name: '', sets: 3, reps: '', rest: '60 sec' }]
-    });
-    const [mealPreps, setMealPreps] = useState<MealPreparation[]>([]);
-    const [showMealPrepForm, setShowMealPrepForm] = useState(false);
-    const [mealPrepFormData, setMealPrepFormData] = useState({
-        title: '',
-        description: '',
-        totalTime: '',
-        scheduledDate: new Date().toISOString().split('T')[0],
-        steps: [
-            {
-                step: '',
-                duration: '',
-                tasks: [''],
-                tips: '',
-                icon: 'ClipboardDocumentListIcon'
-            }
-        ],
-        status: 'planned' as const
+        exercises: [{ name: '', sets: 3, reps: '', rest: '60 sec' }],
+        image: `https://source.unsplash.com/1600x900/?fitness,${Math.random()}`
     });
 
     const categories = [
@@ -339,9 +320,11 @@ export default function WorkoutsPage() {
             const response = await fetch('/api/workouts');
             if (!response.ok) throw new Error('Failed to fetch workouts');
             const data = await response.json();
-            setWorkouts(data);
+            // Ensure we're setting an array of workouts
+            setWorkouts(data.workouts || []);
         } catch (error) {
             console.error('Error fetching workouts:', error);
+            setWorkouts([]); // Set empty array on error
         }
     };
 
@@ -388,10 +371,16 @@ export default function WorkoutsPage() {
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         try {
+            // Update image URL with category for more relevant images
+            const updatedFormData = {
+                ...formData,
+                image: `https://source.unsplash.com/1600x900/?${formData.category.toLowerCase()},workout,${Math.random()}`
+            };
+
             const response = await fetch('/api/workouts', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(formData)
+                body: JSON.stringify(updatedFormData)
             });
 
             if (!response.ok) throw new Error('Failed to create workout');
@@ -405,165 +394,70 @@ export default function WorkoutsPage() {
                 duration: '',
                 frequency: '',
                 category: 'Strength',
-                exercises: [{ name: '', sets: 3, reps: '', rest: '60 sec' }]
+                exercises: [{ name: '', sets: 3, reps: '', rest: '60 sec' }],
+                image: `https://source.unsplash.com/1600x900/?fitness,${Math.random()}`
             });
         } catch (error) {
             console.error('Error creating workout:', error);
         }
     };
 
-    const fetchMealPreps = async () => {
-        try {
-            const response = await fetch('/api/meal-prep');
-            if (!response.ok) throw new Error('Failed to fetch meal preparations');
-            const data = await response.json();
-            setMealPreps(data);
-        } catch (error) {
-            console.error('Error fetching meal preparations:', error);
-        }
-    };
-
-    const handleMealPrepSubmit = async (e: React.FormEvent) => {
-        e.preventDefault();
-        try {
-            const response = await fetch('/api/meal-prep', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(mealPrepFormData)
-            });
-
-            if (!response.ok) throw new Error('Failed to create meal preparation');
-
-            await fetchMealPreps();
-            setShowMealPrepForm(false);
-            setMealPrepFormData({
-                title: '',
-                description: '',
-                totalTime: '',
-                scheduledDate: new Date().toISOString().split('T')[0],
-                steps: [
-                    {
-                        step: '',
-                        duration: '',
-                        tasks: [''],
-                        tips: '',
-                        icon: 'ClipboardDocumentListIcon'
-                    }
-                ],
-                status: 'planned'
-            });
-        } catch (error) {
-            console.error('Error creating meal preparation:', error);
-        }
-    };
-
-    const handleStepChange = (index: number, field: keyof MealPrepStep, value: any) => {
-        setMealPrepFormData(prev => {
-            const newSteps = [...prev.steps];
-            newSteps[index] = {
-                ...newSteps[index],
-                [field]: value
-            };
-            return {
-                ...prev,
-                steps: newSteps
-            };
-        });
-    };
-
-    const addStep = () => {
-        setMealPrepFormData(prev => ({
-            ...prev,
-            steps: [...prev.steps, {
-                step: '',
-                duration: '',
-                tasks: [''],
-                tips: '',
-                icon: 'ClipboardDocumentListIcon'
-            }]
-        }));
-    };
-
-    const removeStep = (index: number) => {
-        setMealPrepFormData(prev => ({
-            ...prev,
-            steps: prev.steps.filter((_, i) => i !== index)
-        }));
-    };
-
-    const addTask = (stepIndex: number) => {
-        setMealPrepFormData(prev => {
-            const newSteps = [...prev.steps];
-            newSteps[stepIndex].tasks.push('');
-            return {
-                ...prev,
-                steps: newSteps
-            };
-        });
-    };
-
-    const removeTask = (stepIndex: number, taskIndex: number) => {
-        setMealPrepFormData(prev => {
-            const newSteps = [...prev.steps];
-            newSteps[stepIndex].tasks = newSteps[stepIndex].tasks.filter((_, i) => i !== taskIndex);
-            return {
-                ...prev,
-                steps: newSteps
-            };
-        });
-    };
-
-    const handleTaskChange = (stepIndex: number, taskIndex: number, value: string) => {
-        setMealPrepFormData(prev => {
-            const newSteps = [...prev.steps];
-            newSteps[stepIndex].tasks[taskIndex] = value;
-            return {
-                ...prev,
-                steps: newSteps
-            };
-        });
-    };
-
-    useEffect(() => {
-        fetchMealPreps();
-    }, []);
-
     return (
-        <div className="space-y-6">
-            <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-                <div>
-                    <h1 className="text-2xl font-bold text-white">Workouts</h1>
-                    <p className="text-gray-400">Track your fitness journey and discover new exercises</p>
+        <div className="space-y-8">
+            {/* Header Section with Enhanced Styling */}
+            <div className="relative overflow-hidden rounded-2xl bg-gradient-to-r from-violet-600 to-indigo-600 p-8 shadow-xl">
+                <div className="absolute inset-0 bg-grid-white/10 [mask-image:linear-gradient(0deg,white,rgba(255,255,255,0.6))]"></div>
+                <div className="relative">
+                    <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+                        <div>
+                            <h1 className="text-3xl font-bold text-white mb-2">Workout Dashboard</h1>
+                            <p className="text-indigo-100 text-lg">Track your fitness journey and achieve your goals</p>
+                        </div>
+                        <motion.button
+                            whileHover={{ scale: 1.05 }}
+                            whileTap={{ scale: 0.95 }}
+                            className="flex items-center justify-center px-6 py-3 bg-white text-indigo-600 rounded-xl shadow-lg font-semibold hover:bg-indigo-50 transition-colors"
+                            onClick={() => setShowForm(true)}
+                        >
+                            <PlusIcon className="h-5 w-5 mr-2" />
+                            Create Workout
+                        </motion.button>
+                    </div>
                 </div>
-                <motion.button
-                    whileHover={{ scale: 1.05 }}
-                    whileTap={{ scale: 0.95 }}
-                    className="flex items-center justify-center px-4 py-2 bg-gradient-to-r from-violet-500 to-cyan-500 text-white rounded-lg shadow-lg"
-                    onClick={() => setShowForm(true)}
-                >
-                    <span>New Workout</span>
-                </motion.button>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+            {/* Stats Grid with Enhanced Cards */}
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
                 <motion.div
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ duration: 0.5 }}
-                    className="bg-gray-900/80 backdrop-blur-sm rounded-xl p-4 shadow-lg border border-violet-500/20"
+                    className="relative group"
                 >
-                    <div className="flex items-center justify-between">
-                        <div>
-                            <p className="text-sm text-gray-400">Total Workouts</p>
-                            <h3 className="text-2xl font-bold text-white">{monthlyStats.totalWorkouts}</h3>
+                    <div className="absolute -inset-0.5 bg-gradient-to-r from-violet-600 to-indigo-600 rounded-2xl blur opacity-30 group-hover:opacity-50 transition duration-300"></div>
+                    <div className="relative bg-gray-900 rounded-xl p-6 shadow-lg border border-gray-800/50">
+                        <div className="flex items-center justify-between mb-4">
+                            <div>
+                                <p className="text-sm text-gray-400">Total Workouts</p>
+                                <div className="flex items-baseline">
+                                    <h3 className="text-2xl font-bold text-white mt-1">{monthlyStats.totalWorkouts}</h3>
+                                    <span className="ml-2 text-sm text-green-400">+{monthlyStats.improvement}%</span>
+                                </div>
+                            </div>
+                            <div className="p-3 bg-violet-500/20 rounded-lg">
+                                <FireIcon className="h-6 w-6 text-violet-400" />
+                            </div>
                         </div>
-                        <div className="p-3 bg-violet-500/20 rounded-lg">
-                            <FireIcon className="h-6 w-6 text-violet-400" />
+                        <div className="mt-3">
+                            <div className="w-full h-2 bg-gray-800 rounded-full overflow-hidden">
+                                <motion.div
+                                    initial={{ width: 0 }}
+                                    animate={{ width: `${monthlyStats.improvement}%` }}
+                                    transition={{ duration: 1, ease: "easeOut" }}
+                                    className="h-full bg-gradient-to-r from-violet-500 to-indigo-500 rounded-full"
+                                />
+                            </div>
                         </div>
-                    </div>
-                    <div className="mt-4 flex items-center">
-                        <ArrowTrendingUpIcon className="h-4 w-4 text-green-400 mr-1" />
-                        <span className="text-xs text-green-400">+{monthlyStats.improvement}% from last month</span>
                     </div>
                 </motion.div>
 
@@ -571,20 +465,32 @@ export default function WorkoutsPage() {
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ duration: 0.5, delay: 0.1 }}
-                    className="bg-gray-900/80 backdrop-blur-sm rounded-xl p-4 shadow-lg border border-cyan-500/20"
+                    className="relative group"
                 >
-                    <div className="flex items-center justify-between">
-                        <div>
-                            <p className="text-sm text-gray-400">Minutes Active</p>
-                            <h3 className="text-2xl font-bold text-white">{monthlyStats.totalMinutes}</h3>
+                    <div className="absolute -inset-0.5 bg-gradient-to-r from-cyan-600 to-blue-600 rounded-2xl blur opacity-30 group-hover:opacity-50 transition duration-300"></div>
+                    <div className="relative bg-gray-900 rounded-xl p-6 shadow-lg border border-gray-800/50">
+                        <div className="flex items-center justify-between mb-4">
+                            <div>
+                                <p className="text-sm text-gray-400">Active Minutes</p>
+                                <div className="flex items-baseline">
+                                    <h3 className="text-2xl font-bold text-white mt-1">{monthlyStats.totalMinutes}</h3>
+                                    <span className="ml-2 text-sm text-green-400">+{Math.floor(monthlyStats.improvement / 2)}%</span>
+                                </div>
+                            </div>
+                            <div className="p-3 bg-cyan-500/20 rounded-lg">
+                                <ClockIcon className="h-6 w-6 text-cyan-400" />
+                            </div>
                         </div>
-                        <div className="p-3 bg-cyan-500/20 rounded-lg">
-                            <ClockIcon className="h-6 w-6 text-cyan-400" />
+                        <div className="mt-3">
+                            <div className="w-full h-2 bg-gray-800 rounded-full overflow-hidden">
+                                <motion.div
+                                    initial={{ width: 0 }}
+                                    animate={{ width: `${Math.floor(monthlyStats.improvement / 2)}%` }}
+                                    transition={{ duration: 1, ease: "easeOut" }}
+                                    className="h-full bg-gradient-to-r from-cyan-500 to-blue-500 rounded-full"
+                                />
+                            </div>
                         </div>
-                    </div>
-                    <div className="mt-4 flex items-center">
-                        <ArrowTrendingUpIcon className="h-4 w-4 text-green-400 mr-1" />
-                        <span className="text-xs text-green-400">+{Math.floor(monthlyStats.improvement / 2)}% from last month</span>
                     </div>
                 </motion.div>
 
@@ -592,20 +498,32 @@ export default function WorkoutsPage() {
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ duration: 0.5, delay: 0.2 }}
-                    className="bg-gray-900/80 backdrop-blur-sm rounded-xl p-4 shadow-lg border border-amber-500/20"
+                    className="relative group"
                 >
-                    <div className="flex items-center justify-between">
-                        <div>
-                            <p className="text-sm text-gray-400">Calories Burned</p>
-                            <h3 className="text-2xl font-bold text-white">{monthlyStats.totalCalories}</h3>
+                    <div className="absolute -inset-0.5 bg-gradient-to-r from-amber-600 to-orange-600 rounded-2xl blur opacity-30 group-hover:opacity-50 transition duration-300"></div>
+                    <div className="relative bg-gray-900 rounded-xl p-6 shadow-lg border border-gray-800/50">
+                        <div className="flex items-center justify-between mb-4">
+                            <div>
+                                <p className="text-sm text-gray-400">Calories Burned</p>
+                                <div className="flex items-baseline">
+                                    <h3 className="text-2xl font-bold text-white mt-1">{monthlyStats.totalCalories}</h3>
+                                    <span className="ml-2 text-sm text-green-400">+{Math.floor(monthlyStats.improvement * 1.5)}%</span>
+                                </div>
+                            </div>
+                            <div className="p-3 bg-amber-500/20 rounded-lg">
+                                <BoltIcon className="h-6 w-6 text-amber-400" />
+                            </div>
                         </div>
-                        <div className="p-3 bg-amber-500/20 rounded-lg">
-                            <BoltIcon className="h-6 w-6 text-amber-400" />
+                        <div className="mt-3">
+                            <div className="w-full h-2 bg-gray-800 rounded-full overflow-hidden">
+                                <motion.div
+                                    initial={{ width: 0 }}
+                                    animate={{ width: `${Math.floor(monthlyStats.improvement * 1.5)}%` }}
+                                    transition={{ duration: 1, ease: "easeOut" }}
+                                    className="h-full bg-gradient-to-r from-amber-500 to-orange-500 rounded-full"
+                                />
+                            </div>
                         </div>
-                    </div>
-                    <div className="mt-4 flex items-center">
-                        <ArrowTrendingUpIcon className="h-4 w-4 text-green-400 mr-1" />
-                        <span className="text-xs text-green-400">+{Math.floor(monthlyStats.improvement * 1.5)}% from last month</span>
                     </div>
                 </motion.div>
 
@@ -613,22 +531,104 @@ export default function WorkoutsPage() {
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ duration: 0.5, delay: 0.3 }}
-                    className="bg-gray-900/80 backdrop-blur-sm rounded-xl p-4 shadow-lg border border-emerald-500/20"
+                    className="relative group"
                 >
-                    <div className="flex items-center justify-between">
-                        <div>
-                            <p className="text-sm text-gray-400">Current Streak</p>
-                            <h3 className="text-2xl font-bold text-white">{monthlyStats.streak} days</h3>
+                    <div className="absolute -inset-0.5 bg-gradient-to-r from-emerald-600 to-green-600 rounded-2xl blur opacity-30 group-hover:opacity-50 transition duration-300"></div>
+                    <div className="relative bg-gray-900 rounded-xl p-6 shadow-lg border border-gray-800/50">
+                        <div className="flex items-center justify-between mb-4">
+                            <div>
+                                <p className="text-sm text-gray-400">Current Streak</p>
+                                <div className="flex items-baseline">
+                                    <h3 className="text-2xl font-bold text-white mt-1">{monthlyStats.streak} days</h3>
+                                    <span className="ml-2 text-xs text-emerald-400">Best: {monthlyStats.streak + 3}</span>
+                                </div>
+                            </div>
+                            <div className="p-3 bg-emerald-500/20 rounded-lg">
+                                <TrophyIcon className="h-6 w-6 text-emerald-400" />
+                            </div>
                         </div>
-                        <div className="p-3 bg-emerald-500/20 rounded-lg">
-                            <TrophyIcon className="h-6 w-6 text-emerald-400" />
+                        <div className="mt-3">
+                            <div className="w-full h-2 bg-gray-800 rounded-full overflow-hidden">
+                                <motion.div
+                                    initial={{ width: 0 }}
+                                    animate={{ width: `${(monthlyStats.streak / (monthlyStats.streak + 3)) * 100}%` }}
+                                    transition={{ duration: 1, ease: "easeOut" }}
+                                    className="h-full bg-gradient-to-r from-emerald-500 to-green-500 rounded-full"
+                                />
+                            </div>
                         </div>
-                    </div>
-                    <div className="mt-4 flex items-center">
-                        <ArrowTrendingUpIcon className="h-4 w-4 text-green-400 mr-1" />
-                        <span className="text-xs text-green-400">Personal best: {monthlyStats.streak + 3} days</span>
                     </div>
                 </motion.div>
+            </div>
+
+            {/* Filter Section with Enhanced Styling */}
+            <div className="bg-gray-900/80 backdrop-blur-sm rounded-xl p-6 shadow-lg border border-gray-800/50">
+                <div className="flex flex-col md:flex-row gap-6">
+                    <div className="flex items-center bg-gray-800/50 rounded-lg p-1 backdrop-blur-sm">
+                        <button
+                            onClick={() => setActiveTab('upcoming')}
+                            className={`flex items-center justify-center px-4 py-2 rounded-md transition-all duration-200 ${activeTab === 'upcoming'
+                                    ? 'bg-gradient-to-r from-violet-500 to-indigo-500 text-white shadow-lg'
+                                    : 'text-gray-400 hover:text-gray-300'
+                                }`}
+                        >
+                            <CalendarIcon className="h-5 w-5 mr-2" />
+                            <span>Upcoming</span>
+                        </button>
+                        <button
+                            onClick={() => setActiveTab('completed')}
+                            className={`flex items-center justify-center px-4 py-2 rounded-md transition-all duration-200 ${activeTab === 'completed'
+                                    ? 'bg-gradient-to-r from-violet-500 to-indigo-500 text-white shadow-lg'
+                                    : 'text-gray-400 hover:text-gray-300'
+                                }`}
+                        >
+                            <CheckCircleIcon className="h-5 w-5 mr-2" />
+                            <span>Completed</span>
+                        </button>
+                        <button
+                            onClick={() => setActiveTab('favorites')}
+                            className={`flex items-center justify-center px-4 py-2 rounded-md transition-all duration-200 ${activeTab === 'favorites'
+                                    ? 'bg-gradient-to-r from-violet-500 to-indigo-500 text-white shadow-lg'
+                                    : 'text-gray-400 hover:text-gray-300'
+                                }`}
+                        >
+                            <StarIcon className="h-5 w-5 mr-2" />
+                            <span>Favorites</span>
+                        </button>
+                    </div>
+
+                    <div className="relative flex-1">
+                        <input
+                            type="text"
+                            placeholder="Search workouts..."
+                            value={searchQuery}
+                            onChange={(e) => setSearchQuery(e.target.value)}
+                            className="w-full bg-gray-800/50 text-white rounded-lg pl-10 pr-4 py-2 focus:outline-none focus:ring-2 focus:ring-violet-500 transition-all duration-200"
+                        />
+                        <div className="absolute left-3 top-2.5 text-gray-400">
+                            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                            </svg>
+                        </div>
+                    </div>
+
+                    <div className="flex flex-wrap gap-2">
+                        {categories.map((category) => (
+                            <motion.button
+                                key={category.name}
+                                whileHover={{ scale: 1.05 }}
+                                whileTap={{ scale: 0.95 }}
+                                onClick={() => setSelectedCategory(category.name)}
+                                className={`px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${selectedCategory === category.name
+                                        ? 'bg-gradient-to-r from-violet-500 to-indigo-500 text-white shadow-lg'
+                                        : 'bg-gray-800/50 text-gray-400 hover:text-gray-300'
+                                    }`}
+                            >
+                                {category.name} ({category.count})
+                            </motion.button>
+                        ))}
+                    </div>
+                </div>
             </div>
 
             <motion.div
@@ -637,37 +637,9 @@ export default function WorkoutsPage() {
                 transition={{ duration: 0.5, delay: 0.4 }}
                 className="bg-gray-900/80 backdrop-blur-sm rounded-xl p-4 shadow-lg border border-violet-500/20"
             >
-                <div className="flex items-center justify-between mb-4">
-                    <h3 className="text-lg font-semibold text-white">Weekly Activity</h3>
-                    <div className="flex items-center space-x-2">
-                        <span className="text-xs text-gray-400">Workouts</span>
-                        <div className="w-3 h-3 rounded-full bg-violet-500"></div>
-                        <span className="text-xs text-gray-400">Minutes</span>
-                        <div className="w-3 h-3 rounded-full bg-cyan-500"></div>
-                    </div>
-                </div>
-                <div className="h-64 flex items-end justify-between">
-                    {weeklyProgress.map((day, index) => (
-                        <div key={day.day} className="flex flex-col items-center w-full">
-                            <div className="flex items-end justify-center space-x-1 w-full">
-                                <motion.div
-                                    initial={{ height: 0 }}
-                                    animate={{ height: `${(day.workouts / 3) * 100}%` }}
-                                    transition={{ duration: 0.5, delay: 0.1 * index }}
-                                    className="w-6 bg-violet-500 rounded-t-lg"
-                                    style={{ maxHeight: '100%' }}
-                                ></motion.div>
-                                <motion.div
-                                    initial={{ height: 0 }}
-                                    animate={{ height: `${(day.minutes / 120) * 100}%` }}
-                                    transition={{ duration: 0.5, delay: 0.1 * index }}
-                                    className="w-6 bg-cyan-500 rounded-t-lg"
-                                    style={{ maxHeight: '100%' }}
-                                ></motion.div>
-                            </div>
-                            <span className="text-xs text-gray-400 mt-2">{day.day}</span>
-                        </div>
-                    ))}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <RestTimer defaultTime={60} onComplete={() => console.log('Rest time complete!')} />
+                    <WorkoutAchievements />
                 </div>
             </motion.div>
 
@@ -744,314 +716,6 @@ export default function WorkoutsPage() {
                     ))}
                 </div>
             </motion.div>
-
-            <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.5, delay: 0.6 }}
-                className="bg-gray-900/80 backdrop-blur-sm rounded-xl p-6 shadow-lg border border-violet-500/20"
-            >
-                <div className="flex items-center justify-between mb-6">
-                    <h3 className="text-lg font-semibold text-white">Meal Preparations</h3>
-                    <button
-                        onClick={() => setShowMealPrepForm(true)}
-                        className="px-4 py-2 bg-violet-500 text-white rounded-lg hover:bg-violet-600 transition-colors flex items-center gap-2"
-                    >
-                        <PlusIcon className="w-5 h-5" />
-                        New Meal Prep
-                    </button>
-                </div>
-
-                {mealPreps.length === 0 ? (
-                    <div className="text-center py-8">
-                        <p className="text-gray-400">No meal preparations found. Create your first meal prep plan!</p>
-                    </div>
-                ) : (
-                    <div className="space-y-6">
-                        {mealPreps.map((prep) => (
-                            <div key={prep._id} className="bg-gray-800/50 rounded-xl p-4">
-                                <div className="flex items-center justify-between mb-4">
-                                    <div>
-                                        <h4 className="text-white font-medium">{prep.title}</h4>
-                                        <p className="text-sm text-gray-400">{prep.description}</p>
-                                    </div>
-                                    <div className="flex items-center gap-4">
-                                        <span className={`px-3 py-1 rounded-full text-xs font-medium ${prep.status === 'completed' ? 'bg-green-500/20 text-green-400' :
-                                            prep.status === 'in_progress' ? 'bg-blue-500/20 text-blue-400' :
-                                                'bg-gray-500/20 text-gray-400'
-                                            }`}>
-                                            {prep.status.replace('_', ' ')}
-                                        </span>
-                                        <span className="text-sm text-violet-400">{prep.totalTime}</span>
-                                    </div>
-                                </div>
-
-                                <div className="space-y-4">
-                                    {prep.steps.map((step, index) => (
-                                        <div key={index} className="flex items-start gap-4">
-                                            <div className="flex-shrink-0 w-8 h-8 rounded-full bg-violet-500/20 flex items-center justify-center">
-                                                <FireIcon className="w-5 h-5 text-violet-400" />
-                                            </div>
-                                            <div className="flex-grow">
-                                                <div className="flex items-center justify-between">
-                                                    <h5 className="text-white">{step.step}</h5>
-                                                    <span className="text-sm text-violet-400">{step.duration}</span>
-                                                </div>
-                                                <div className="mt-2 space-y-1">
-                                                    {step.tasks.map((task, taskIndex) => (
-                                                        <div key={taskIndex} className="flex items-center gap-2">
-                                                            <div className="w-1.5 h-1.5 rounded-full bg-violet-400"></div>
-                                                            <span className="text-sm text-gray-300">{task}</span>
-                                                        </div>
-                                                    ))}
-                                                </div>
-                                                <p className="text-xs text-amber-400 mt-2">{step.tips}</p>
-                                            </div>
-                                        </div>
-                                    ))}
-                                </div>
-
-                                <div className="mt-4 pt-4 border-t border-gray-700">
-                                    <div className="flex items-center justify-between text-sm text-gray-400">
-                                        <span>Scheduled: {new Date(prep.scheduledDate).toLocaleDateString()}</span>
-                                        <span>Last updated: {new Date(prep.updatedAt).toLocaleDateString()}</span>
-                                    </div>
-                                </div>
-                            </div>
-                        ))}
-                    </div>
-                )}
-
-                {showMealPrepForm && (
-                    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-                        <div className="bg-gray-900 rounded-xl p-6 max-w-2xl w-full max-h-[90vh] overflow-y-auto">
-                            <div className="flex justify-between items-center mb-6">
-                                <h2 className="text-xl font-bold text-white">Create New Meal Preparation</h2>
-                                <button
-                                    onClick={() => setShowMealPrepForm(false)}
-                                    className="text-gray-400 hover:text-white"
-                                >
-                                    <XCircleIcon className="w-6 h-6" />
-                                </button>
-                            </div>
-
-                            <form onSubmit={handleMealPrepSubmit} className="space-y-6">
-                                <div>
-                                    <label className="block text-sm font-medium text-gray-300 mb-1">Title</label>
-                                    <input
-                                        type="text"
-                                        value={mealPrepFormData.title}
-                                        onChange={(e) => setMealPrepFormData(prev => ({ ...prev, title: e.target.value }))}
-                                        className="w-full bg-gray-800 text-white rounded-lg px-4 py-2 focus:ring-2 focus:ring-violet-500"
-                                        required
-                                    />
-                                </div>
-
-                                <div>
-                                    <label className="block text-sm font-medium text-gray-300 mb-1">Description</label>
-                                    <textarea
-                                        value={mealPrepFormData.description}
-                                        onChange={(e) => setMealPrepFormData(prev => ({ ...prev, description: e.target.value }))}
-                                        className="w-full bg-gray-800 text-white rounded-lg px-4 py-2 focus:ring-2 focus:ring-violet-500"
-                                        rows={3}
-                                        required
-                                    />
-                                </div>
-
-                                <div className="grid grid-cols-2 gap-4">
-                                    <div>
-                                        <label className="block text-sm font-medium text-gray-300 mb-1">Total Time</label>
-                                        <input
-                                            type="text"
-                                            value={mealPrepFormData.totalTime}
-                                            onChange={(e) => setMealPrepFormData(prev => ({ ...prev, totalTime: e.target.value }))}
-                                            className="w-full bg-gray-800 text-white rounded-lg px-4 py-2 focus:ring-2 focus:ring-violet-500"
-                                            placeholder="e.g., 2.5 hours"
-                                            required
-                                        />
-                                    </div>
-                                    <div>
-                                        <label className="block text-sm font-medium text-gray-300 mb-1">Scheduled Date</label>
-                                        <input
-                                            type="date"
-                                            value={mealPrepFormData.scheduledDate}
-                                            onChange={(e) => setMealPrepFormData(prev => ({ ...prev, scheduledDate: e.target.value }))}
-                                            className="w-full bg-gray-800 text-white rounded-lg px-4 py-2 focus:ring-2 focus:ring-violet-500"
-                                            required
-                                        />
-                                    </div>
-                                </div>
-
-                                <div>
-                                    <label className="block text-sm font-medium text-gray-300 mb-1">Steps</label>
-                                    <div className="space-y-4">
-                                        {mealPrepFormData.steps.map((step, stepIndex) => (
-                                            <div key={stepIndex} className="bg-gray-800/50 rounded-lg p-4">
-                                                <div className="grid grid-cols-2 gap-4 mb-4">
-                                                    <div>
-                                                        <input
-                                                            type="text"
-                                                            value={step.step}
-                                                            onChange={(e) => handleStepChange(stepIndex, 'step', e.target.value)}
-                                                            placeholder="Step name"
-                                                            className="w-full bg-gray-700 text-white rounded-lg px-4 py-2"
-                                                            required
-                                                        />
-                                                    </div>
-                                                    <div>
-                                                        <input
-                                                            type="text"
-                                                            value={step.duration}
-                                                            onChange={(e) => handleStepChange(stepIndex, 'duration', e.target.value)}
-                                                            placeholder="Duration"
-                                                            className="w-full bg-gray-700 text-white rounded-lg px-4 py-2"
-                                                            required
-                                                        />
-                                                    </div>
-                                                </div>
-
-                                                <div className="space-y-2">
-                                                    {step.tasks.map((task, taskIndex) => (
-                                                        <div key={taskIndex} className="flex items-center gap-2">
-                                                            <input
-                                                                type="text"
-                                                                value={task}
-                                                                onChange={(e) => handleTaskChange(stepIndex, taskIndex, e.target.value)}
-                                                                placeholder="Task description"
-                                                                className="flex-grow bg-gray-700 text-white rounded-lg px-4 py-2"
-                                                                required
-                                                            />
-                                                            {step.tasks.length > 1 && (
-                                                                <button
-                                                                    type="button"
-                                                                    onClick={() => removeTask(stepIndex, taskIndex)}
-                                                                    className="text-red-400 hover:text-red-300"
-                                                                >
-                                                                    <XCircleIcon className="w-5 h-5" />
-                                                                </button>
-                                                            )}
-                                                        </div>
-                                                    ))}
-                                                    <button
-                                                        type="button"
-                                                        onClick={() => addTask(stepIndex)}
-                                                        className="text-sm text-violet-400 hover:text-violet-300"
-                                                    >
-                                                        + Add Task
-                                                    </button>
-                                                </div>
-
-                                                <div className="mt-4">
-                                                    <input
-                                                        type="text"
-                                                        value={step.tips}
-                                                        onChange={(e) => handleStepChange(stepIndex, 'tips', e.target.value)}
-                                                        placeholder="Tips"
-                                                        className="w-full bg-gray-700 text-white rounded-lg px-4 py-2"
-                                                        required
-                                                    />
-                                                </div>
-
-                                                {mealPrepFormData.steps.length > 1 && (
-                                                    <button
-                                                        type="button"
-                                                        onClick={() => removeStep(stepIndex)}
-                                                        className="mt-4 text-red-400 hover:text-red-300"
-                                                    >
-                                                        Remove Step
-                                                    </button>
-                                                )}
-                                            </div>
-                                        ))}
-                                    </div>
-                                    <button
-                                        type="button"
-                                        onClick={addStep}
-                                        className="mt-4 text-violet-400 hover:text-violet-300"
-                                    >
-                                        + Add Step
-                                    </button>
-                                </div>
-
-                                <div className="flex justify-end gap-4">
-                                    <button
-                                        type="button"
-                                        onClick={() => setShowMealPrepForm(false)}
-                                        className="px-4 py-2 bg-gray-700 text-white rounded-lg hover:bg-gray-600"
-                                    >
-                                        Cancel
-                                    </button>
-                                    <button
-                                        type="submit"
-                                        className="px-4 py-2 bg-violet-500 text-white rounded-lg hover:bg-violet-600"
-                                    >
-                                        Create Meal Prep
-                                    </button>
-                                </div>
-                            </form>
-                        </div>
-                    </div>
-                )}
-            </motion.div>
-
-            <div className="flex flex-col md:flex-row gap-4">
-                <div className="flex items-center bg-gray-900/80 rounded-lg p-1">
-                    <button
-                        onClick={() => setActiveTab('upcoming')}
-                        className={`flex items-center justify-center px-4 py-2 rounded-md ${activeTab === 'upcoming' ? 'bg-white/10 text-white' : 'text-gray-400'
-                            }`}
-                    >
-                        <CalendarIcon className="h-5 w-5 mr-2" />
-                        <span>Upcoming</span>
-                    </button>
-                    <button
-                        onClick={() => setActiveTab('completed')}
-                        className={`flex items-center justify-center px-4 py-2 rounded-md ${activeTab === 'completed' ? 'bg-white/10 text-white' : 'text-gray-400'
-                            }`}
-                    >
-                        <CheckCircleIcon className="h-5 w-5 mr-2" />
-                        <span>Completed</span>
-                    </button>
-                    <button
-                        onClick={() => setActiveTab('favorites')}
-                        className={`flex items-center justify-center px-4 py-2 rounded-md ${activeTab === 'favorites' ? 'bg-white/10 text-white' : 'text-gray-400'
-                            }`}
-                    >
-                        <StarIcon className="h-5 w-5 mr-2" />
-                        <span>Favorites</span>
-                    </button>
-                </div>
-
-                <div className="relative flex-1">
-                    <input
-                        type="text"
-                        placeholder="Search workouts..."
-                        value={searchQuery}
-                        onChange={(e) => setSearchQuery(e.target.value)}
-                        className="w-full bg-gray-900/80 text-white rounded-lg pl-10 pr-4 py-2 focus:outline-none focus:ring-2 focus:ring-violet-500"
-                    />
-                    <div className="absolute left-3 top-2.5 text-gray-400">
-                        <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                        </svg>
-                    </div>
-                </div>
-
-                <div className="flex flex-wrap gap-2">
-                    {categories.map((category) => (
-                        <button
-                            key={category.name}
-                            onClick={() => setSelectedCategory(category.name)}
-                            className={`px-3 py-1 rounded-full text-xs font-medium ${selectedCategory === category.name
-                                ? 'bg-gray-100 text-gray-900'
-                                : 'bg-gray-900/80 text-gray-300'
-                                }`}
-                        >
-                            {category.name} ({category.count})
-                        </button>
-                    ))}
-                </div>
-            </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                 {(activeTab === 'upcoming' ? upcomingWorkouts :
@@ -1417,17 +1081,88 @@ export default function WorkoutsPage() {
                                 </div>
 
                                 <div>
-                                    <div className="bg-gray-900/80 rounded-lg p-4 mb-4">
-                                        <h3 className="text-lg font-semibold text-white mb-4">Workout Timer</h3>
+                                    <div className="bg-gradient-to-br from-gray-900/90 via-gray-800/90 to-gray-900/90 rounded-xl p-6 mb-4 shadow-lg border border-gray-700/30">
+                                        <h3 className="text-lg font-semibold text-white mb-6 flex items-center">
+                                            <ClockIcon className="h-5 w-5 mr-2 text-violet-400" />
+                                            Workout Timer
+                                        </h3>
                                         <div className="text-center">
-                                            <p className="text-4xl font-bold text-white mb-4">{formatTime(currentTime)}</p>
-                                            <div className="flex justify-center space-x-2">
+                                            <div className="relative w-56 h-56 mx-auto mb-8">
+                                                {/* Outer glow effect */}
+                                                <div className="absolute inset-0 rounded-full bg-violet-500/20 blur-xl"></div>
+
+                                                {/* Background circles for depth */}
+                                                <svg className="absolute inset-0 w-full h-full transform -rotate-90">
+                                                    <circle
+                                                        cx="112"
+                                                        cy="112"
+                                                        r="100"
+                                                        className="stroke-current text-gray-800"
+                                                        strokeWidth="4"
+                                                        fill="none"
+                                                    />
+                                                    <circle
+                                                        cx="112"
+                                                        cy="112"
+                                                        r="92"
+                                                        className="stroke-current text-gray-700"
+                                                        strokeWidth="4"
+                                                        fill="none"
+                                                    />
+                                                </svg>
+
+                                                {/* Main progress circle */}
+                                                <svg className="absolute inset-0 w-full h-full transform -rotate-90">
+                                                    <defs>
+                                                        <linearGradient id="progressGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                                                            <stop offset="0%" stopColor="#8B5CF6" />
+                                                            <stop offset="50%" stopColor="#6D28D9" />
+                                                            <stop offset="100%" stopColor="#4C1D95" />
+                                                        </linearGradient>
+                                                    </defs>
+                                                    <circle
+                                                        cx="112"
+                                                        cy="112"
+                                                        r="96"
+                                                        className="stroke-current"
+                                                        strokeWidth="12"
+                                                        stroke="url(#progressGradient)"
+                                                        fill="none"
+                                                        strokeDasharray={603}
+                                                        strokeDashoffset={603 - (603 * calculateTimerProgress(currentTime)) / 100}
+                                                        strokeLinecap="round"
+                                                    >
+                                                        <animate
+                                                            attributeName="stroke-dashoffset"
+                                                            dur="0.5s"
+                                                            fill="freeze"
+                                                        />
+                                                    </circle>
+                                                </svg>
+
+                                                {/* Center content */}
+                                                <div className="absolute inset-0 flex items-center justify-center">
+                                                    <div className="text-center">
+                                                        <motion.span
+                                                            className="text-5xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-violet-400 to-cyan-400"
+                                                            animate={{ scale: isPlaying ? [1, 1.02, 1] : 1 }}
+                                                            transition={{ duration: 1, repeat: isPlaying ? Infinity : 0 }}
+                                                        >
+                                                            {formatTimeDetailed(currentTime)}
+                                                        </motion.span>
+                                                        <p className="text-gray-400 text-sm mt-2">Elapsed Time</p>
+                                                    </div>
+                                                </div>
+                                            </div>
+
+                                            {/* Control buttons with enhanced styling */}
+                                            <div className="flex justify-center space-x-4 mb-6">
                                                 {isPlaying ? (
                                                     <motion.button
                                                         whileHover={{ scale: 1.05 }}
                                                         whileTap={{ scale: 0.95 }}
                                                         onClick={pauseWorkoutTimer}
-                                                        className="p-3 rounded-full bg-red-500 text-white"
+                                                        className="p-4 rounded-full bg-gradient-to-r from-red-500/90 to-red-600/90 text-white hover:from-red-500 hover:to-red-600 transition-all duration-300 shadow-lg shadow-red-500/20"
                                                     >
                                                         <PauseIcon className="h-6 w-6" />
                                                     </motion.button>
@@ -1436,7 +1171,7 @@ export default function WorkoutsPage() {
                                                         whileHover={{ scale: 1.05 }}
                                                         whileTap={{ scale: 0.95 }}
                                                         onClick={startWorkoutTimer}
-                                                        className="p-3 rounded-full bg-green-500 text-white"
+                                                        className="p-4 rounded-full bg-gradient-to-r from-green-500/90 to-green-600/90 text-white hover:from-green-500 hover:to-green-600 transition-all duration-300 shadow-lg shadow-green-500/20"
                                                     >
                                                         <PlayIcon className="h-6 w-6" />
                                                     </motion.button>
@@ -1445,12 +1180,28 @@ export default function WorkoutsPage() {
                                                     whileHover={{ scale: 1.05 }}
                                                     whileTap={{ scale: 0.95 }}
                                                     onClick={() => setCurrentTime(0)}
-                                                    className="p-3 rounded-full bg-gray-600 text-white"
+                                                    className="p-4 rounded-full bg-gradient-to-r from-gray-600/90 to-gray-700/90 text-white hover:from-gray-600 hover:to-gray-700 transition-all duration-300 shadow-lg shadow-gray-600/20"
                                                 >
-                                                    <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-                                                    </svg>
+                                                    <ArrowPathIcon className="h-6 w-6" />
                                                 </motion.button>
+                                            </div>
+
+                                            {/* Time preset buttons with enhanced styling */}
+                                            <div className="grid grid-cols-4 gap-2">
+                                                {[5, 10, 15, 20, 30, 45, 60, 90].map((minutes) => (
+                                                    <motion.button
+                                                        key={minutes}
+                                                        whileHover={{ scale: 1.05 }}
+                                                        whileTap={{ scale: 0.95 }}
+                                                        onClick={() => setCurrentTime(minutes * 60)}
+                                                        className={`px-3 py-2 rounded-lg text-sm font-medium transition-all duration-300 ${currentTime === minutes * 60
+                                                            ? 'bg-gradient-to-r from-violet-500 to-cyan-500 text-white shadow-lg shadow-violet-500/20'
+                                                            : 'bg-gray-800/80 text-gray-400 hover:text-gray-200 hover:bg-gray-700/80'
+                                                            }`}
+                                                    >
+                                                        {minutes}m
+                                                    </motion.button>
+                                                ))}
                                             </div>
                                         </div>
                                     </div>

@@ -1,97 +1,77 @@
-import { NextResponse } from 'next/server';
-import { clientPromise } from '@/app/lib/db';
-import { z } from 'zod';
+import { NextRequest, NextResponse } from 'next/server';
+import dbConnect from '@/lib/dbConnect';
+import Goal from '@/app/models/Goal';
 
-// Schema for validating goal creation request
-const createGoalSchema = z.object({
-    title: z.string().min(3).max(100),
-    description: z.string().max(500).optional(),
-    category: z.enum(['Weight Loss', 'Muscle Gain', 'Cardio', 'Strength', 'Nutrition', 'Mental Health', 'Other']),
-    targetValue: z.number().positive(),
-    currentValue: z.number().min(0).optional(),
-    unit: z.string(),
-    startDate: z.string(),
-    targetDate: z.string(),
-    reminders: z.object({
-        frequency: z.enum(['daily', 'weekly', 'monthly', 'none']),
-        time: z.string(),
-        enabled: z.boolean()
-    }).optional()
-});
-
-interface Goal {
-    title: string;
-    description?: string;
-    targetValue: number;
-    currentValue: number;
-    progress: number;
-    status: 'In Progress' | 'Completed';
-    userEmail: string;
-    createdAt: Date;
-}
-
-export async function POST(request: Request) {
+export async function POST(req: NextRequest) {
     try {
-        const body = await request.json();
-        console.log('Received data:', body);
+        await dbConnect();
+        const data = await req.json();
 
-        const validatedData = createGoalSchema.parse(body);
-        console.log('Validated data:', validatedData);
-
-        const client = await clientPromise;
-        const db = client.db('healthcare_system');
-        const goalsCollection = db.collection('goals');
-
-        const newGoal = {
-            ...validatedData,
-            createdAt: new Date(),
-            currentValue: validatedData.currentValue || 0,
-            progress: 0,
-            status: 'In Progress'
-        };
-
-        console.log('Saving goal:', newGoal);
-        const result = await goalsCollection.insertOne(newGoal);
-        console.log('Insert result:', result);
-
-        return NextResponse.json({
-            success: true,
-            goal: { ...newGoal, _id: result.insertedId }
-        });
-    } catch (error) {
-        console.error('Error creating goal:', error);
-
-        if (error instanceof z.ZodError) {
+        // Create the goal with basic validation
+        if (!data.title || !data.description || !data.category || !data.targetValue || !data.unit || !data.targetDate) {
             return NextResponse.json({
-                error: 'Validation error',
-                details: error.errors
+                error: 'Missing required fields',
+                details: ['All fields are required except currentValue']
             }, { status: 400 });
         }
 
+        const goalData = {
+            title: data.title,
+            description: data.description,
+            category: data.category,
+            targetValue: Number(data.targetValue),
+            currentValue: Number(data.currentValue || 0),
+            unit: data.unit,
+            targetDate: new Date(data.targetDate),
+            status: 'Not Started',
+            progress: 0
+        };
+
+        const goal = await Goal.create(goalData);
+        return NextResponse.json(goal, { status: 201 });
+    } catch (error: any) {
+        console.error('Error creating goal:', error);
         return NextResponse.json({
             error: 'Failed to create goal',
-            details: error instanceof Error ? error.message : 'Unknown error'
+            details: [error.message]
         }, { status: 500 });
     }
 }
 
 export async function GET() {
     try {
-        const client = await clientPromise;
-        const db = client.db('healthcare_system');
-        const goalsCollection = db.collection('goals');
-
-        const goals = await goalsCollection
-            .find({})
-            .sort({ createdAt: -1 })
-            .toArray();
-
+        await dbConnect();
+        const goals = await Goal.find().sort({ createdAt: -1 });
         return NextResponse.json({ goals });
-    } catch (error) {
+    } catch (error: any) {
         console.error('Error fetching goals:', error);
         return NextResponse.json({
             error: 'Failed to fetch goals',
-            details: error instanceof Error ? error.message : 'Unknown error'
+            details: [error.message]
+        }, { status: 500 });
+    }
+}
+
+export async function PUT(req: NextRequest) {
+    try {
+        await dbConnect();
+        const { id, ...updateData } = await req.json();
+
+        const goal = await Goal.findByIdAndUpdate(id, updateData, {
+            new: true,
+            runValidators: true
+        });
+
+        if (!goal) {
+            return NextResponse.json({ error: 'Goal not found' }, { status: 404 });
+        }
+
+        return NextResponse.json(goal);
+    } catch (error: any) {
+        console.error('Error updating goal:', error);
+        return NextResponse.json({
+            error: 'Failed to update goal',
+            details: [error.message]
         }, { status: 500 });
     }
 } 

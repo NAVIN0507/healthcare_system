@@ -1,247 +1,255 @@
-import { useState } from 'react';
-import { useForm } from 'react-hook-form';
-import toast from 'react-hot-toast';
-import { z } from 'zod';
-import { zodResolver } from '@hookform/resolvers/zod';
+'use client';
 
-const createGoalSchema = z.object({
-    title: z.string().min(3, 'Title must be at least 3 characters').max(100, 'Title cannot exceed 100 characters'),
-    description: z.string().max(500, 'Description cannot exceed 500 characters').optional(),
-    category: z.enum(['Weight Loss', 'Muscle Gain', 'Cardio', 'Strength', 'Nutrition', 'Mental Health', 'Other']),
-    targetValue: z.number().positive('Target value must be positive'),
-    currentValue: z.number().min(0, 'Current value must be non-negative').optional(),
-    unit: z.string().min(1, 'Unit is required'),
-    startDate: z.string(),
-    targetDate: z.string(),
-    reminders: z.object({
-        frequency: z.enum(['daily', 'weekly', 'monthly', 'none']),
-        time: z.string(),
-        enabled: z.boolean()
-    }).optional()
-});
+import { Fragment, useState } from 'react';
+import { Dialog, Transition } from '@headlessui/react';
+import { XMarkIcon } from '@heroicons/react/24/outline';
 
-type CreateGoalForm = z.infer<typeof createGoalSchema>;
-
-interface CreateGoalFormProps {
-    onGoalCreated?: () => void;
-    onCancel?: () => void;
+interface CreateGoalModalProps {
+    isOpen: boolean;
+    onClose: () => void;
+    onSuccess: () => void;
 }
 
-export default function CreateGoalForm({ onGoalCreated, onCancel }: CreateGoalFormProps) {
-    const [isSubmitting, setIsSubmitting] = useState(false);
-    const { register, handleSubmit, reset, formState: { errors } } = useForm<CreateGoalForm>({
-        resolver: zodResolver(createGoalSchema),
-        defaultValues: {
-            category: 'Other',
-            currentValue: 0,
-            reminders: {
-                frequency: 'none',
-                time: '09:00',
-                enabled: false
-            }
-        }
+export default function CreateGoalModal({ isOpen, onClose, onSuccess }: CreateGoalModalProps) {
+    const [formData, setFormData] = useState({
+        title: '',
+        description: '',
+        category: 'Other',
+        targetValue: '',
+        currentValue: '',
+        unit: '',
+        targetDate: ''
     });
+    const [isSubmitting, setIsSubmitting] = useState(false);
+    const [error, setError] = useState<string | null>(null);
 
-    const onSubmit = async (data: CreateGoalForm) => {
+    const handleSubmit = async (e: React.FormEvent) => {
+        e.preventDefault();
+        setIsSubmitting(true);
+        setError(null);
+
         try {
-            setIsSubmitting(true);
-            console.log('Submitting data:', data);
-
             const response = await fetch('/api/goals', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
                 },
                 body: JSON.stringify({
-                    ...data,
-                    // Ensure all required fields are present
-                    description: data.description || '',
-                    currentValue: data.currentValue || 0,
-                    reminders: data.reminders || {
-                        frequency: 'none',
-                        time: '09:00',
-                        enabled: false
-                    }
+                    ...formData,
+                    targetValue: parseFloat(formData.targetValue),
+                    currentValue: formData.currentValue ? parseFloat(formData.currentValue) : 0,
                 }),
             });
 
-            const result = await response.json();
-            console.log('Response:', result);
-
             if (!response.ok) {
-                throw new Error(result.error || 'Failed to create goal');
+                const data = await response.json();
+                throw new Error(data.error || 'Failed to create goal');
             }
 
-            toast.success('Goal created successfully!');
-            reset();
-            onGoalCreated?.();
+            onSuccess();
             onClose();
+            setFormData({
+                title: '',
+                description: '',
+                category: 'Other',
+                targetValue: '',
+                currentValue: '',
+                unit: '',
+                targetDate: ''
+            });
         } catch (error) {
-            console.error('Error creating goal:', error);
-            toast.error(error instanceof Error ? error.message : 'Failed to create goal');
+            setError(error instanceof Error ? error.message : 'Failed to create goal');
         } finally {
             setIsSubmitting(false);
         }
     };
 
+    const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
+        const { name, value } = e.target;
+        setFormData(prev => ({ ...prev, [name]: value }));
+    };
+
     return (
-        <div className="bg-white rounded-lg shadow-lg p-6 mb-8">
-            <h2 className="text-2xl font-bold text-gray-900 mb-6">Create New Goal</h2>
-            <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
-                <div>
-                    <label className="block text-sm font-medium text-gray-700">Title</label>
-                    <input
-                        type="text"
-                        {...register('title')}
-                        className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 focus:border-indigo-500 focus:ring-indigo-500"
-                        placeholder="Enter goal title"
-                    />
-                    {errors.title && (
-                        <p className="mt-1 text-sm text-red-600">{errors.title.message}</p>
-                    )}
-                </div>
+        <Transition.Root show={isOpen} as={Fragment}>
+            <Dialog as="div" className="relative z-50" onClose={onClose}>
+                <Transition.Child
+                    as={Fragment}
+                    enter="ease-out duration-300"
+                    enterFrom="opacity-0"
+                    enterTo="opacity-100"
+                    leave="ease-in duration-200"
+                    leaveFrom="opacity-100"
+                    leaveTo="opacity-0"
+                >
+                    <div className="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" />
+                </Transition.Child>
 
-                <div>
-                    <label className="block text-sm font-medium text-gray-700">Description</label>
-                    <textarea
-                        {...register('description')}
-                        rows={3}
-                        className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 focus:border-indigo-500 focus:ring-indigo-500"
-                        placeholder="Describe your goal"
-                    />
-                    {errors.description && (
-                        <p className="mt-1 text-sm text-red-600">{errors.description.message}</p>
-                    )}
-                </div>
-
-                <div className="grid grid-cols-2 gap-4">
-                    <div>
-                        <label className="block text-sm font-medium text-gray-700">Category</label>
-                        <select
-                            {...register('category')}
-                            className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 focus:border-indigo-500 focus:ring-indigo-500"
+                <div className="fixed inset-0 z-10 overflow-y-auto">
+                    <div className="flex min-h-full items-end justify-center p-4 text-center sm:items-center sm:p-0">
+                        <Transition.Child
+                            as={Fragment}
+                            enter="ease-out duration-300"
+                            enterFrom="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
+                            enterTo="opacity-100 translate-y-0 sm:scale-100"
+                            leave="ease-in duration-200"
+                            leaveFrom="opacity-100 translate-y-0 sm:scale-100"
+                            leaveTo="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
                         >
-                            <option value="Weight Loss">Weight Loss</option>
-                            <option value="Muscle Gain">Muscle Gain</option>
-                            <option value="Cardio">Cardio</option>
-                            <option value="Strength">Strength</option>
-                            <option value="Nutrition">Nutrition</option>
-                            <option value="Mental Health">Mental Health</option>
-                            <option value="Other">Other</option>
-                        </select>
-                    </div>
-
-                    <div>
-                        <label className="block text-sm font-medium text-gray-700">Unit</label>
-                        <input
-                            type="text"
-                            {...register('unit')}
-                            className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 focus:border-indigo-500 focus:ring-indigo-500"
-                            placeholder="e.g., kg, miles, minutes"
-                        />
-                        {errors.unit && (
-                            <p className="mt-1 text-sm text-red-600">{errors.unit.message}</p>
-                        )}
+                            <Dialog.Panel className="relative transform overflow-hidden rounded-lg bg-white px-4 pb-4 pt-5 text-left shadow-xl transition-all sm:my-8 sm:w-full sm:max-w-lg sm:p-6">
+                                <div className="absolute right-0 top-0 hidden pr-4 pt-4 sm:block">
+                                    <button
+                                        type="button"
+                                        className="rounded-md bg-white text-gray-400 hover:text-gray-500"
+                                        onClick={onClose}
+                                    >
+                                        <span className="sr-only">Close</span>
+                                        <XMarkIcon className="h-6 w-6" aria-hidden="true" />
+                                    </button>
+                                </div>
+                                <div className="sm:flex sm:items-start">
+                                    <div className="mt-3 text-center sm:mt-0 sm:text-left w-full">
+                                        <Dialog.Title as="h3" className="text-lg font-semibold leading-6 text-gray-900">
+                                            Create New Goal
+                                        </Dialog.Title>
+                                        <form onSubmit={handleSubmit} className="mt-6 space-y-4">
+                                            {error && (
+                                                <div className="rounded-md bg-red-50 p-4 mb-4">
+                                                    <p className="text-sm text-red-700">{error}</p>
+                                                </div>
+                                            )}
+                                            <div>
+                                                <label htmlFor="title" className="block text-sm font-medium text-gray-700">
+                                                    Title
+                                                </label>
+                                                <input
+                                                    type="text"
+                                                    name="title"
+                                                    id="title"
+                                                    required
+                                                    className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm"
+                                                    value={formData.title}
+                                                    onChange={handleChange}
+                                                />
+                                            </div>
+                                            <div>
+                                                <label htmlFor="description" className="block text-sm font-medium text-gray-700">
+                                                    Description
+                                                </label>
+                                                <textarea
+                                                    name="description"
+                                                    id="description"
+                                                    required
+                                                    rows={3}
+                                                    className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm"
+                                                    value={formData.description}
+                                                    onChange={handleChange}
+                                                />
+                                            </div>
+                                            <div>
+                                                <label htmlFor="category" className="block text-sm font-medium text-gray-700">
+                                                    Category
+                                                </label>
+                                                <select
+                                                    name="category"
+                                                    id="category"
+                                                    required
+                                                    className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm"
+                                                    value={formData.category}
+                                                    onChange={handleChange}
+                                                >
+                                                    <option value="Weight Loss">Weight Loss</option>
+                                                    <option value="Muscle Gain">Muscle Gain</option>
+                                                    <option value="Cardio">Cardio</option>
+                                                    <option value="Strength">Strength</option>
+                                                    <option value="Nutrition">Nutrition</option>
+                                                    <option value="Mental Health">Mental Health</option>
+                                                    <option value="Other">Other</option>
+                                                </select>
+                                            </div>
+                                            <div className="grid grid-cols-2 gap-4">
+                                                <div>
+                                                    <label htmlFor="targetValue" className="block text-sm font-medium text-gray-700">
+                                                        Target Value
+                                                    </label>
+                                                    <input
+                                                        type="number"
+                                                        name="targetValue"
+                                                        id="targetValue"
+                                                        required
+                                                        step="any"
+                                                        className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm"
+                                                        value={formData.targetValue}
+                                                        onChange={handleChange}
+                                                    />
+                                                </div>
+                                                <div>
+                                                    <label htmlFor="currentValue" className="block text-sm font-medium text-gray-700">
+                                                        Current Value
+                                                    </label>
+                                                    <input
+                                                        type="number"
+                                                        name="currentValue"
+                                                        id="currentValue"
+                                                        step="any"
+                                                        className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm"
+                                                        value={formData.currentValue}
+                                                        onChange={handleChange}
+                                                    />
+                                                </div>
+                                            </div>
+                                            <div>
+                                                <label htmlFor="unit" className="block text-sm font-medium text-gray-700">
+                                                    Unit
+                                                </label>
+                                                <input
+                                                    type="text"
+                                                    name="unit"
+                                                    id="unit"
+                                                    required
+                                                    placeholder="e.g., kg, miles, minutes"
+                                                    className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm"
+                                                    value={formData.unit}
+                                                    onChange={handleChange}
+                                                />
+                                            </div>
+                                            <div>
+                                                <label htmlFor="targetDate" className="block text-sm font-medium text-gray-700">
+                                                    Target Date
+                                                </label>
+                                                <input
+                                                    type="date"
+                                                    name="targetDate"
+                                                    id="targetDate"
+                                                    required
+                                                    className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm"
+                                                    value={formData.targetDate}
+                                                    onChange={handleChange}
+                                                />
+                                            </div>
+                                            <div className="mt-5 sm:mt-4 sm:flex sm:flex-row-reverse">
+                                                <button
+                                                    type="submit"
+                                                    disabled={isSubmitting}
+                                                    className="inline-flex w-full justify-center rounded-md bg-primary-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-primary-500 sm:ml-3 sm:w-auto disabled:opacity-50 disabled:cursor-not-allowed"
+                                                >
+                                                    {isSubmitting ? 'Creating...' : 'Create Goal'}
+                                                </button>
+                                                <button
+                                                    type="button"
+                                                    className="mt-3 inline-flex w-full justify-center rounded-md bg-white px-3 py-2 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50 sm:mt-0 sm:w-auto"
+                                                    onClick={onClose}
+                                                >
+                                                    Cancel
+                                                </button>
+                                            </div>
+                                        </form>
+                                    </div>
+                                </div>
+                            </Dialog.Panel>
+                        </Transition.Child>
                     </div>
                 </div>
-
-                <div className="grid grid-cols-2 gap-4">
-                    <div>
-                        <label className="block text-sm font-medium text-gray-700">Target Value</label>
-                        <input
-                            type="number"
-                            step="0.01"
-                            {...register('targetValue', { valueAsNumber: true })}
-                            className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 focus:border-indigo-500 focus:ring-indigo-500"
-                        />
-                        {errors.targetValue && (
-                            <p className="mt-1 text-sm text-red-600">{errors.targetValue.message}</p>
-                        )}
-                    </div>
-
-                    <div>
-                        <label className="block text-sm font-medium text-gray-700">Current Value</label>
-                        <input
-                            type="number"
-                            step="0.01"
-                            {...register('currentValue', { valueAsNumber: true })}
-                            className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 focus:border-indigo-500 focus:ring-indigo-500"
-                        />
-                        {errors.currentValue && (
-                            <p className="mt-1 text-sm text-red-600">{errors.currentValue.message}</p>
-                        )}
-                    </div>
-                </div>
-
-                <div className="grid grid-cols-2 gap-4">
-                    <div>
-                        <label className="block text-sm font-medium text-gray-700">Start Date</label>
-                        <input
-                            type="date"
-                            {...register('startDate')}
-                            className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 focus:border-indigo-500 focus:ring-indigo-500"
-                        />
-                    </div>
-
-                    <div>
-                        <label className="block text-sm font-medium text-gray-700">Target Date</label>
-                        <input
-                            type="date"
-                            {...register('targetDate')}
-                            className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 focus:border-indigo-500 focus:ring-indigo-500"
-                        />
-                    </div>
-                </div>
-
-                <div className="space-y-4">
-                    <label className="block text-sm font-medium text-gray-700">Reminders</label>
-                    <div className="flex items-center space-x-4">
-                        <select
-                            {...register('reminders.frequency')}
-                            className="block w-40 rounded-md border border-gray-300 px-3 py-2 focus:border-indigo-500 focus:ring-indigo-500"
-                        >
-                            <option value="none">No reminders</option>
-                            <option value="daily">Daily</option>
-                            <option value="weekly">Weekly</option>
-                            <option value="monthly">Monthly</option>
-                        </select>
-
-                        <input
-                            type="time"
-                            {...register('reminders.time')}
-                            className="block w-32 rounded-md border border-gray-300 px-3 py-2 focus:border-indigo-500 focus:ring-indigo-500"
-                        />
-
-                        <label className="flex items-center space-x-2">
-                            <input
-                                type="checkbox"
-                                {...register('reminders.enabled')}
-                                className="rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
-                            />
-                            <span className="text-sm text-gray-700">Enable reminders</span>
-                        </label>
-                    </div>
-                </div>
-
-                <div className="flex justify-end space-x-4 mt-6">
-                    {onCancel && (
-                        <button
-                            type="button"
-                            onClick={onCancel}
-                            className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
-                        >
-                            Cancel
-                        </button>
-                    )}
-                    <button
-                        type="submit"
-                        disabled={isSubmitting}
-                        className="px-4 py-2 text-sm font-medium text-white bg-indigo-600 border border-transparent rounded-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed"
-                    >
-                        {isSubmitting ? 'Creating...' : 'Create Goal'}
-                    </button>
-                </div>
-            </form>
-        </div>
+            </Dialog>
+        </Transition.Root>
     );
 } 

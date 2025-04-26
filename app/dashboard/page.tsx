@@ -40,6 +40,7 @@ import {
 import { Line, Bar, Doughnut } from 'react-chartjs-2';
 import CreateGoalModal from '@/app/components/CreateGoalModal';
 import toast from 'react-hot-toast';
+import GoalSection from '../components/GoalSection';
 
 // Register ChartJS components
 ChartJS.register(
@@ -496,6 +497,8 @@ export default function DashboardPage() {
                         </div>
                     </div>
                 )}
+
+                <GoalSection />
             </div>
         </div>
     );

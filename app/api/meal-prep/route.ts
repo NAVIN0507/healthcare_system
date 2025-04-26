@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { connectDB } from '@/app/lib/db';
 import { z } from 'zod';
+import { ObjectId } from 'mongodb';
 
 // Schema for meal preparation tasks
 const taskSchema = z.object({
@@ -42,10 +43,9 @@ export async function POST(req: Request) {
             updatedAt: new Date()
         });
 
-        return NextResponse.json({
-            message: 'Meal preparation created successfully',
-            id: result.insertedId
-        }, { status: 201 });
+        const createdMealPrep = await mealPrepsCollection.findOne({ _id: result.insertedId });
+
+        return NextResponse.json(createdMealPrep, { status: 201 });
     } catch (error) {
         console.error('Error creating meal preparation:', error);
         if (error instanceof z.ZodError) {
@@ -72,7 +72,7 @@ export async function GET(req: Request) {
 
         const mealPreps = await mealPrepsCollection
             .find(query)
-            .sort({ scheduledDate: -1 })
+            .sort({ scheduledDate: -1, createdAt: -1 })
             .toArray();
 
         return NextResponse.json(mealPreps);
@@ -97,25 +97,29 @@ export async function PUT(req: Request) {
         const db = await connectDB();
         const mealPrepsCollection = db.collection('meal_preparations');
 
-        const result = await mealPrepsCollection.updateOne(
-            { _id: id },
+        const result = await mealPrepsCollection.findOneAndUpdate(
+            { _id: new ObjectId(id) },
             {
                 $set: {
                     ...validatedData,
                     updatedAt: new Date()
                 }
-            }
+            },
+            { returnDocument: 'after' }
         );
 
-        if (result.matchedCount === 0) {
+        if (!result) {
             return NextResponse.json({ error: 'Meal preparation not found' }, { status: 404 });
         }
 
-        return NextResponse.json({ message: 'Meal preparation updated successfully' });
+        return NextResponse.json(result);
     } catch (error) {
         console.error('Error updating meal preparation:', error);
         if (error instanceof z.ZodError) {
             return NextResponse.json({ error: 'Invalid meal preparation data', details: error.errors }, { status: 400 });
+        }
+        if (error instanceof Error && error.message.includes('ObjectId')) {
+            return NextResponse.json({ error: 'Invalid meal preparation ID' }, { status: 400 });
         }
         return NextResponse.json({ error: 'Failed to update meal preparation' }, { status: 500 });
     }
@@ -133,15 +137,18 @@ export async function DELETE(req: Request) {
         const db = await connectDB();
         const mealPrepsCollection = db.collection('meal_preparations');
 
-        const result = await mealPrepsCollection.deleteOne({ _id: id });
+        const result = await mealPrepsCollection.findOneAndDelete({ _id: new ObjectId(id) });
 
-        if (result.deletedCount === 0) {
+        if (!result) {
             return NextResponse.json({ error: 'Meal preparation not found' }, { status: 404 });
         }
 
-        return NextResponse.json({ message: 'Meal preparation deleted successfully' });
+        return NextResponse.json(result);
     } catch (error) {
         console.error('Error deleting meal preparation:', error);
+        if (error instanceof Error && error.message.includes('ObjectId')) {
+            return NextResponse.json({ error: 'Invalid meal preparation ID' }, { status: 400 });
+        }
         return NextResponse.json({ error: 'Failed to delete meal preparation' }, { status: 500 });
     }
 } 

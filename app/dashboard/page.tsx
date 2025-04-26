@@ -68,6 +68,7 @@ export default function DashboardPage() {
     const router = useRouter();
     const [userData, setUserData] = useState<any>(null);
     const [isLoading, setIsLoading] = useState(true);
+    const [error, setError] = useState<string | null>(null);
     const [showAchievements, setShowAchievements] = useState(false);
     const [workouts, setWorkouts] = useState<Workout[]>([]);
     const [mealPreps, setMealPreps] = useState<MealPreparation[]>([]);
@@ -75,6 +76,7 @@ export default function DashboardPage() {
     useEffect(() => {
         const fetchData = async () => {
             try {
+                setError(null);
                 const [userResponse, workoutsResponse, mealPrepsResponse] = await Promise.all([
                     fetch('/api/auth/me'),
                     fetch('/api/workouts'),
@@ -82,32 +84,73 @@ export default function DashboardPage() {
                 ]);
 
                 if (!userResponse.ok) {
-                    router.push('/login');
-                    return;
+                    throw new Error('Failed to fetch user data');
                 }
 
                 const userData = await userResponse.json();
-                const workoutsData = workoutsResponse.ok ? await workoutsResponse.json() : [];
-                const mealPrepsData = mealPrepsResponse.ok ? await mealPrepsResponse.json() : [];
+                let workoutsData = [];
+                let mealPrepsData = [];
+
+                try {
+                    if (workoutsResponse.ok) {
+                        workoutsData = await workoutsResponse.json();
+                    } else {
+                        console.error('Failed to fetch workouts:', await workoutsResponse.text());
+                    }
+                } catch (workoutError) {
+                    console.error('Error parsing workouts data:', workoutError);
+                }
+
+                try {
+                    if (mealPrepsResponse.ok) {
+                        mealPrepsData = await mealPrepsResponse.json();
+                    } else {
+                        console.error('Failed to fetch meal preparations:', await mealPrepsResponse.text());
+                    }
+                } catch (mealPrepError) {
+                    console.error('Error parsing meal preparations data:', mealPrepError);
+                }
 
                 setUserData(userData.user);
                 setWorkouts(workoutsData);
                 setMealPreps(mealPrepsData);
             } catch (error) {
-                console.error('Error fetching data:', error);
-                router.push('/login');
+                console.error('Error fetching dashboard data:', error);
+                setError(error instanceof Error ? error.message : 'Failed to load dashboard data');
+                if (!userData) {
+                    router.push('/login');
+                }
             } finally {
                 setIsLoading(false);
             }
         };
 
         fetchData();
-    }, [router]);
+    }, [router, userData]);
 
     if (isLoading) {
         return (
             <div className="flex items-center justify-center min-h-screen bg-gradient-to-br from-gray-50 to-gray-100">
                 <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary-600"></div>
+            </div>
+        );
+    }
+
+    if (error) {
+        return (
+            <div className="flex flex-col items-center justify-center min-h-screen bg-gradient-to-br from-gray-50 to-gray-100">
+                <div className="text-red-600 mb-4">
+                    <svg className="h-12 w-12 mx-auto mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                    </svg>
+                    <p className="text-center text-lg font-medium">{error}</p>
+                </div>
+                <button
+                    onClick={() => window.location.reload()}
+                    className="px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-colors"
+                >
+                    Retry
+                </button>
             </div>
         );
     }
@@ -252,8 +295,8 @@ export default function DashboardPage() {
                                     <div className="flex items-center justify-between mb-4">
                                         <h3 className="text-xl font-bold text-gray-900">{prep.title}</h3>
                                         <span className={`px-3 py-1 rounded-full text-xs font-medium ${prep.status === 'completed' ? 'bg-green-100 text-green-700' :
-                                                prep.status === 'in_progress' ? 'bg-blue-100 text-blue-700' :
-                                                    'bg-gray-100 text-gray-700'
+                                            prep.status === 'in_progress' ? 'bg-blue-100 text-blue-700' :
+                                                'bg-gray-100 text-gray-700'
                                             }`}>
                                             {prep.status.replace('_', ' ')}
                                         </span>

@@ -37,6 +37,13 @@ interface Exercise {
     rest: string;
 }
 
+interface WorkoutStats {
+    heartRate: number;
+    steps: number;
+    distance: number;
+    calories: number;
+}
+
 interface Workout {
     _id?: string;
     title: string;
@@ -49,6 +56,9 @@ interface Workout {
     color?: string;
     completed?: boolean;
     date?: Date;
+    image?: string;
+    stats?: WorkoutStats;
+    calories?: number;
 }
 
 interface MealPrepStep {
@@ -274,8 +284,18 @@ export default function WorkoutsPage() {
     const upcomingWorkouts = filteredWorkouts.filter(workout => !workout.completed);
     const completedWorkouts = filteredWorkouts.filter(workout => workout.completed);
 
-    const handleWorkoutSelect = (workout) => {
-        setSelectedWorkout(workout);
+    const handleWorkoutSelect = (workout: Workout) => {
+        // Add default stats if they don't exist
+        const workoutWithStats = {
+            ...workout,
+            stats: workout.stats || {
+                heartRate: 0,
+                steps: 0,
+                distance: 0,
+                calories: workout.calories || 0
+            }
+        };
+        setSelectedWorkout(workoutWithStats);
         setIsWorkoutModalOpen(true);
     };
 
@@ -757,8 +777,8 @@ export default function WorkoutsPage() {
                                     </div>
                                     <div className="flex items-center gap-4">
                                         <span className={`px-3 py-1 rounded-full text-xs font-medium ${prep.status === 'completed' ? 'bg-green-500/20 text-green-400' :
-                                                prep.status === 'in_progress' ? 'bg-blue-500/20 text-blue-400' :
-                                                    'bg-gray-500/20 text-gray-400'
+                                            prep.status === 'in_progress' ? 'bg-blue-500/20 text-blue-400' :
+                                                'bg-gray-500/20 text-gray-400'
                                             }`}>
                                             {prep.status.replace('_', ' ')}
                                         </span>
